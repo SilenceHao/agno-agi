@@ -1,0 +1,49 @@
+- generic [ref=f9e2]:
+  - complementary "应用导航" [ref=f9e3]:
+    - link "本地智能体首页" [ref=f9e4] [cursor=pointer]:
+      - /url: /
+  - main [ref=f9e14]:
+    - generic [ref=f9e15]:
+      - generic [ref=f9e16]:
+        - generic [ref=f9e17]: 工作区
+        - generic [ref=f9e18]: /
+        - strong [ref=f9e19]: 新对话
+      - generic [ref=f9e20]:
+        - generic [ref=f9e21]: DeepSeek
+        - button "本地工作区" [ref=f9e23] [cursor=pointer]: AI
+    - region "智能体对话" [ref=f9e24]:
+      - status [ref=f9e25]
+      - generic [ref=f9e27]:
+        - generic [ref=f9e32]: 通用智能体
+        - heading "今天想处理什么？ 从一个问题开始。" [level=1] [ref=f9e33]: 今天想处理什么？从一个问题开始。
+        - paragraph [ref=f9e34]: 你可以提问、分析内容、写作、整理资料，也可以上传文件让我结合材料回答。
+        - generic [ref=f9e35]:
+          - button "梳理一个想法 拆清问题与下一步 ↗" [ref=f9e36] [cursor=pointer]:
+            - generic [ref=f9e40]:
+              - strong [ref=f9e41]: 梳理一个想法
+              - generic [ref=f9e42]: 拆清问题与下一步
+            - generic [ref=f9e43]: ↗
+          - button "总结与提炼 抓住重点，整理行动项 ↗" [ref=f9e44] [cursor=pointer]:
+            - generic [ref=f9e48]:
+              - strong [ref=f9e49]: 总结与提炼
+              - generic [ref=f9e50]: 抓住重点，整理行动项
+            - generic [ref=f9e51]: ↗
+          - button "起草一封邮件 调整结构与表达语气 ↗" [ref=f9e52] [cursor=pointer]:
+            - generic [ref=f9e56]:
+              - strong [ref=f9e57]: 起草一封邮件
+              - generic [ref=f9e58]: 调整结构与表达语气
+            - generic [ref=f9e59]: ↗
+          - button "制定一个计划 把目标变成可执行步骤 ↗" [ref=f9e60] [cursor=pointer]:
+            - generic [ref=f9e65]:
+              - strong [ref=f9e66]: 制定一个计划
+              - generic [ref=f9e67]: 把目标变成可执行步骤
+            - generic [ref=f9e68]: ↗
+      - generic [ref=f9e70]:
+        - generic [ref=f9e71]:
+          - textbox "给智能体发送消息" [ref=f9e72]:
+            - /placeholder: 给智能体发送消息…
+          - generic [ref=f9e73]:
+            - button "上传附件" [ref=f9e75] [cursor=pointer]:
+              - generic [ref=f9e78]: 添加附件
+            - button "发送消息" [ref=f9e79] [cursor=pointer]
+        - generic [ref=f9e82]: 模型回答可能有误，请核对重要信息。

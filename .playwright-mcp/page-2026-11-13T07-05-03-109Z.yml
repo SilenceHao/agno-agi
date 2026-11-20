@@ -1,0 +1,1754 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - link "Skip to content" [ref=e4] [cursor=pointer]:
+      - /url: "#start-of-content"
+    - banner [ref=e9]:
+      - heading "Navigation Menu" [level=2] [ref=e10]
+      - generic [ref=e11]:
+        - link "Homepage" [ref=e14] [cursor=pointer]:
+          - /url: /
+        - generic [ref=e17]:
+          - navigation "Global" [ref=e18]:
+            - list [ref=e19]:
+              - listitem [ref=e20]:
+                - button "Products" [ref=e22] [cursor=pointer]
+              - listitem [ref=e25]:
+                - button "Developers" [ref=e27] [cursor=pointer]
+              - listitem [ref=e30]:
+                - button "Businesses" [ref=e32] [cursor=pointer]
+              - listitem [ref=e35]:
+                - button "Resources" [ref=e37] [cursor=pointer]
+              - listitem [ref=e40]:
+                - link "Pricing" [ref=e41] [cursor=pointer]:
+                  - /url: https://github.com/pricing
+          - generic [ref=e42]:
+            - button "Search or jump to, type / to search" [ref=e44] [cursor=pointer]:
+              - generic [ref=e47]:
+                - generic [ref=e48]: Search
+                - generic [aria-hidden] [ref=e49]: /
+            - generic [ref=e50]:
+              - link "Sign in" [ref=e52] [cursor=pointer]:
+                - /url: /login?return_to=https%3A%2F%2Fgithub.com%2Feosphoros-ai%2FDB-GPT
+              - link "Sign up" [ref=e55] [cursor=pointer]:
+                - /url: /signup?ref_cta=Sign+up&ref_loc=header+logged+out&ref_page=%2F%3Cuser-name%3E%2F%3Crepo-name%3E&source=header-repo&source_repo=eosphoros-ai%2FDB-GPT
+              - button "Appearance settings" [ref=e58] [cursor=pointer]
+  - main [ref=e65]:
+    - generic "Global navigation menu" [ref=e68]:
+      - navigation "Breadcrumbs" [ref=e71]:
+        - list [ref=e72]:
+          - listitem [ref=e73]:
+            - link "eosphoros-ai" [ref=e74] [cursor=pointer]:
+              - /url: /eosphoros-ai
+          - listitem [ref=e76]:
+            - link "DB-GPT" [ref=e77] [cursor=pointer]:
+              - /url: /eosphoros-ai/DB-GPT
+      - heading "Repository navigation" [level=2] [ref=e80]
+      - navigation "Repository" [ref=e81]:
+        - list [ref=e82]:
+          - listitem [ref=e83]:
+            - link "Code" [ref=e84] [cursor=pointer]:
+              - /url: /eosphoros-ai/DB-GPT
+          - listitem [ref=e89]:
+            - link "Issues (399)" [ref=e90] [cursor=pointer]:
+              - /url: /eosphoros-ai/DB-GPT/issues
+              - generic [ref=e95]: Issues
+              - generic [ref=e96]:
+                - generic [aria-hidden] [ref=e97]: "399"
+                - generic [ref=e98]: (399)
+          - listitem [ref=e99]:
+            - link "Pull requests (122)" [ref=e100] [cursor=pointer]:
+              - /url: /eosphoros-ai/DB-GPT/pulls
+              - generic [ref=e104]: Pull requests
+              - generic [ref=e105]:
+                - generic [aria-hidden] [ref=e106]: "122"
+                - generic [ref=e107]: (122)
+          - listitem [ref=e108]:
+            - link "Discussions" [ref=e109] [cursor=pointer]:
+              - /url: /eosphoros-ai/DB-GPT/discussions
+          - listitem [ref=e114]:
+            - link "Actions" [ref=e115] [cursor=pointer]:
+              - /url: /eosphoros-ai/DB-GPT/actions
+          - listitem [ref=e120]:
+            - link "Projects" [ref=e121] [cursor=pointer]:
+              - /url: /eosphoros-ai/DB-GPT/projects
+          - listitem [ref=e126]:
+            - link "Security and quality" [ref=e127] [cursor=pointer]:
+              - /url: /eosphoros-ai/DB-GPT/security
+          - listitem [ref=e132]:
+            - link "Insights" [ref=e133] [cursor=pointer]:
+              - /url: /eosphoros-ai/DB-GPT/pulse
+    - generic [ref=e150]:
+      - generic [ref=e154]:
+        - generic [ref=e157]:
+          - img "eosphoros-ai" [ref=e158]
+          - generic "DB-GPT" [ref=e159]:
+            - strong [ref=e160]:
+              - link "DB-GPT" [ref=e161] [cursor=pointer]:
+                - /url: /eosphoros-ai/DB-GPT
+          - generic [ref=e162]: Public
+        - list [ref=e164]:
+          - listitem [ref=e165]:
+            - link "You must be signed in to change notification settings" [ref=e166] [cursor=pointer]:
+              - /url: /login?return_to=%2Feosphoros-ai%2FDB-GPT
+              - generic [ref=e167]: Notifications
+          - listitem [ref=e169]:
+            - link "You must be signed in to fork a repository" [ref=e170] [cursor=pointer]:
+              - /url: /login?return_to=%2Feosphoros-ai%2FDB-GPT
+              - generic [ref=e172]:
+                - text: Fork
+                - generic [aria-hidden] [ref=e173]: 3k
+                - generic [ref=e174]: (3k)
+          - listitem [ref=e175]:
+            - link "Star (20.3k)" [ref=e176] [cursor=pointer]:
+              - /url: /login?return_to=%2Feosphoros-ai%2FDB-GPT
+              - generic [ref=e178]:
+                - text: Star
+                - generic [aria-hidden] [ref=e179]: 20.3k
+                - generic [ref=e180]: (20.3k)
+      - generic [ref=e181]:
+        - generic [ref=e184]:
+          - generic [ref=e185]:
+            - generic [ref=e186]:
+              - button "main branch" [ref=e188] [cursor=pointer]:
+                - generic [ref=e189]: main
+              - generic [ref=e193]:
+                - link [ref=e194] [cursor=pointer]:
+                  - /url: /eosphoros-ai/DB-GPT/branches
+                  - generic [ref=e197]:
+                    - strong [ref=e198]: "75"
+                    - text: Branches
+                - link [ref=e199] [cursor=pointer]:
+                  - /url: /eosphoros-ai/DB-GPT/tags
+                  - generic [ref=e202]:
+                    - strong [ref=e203]: "55"
+                    - text: Tags
+            - generic [ref=e204]:
+              - combobox "Go to file" [ref=e212]
+              - button "Code" [ref=e213] [cursor=pointer]
+          - generic [ref=e216]:
+            - generic [ref=e217]:
+              - generic [ref=e219]:
+                - heading "Latest commit" [level=2] [ref=e220]
+                - generic [ref=e221]:
+                  - generic [ref=e223]:
+                    - link [ref=e224] [cursor=pointer]:
+                      - /url: /xiaoyvhuv
+                      - img "xiaoyvhuv" [ref=e225]
+                    - link "commits by xiaoyvhuv" [ref=e226] [cursor=pointer]:
+                      - /url: /eosphoros-ai/DB-GPT/commits?author=xiaoyvhuv
+                      - text: xiaoyvhuv
+                  - generic [ref=e227]:
+                    - generic [ref=e229]:
+                      - 'link "feat(report): improve evidence verification and report recovery (" [ref=e230] [cursor=pointer]':
+                        - /url: /eosphoros-ai/DB-GPT/commit/5b30ad7da8578a90e24eaae43d9bd568b6e3079a
+                      - link "#3348" [ref=e231] [cursor=pointer]:
+                        - /url: https://github.com/eosphoros-ai/DB-GPT/pull/3348
+                      - link ")" [ref=e232] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/commit/5b30ad7da8578a90e24eaae43d9bd568b6e3079a
+                    - button "success" [ref=e233] [cursor=pointer]
+                - generic [ref=e236]:
+                  - generic [ref=e238]:
+                    - link "Commit 5b30ad7" [ref=e239] [cursor=pointer]:
+                      - /url: /eosphoros-ai/DB-GPT/commit/5b30ad7da8578a90e24eaae43d9bd568b6e3079a
+                      - text: 5b30ad7
+                    - text: ·
+                    - generic "Nov 8, 2026, 21:58 GMT+8" [ref=e240]: 5 days ago
+                  - generic [ref=e241]:
+                    - heading "History" [level=2] [ref=e242]
+                    - link "3,447 Commits" [ref=e243] [cursor=pointer]:
+                      - /url: /eosphoros-ai/DB-GPT/commits/main/
+              - heading "Folders and files" [level=2] [ref=e246]
+              - table "Folders and files" [ref=e248]:
+                - rowgroup:
+                  - row "Name Last commit message Last commit date":
+                    - columnheader "Name"
+                    - columnheader "Last commit message"
+                    - columnheader "Last commit date"
+                - rowgroup [ref=e249]:
+                  - row [ref=e250]:
+                    - cell [ref=e251]:
+                      - link ".devcontainer, (Directory)" [ref=e258] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/tree/main/.devcontainer
+                        - text: .devcontainer
+                    - cell [ref=e259]:
+                      - generic [ref=e261]:
+                        - link "Bugfix(RAG):handle exceptions in aload_document_with_limit results (" [ref=e262] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/cbc28ea335388a1172523a722580de2c311ebaa7
+                        - link "#…" [ref=e263] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/2712
+                    - cell "last year" [ref=e264]
+                  - row [ref=e266]:
+                    - cell [ref=e267]:
+                      - link ".github, (Directory)" [ref=e274] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/tree/main/.github
+                        - text: .github
+                    - cell [ref=e275]:
+                      - 'link "feat(dashboard): add dashboard workspace with Next.js 16 toolchain up…" [ref=e278] [cursor=pointer]':
+                        - /url: /eosphoros-ai/DB-GPT/commit/61a0460e363552e2e9722905605c86622a216d40
+                    - cell "last month" [ref=e279]
+                  - row [ref=e281]:
+                    - cell [ref=e282]:
+                      - link ".opencode, (Directory)" [ref=e289] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/tree/main/.opencode
+                        - text: .opencode
+                    - cell [ref=e290]:
+                      - generic [ref=e292]:
+                        - link "🎉 DB-GPT V0.8.0 - Beta Testing (" [ref=e293] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/ef83851b312f7481a80d4da88650eb0099b37e79
+                        - link "#2988" [ref=e294] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/2988
+                        - link ")" [ref=e295] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/ef83851b312f7481a80d4da88650eb0099b37e79
+                    - cell "8 months ago" [ref=e296]
+                  - row [ref=e298]:
+                    - cell [ref=e299]:
+                      - link "assets, (Directory)" [ref=e306] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/tree/main/assets
+                        - text: assets
+                    - cell [ref=e307]:
+                      - generic [ref=e309]:
+                        - 'link "feat: Support structured and traceable data analysis reports (" [ref=e310] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/50bb99970d4d910c11aefdccbaaddadc6796849f
+                        - link "#3295" [ref=e311] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/3295
+                        - link ")" [ref=e312] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/50bb99970d4d910c11aefdccbaaddadc6796849f
+                    - cell "last month" [ref=e313]
+                  - row [ref=e315]:
+                    - cell [ref=e316]:
+                      - link "configs, (Directory)" [ref=e323] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/tree/main/configs
+                        - text: configs
+                    - cell [ref=e324]:
+                      - 'link "fix(dashboard): raise agentic completion budget and default generatio…" [ref=e327] [cursor=pointer]':
+                        - /url: /eosphoros-ai/DB-GPT/commit/0cf4ebf26dd4d9026cdea34f5806a3f2f574603b
+                    - cell "2 weeks ago" [ref=e328]
+                  - row [ref=e330]:
+                    - cell [ref=e331]:
+                      - link "docker, (Directory)" [ref=e338] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/tree/main/docker
+                        - text: docker
+                    - cell [ref=e339]:
+                      - generic [ref=e341]:
+                        - 'link "fix(docker): install tzdata and configure container timezone (" [ref=e342] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/7e1a9be705c6e0c2b2dbc4434b1cca5e99fc8114
+                        - link "#3219" [ref=e343] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/3219
+                        - link ")" [ref=e344] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/7e1a9be705c6e0c2b2dbc4434b1cca5e99fc8114
+                    - cell "last month" [ref=e345]
+                  - row [ref=e347]:
+                    - cell [ref=e348]:
+                      - link "docs, (Directory)" [ref=e355] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/tree/main/docs
+                        - text: docs
+                    - cell [ref=e356]:
+                      - generic [ref=e358]:
+                        - 'link "docs: fix typos in quickstart, installation, AWEL and module docs (" [ref=e359] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/8733ce9071dbbfb09d3612c0d60a3d9bb3c66e20
+                        - link "#3286" [ref=e360] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/3286
+                    - cell "3 weeks ago" [ref=e361]
+                  - row [ref=e363]:
+                    - cell [ref=e364]:
+                      - link "examples, (Directory)" [ref=e371] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/tree/main/examples
+                        - text: examples
+                    - cell [ref=e372]:
+                      - generic [ref=e374]:
+                        - 'link "feat(report): improve evidence verification and report recovery (" [ref=e375] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/5b30ad7da8578a90e24eaae43d9bd568b6e3079a
+                        - link "#3348" [ref=e376] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/3348
+                        - link ")" [ref=e377] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/5b30ad7da8578a90e24eaae43d9bd568b6e3079a
+                    - cell "5 days ago" [ref=e378]
+                  - row [ref=e380]:
+                    - cell [ref=e381]:
+                      - link "i18n, (Directory)" [ref=e388] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/tree/main/i18n
+                        - text: i18n
+                    - cell [ref=e389]:
+                      - 'link "feat(model): Support model icon" [ref=e392] [cursor=pointer]':
+                        - /url: /eosphoros-ai/DB-GPT/commit/4489f74e8d467723b5ae313ac011701d33a2eb58
+                    - cell "last year" [ref=e393]
+                  - row [ref=e395]:
+                    - cell [ref=e396]:
+                      - link "packages, (Directory)" [ref=e403] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/tree/main/packages
+                        - text: packages
+                    - cell [ref=e404]:
+                      - generic [ref=e406]:
+                        - 'link "feat(report): improve evidence verification and report recovery (" [ref=e407] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/5b30ad7da8578a90e24eaae43d9bd568b6e3079a
+                        - link "#3348" [ref=e408] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/3348
+                        - link ")" [ref=e409] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/5b30ad7da8578a90e24eaae43d9bd568b6e3079a
+                    - cell "5 days ago" [ref=e410]
+                  - row [ref=e412]:
+                    - cell [ref=e413]:
+                      - link "pilot, (Directory)" [ref=e420] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/tree/main/pilot
+                        - text: pilot
+                    - cell [ref=e421]:
+                      - generic [ref=e423]:
+                        - 'link "feat(report): improve evidence verification and report recovery (" [ref=e424] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/5b30ad7da8578a90e24eaae43d9bd568b6e3079a
+                        - link "#3348" [ref=e425] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/3348
+                        - link ")" [ref=e426] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/5b30ad7da8578a90e24eaae43d9bd568b6e3079a
+                    - cell "5 days ago" [ref=e427]
+                  - row [ref=e429]:
+                    - cell [ref=e430]:
+                      - link "requirements, (Directory)" [ref=e437] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/tree/main/requirements
+                        - text: requirements
+                    - cell [ref=e438]:
+                      - generic [ref=e440]:
+                        - 'link "fix(ChatKnowledge): Fix chat knowledge error (" [ref=e441] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/55c8b39e2ee7f2206522e07bce6adb1b4102da56
+                        - link "#1753" [ref=e442] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/1753
+                        - link ")" [ref=e443] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/55c8b39e2ee7f2206522e07bce6adb1b4102da56
+                    - cell "2 years ago" [ref=e444]
+                  - row [ref=e446]:
+                    - cell [ref=e447]:
+                      - link "scripts, (Directory)" [ref=e454] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/tree/main/scripts
+                        - text: scripts
+                    - cell [ref=e455]:
+                      - generic [ref=e457]:
+                        - link "feat(model):add llm provider ui (" [ref=e458] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/ca9f014cb3ead157ca2ee6ce645658f5fb55138c
+                        - link "#3241" [ref=e459] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/3241
+                        - link ")" [ref=e460] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/ca9f014cb3ead157ca2ee6ce645658f5fb55138c
+                    - cell "2 months ago" [ref=e461]
+                  - row [ref=e463]:
+                    - cell [ref=e464]:
+                      - link "skills, (Directory)" [ref=e471] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/tree/main/skills
+                        - text: skills
+                    - cell [ref=e472]:
+                      - generic [ref=e474]:
+                        - 'link "feat(report): improve evidence verification and report recovery (" [ref=e475] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/5b30ad7da8578a90e24eaae43d9bd568b6e3079a
+                        - link "#3348" [ref=e476] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/3348
+                        - link ")" [ref=e477] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/5b30ad7da8578a90e24eaae43d9bd568b6e3079a
+                    - cell "5 days ago" [ref=e478]
+                  - row [ref=e480]:
+                    - cell [ref=e481]:
+                      - link "tests, (Directory)" [ref=e488] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/tree/main/tests
+                        - text: tests
+                    - cell [ref=e489]:
+                      - generic [ref=e491]:
+                        - 'link "feat: Support structured and traceable data analysis reports (" [ref=e492] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/50bb99970d4d910c11aefdccbaaddadc6796849f
+                        - link "#3295" [ref=e493] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/3295
+                        - link ")" [ref=e494] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/50bb99970d4d910c11aefdccbaaddadc6796849f
+                    - cell "last month" [ref=e495]
+                  - row [ref=e497]:
+                    - cell [ref=e498]:
+                      - link "web, (Directory)" [ref=e505] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/tree/main/web
+                        - text: web
+                    - cell [ref=e506]:
+                      - generic [ref=e508]:
+                        - 'link "feat(report): improve evidence verification and report recovery (" [ref=e509] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/5b30ad7da8578a90e24eaae43d9bd568b6e3079a
+                        - link "#3348" [ref=e510] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/3348
+                        - link ")" [ref=e511] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/5b30ad7da8578a90e24eaae43d9bd568b6e3079a
+                    - cell "5 days ago" [ref=e512]
+                  - row [ref=e514]:
+                    - cell [ref=e515]:
+                      - link ".devcontainer.json, (File)" [ref=e522] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/blob/main/.devcontainer.json
+                        - text: .devcontainer.json
+                    - cell [ref=e523]:
+                      - generic [ref=e525]:
+                        - link "feat(KnowledgeBase):Add Word97-2003 (.doc) Binary File parsing module (" [ref=e526] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/c86243aa62ddf5676a5293e1a547ffdfc4c2c8e0
+                        - link "…" [ref=e527] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/2544
+                    - cell "last year" [ref=e528]
+                  - row [ref=e530]:
+                    - cell [ref=e531]:
+                      - link ".dockerignore, (File)" [ref=e538] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/blob/main/.dockerignore
+                        - text: .dockerignore
+                    - cell [ref=e539]:
+                      - 'link "feat(build): Support docker install" [ref=e542] [cursor=pointer]':
+                        - /url: /eosphoros-ai/DB-GPT/commit/455cdd1612a73d42e3ea23c65089e01fabce04cb
+                    - cell "last year" [ref=e543]
+                  - row [ref=e545]:
+                    - cell [ref=e546]:
+                      - link ".flake8, (File)" [ref=e553] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/blob/main/.flake8
+                        - text: .flake8
+                    - cell [ref=e554]:
+                      - generic [ref=e556]:
+                        - 'link "feat(model): Support yi proxy LLM (" [ref=e557] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/130ffb08c9b2fc9398fba4ee13fd0e773861f4fb
+                        - link "#1303" [ref=e558] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/1303
+                        - link ")" [ref=e559] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/130ffb08c9b2fc9398fba4ee13fd0e773861f4fb
+                    - cell "2 years ago" [ref=e560]
+                  - row [ref=e562]:
+                    - cell [ref=e563]:
+                      - link ".gitignore, (File)" [ref=e570] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/blob/main/.gitignore
+                        - text: .gitignore
+                    - cell [ref=e571]:
+                      - generic [ref=e573]:
+                        - 'link "fix(dashboard): unify builder skills and harden template creation (" [ref=e574] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/32bb8dee64d91cafad8fbc37d63521e82d018c25
+                        - link "#3298" [ref=e575] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/3298
+                    - cell "2 weeks ago" [ref=e576]
+                  - row [ref=e578]:
+                    - cell [ref=e579]:
+                      - link ".isort.cfg, (File)" [ref=e586] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/blob/main/.isort.cfg
+                        - text: .isort.cfg
+                    - cell [ref=e587]:
+                      - generic [ref=e589]:
+                        - 'link "chore: Add pylint for DB-GPT core lib (" [ref=e590] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/40c853575ad826b5ea601efd1a6130a4f979648c
+                        - link "#1076" [ref=e591] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/1076
+                        - link ")" [ref=e592] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/40c853575ad826b5ea601efd1a6130a4f979648c
+                    - cell "2 years ago" [ref=e593]
+                  - row [ref=e595]:
+                    - cell [ref=e596]:
+                      - link ".mypy.ini, (File)" [ref=e603] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/blob/main/.mypy.ini
+                        - text: .mypy.ini
+                    - cell [ref=e604]:
+                      - generic [ref=e606]:
+                        - 'link "chore: Fix pylint error (" [ref=e607] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/f72db23baba5973c681832a016a732774bc35a5b
+                        - link "#1915" [ref=e608] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/1915
+                        - link ")" [ref=e609] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/f72db23baba5973c681832a016a732774bc35a5b
+                    - cell "2 years ago" [ref=e610]
+                  - row [ref=e612]:
+                    - cell [ref=e613]:
+                      - link ".pre-commit-config.yaml, (File)" [ref=e620] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/blob/main/.pre-commit-config.yaml
+                        - text: .pre-commit-config.yaml
+                    - cell [ref=e621]:
+                      - generic [ref=e623]:
+                        - 'link "fix(model): Fix apiserver error (" [ref=e624] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/5ddd9e5bf87e265bde12f419e83ae75552796032
+                        - link "#2605" [ref=e625] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/2605
+                        - link ")" [ref=e626] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/5ddd9e5bf87e265bde12f419e83ae75552796032
+                    - cell "last year" [ref=e627]
+                  - row [ref=e629]:
+                    - cell [ref=e630]:
+                      - link ".python-version, (File)" [ref=e637] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/blob/main/.python-version
+                        - text: .python-version
+                    - cell [ref=e638]:
+                      - generic [ref=e640]:
+                        - 'link "feat(model): Support reasoning model (" [ref=e641] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/82bdc6fe942da59a62643c17ddb63ec3d45fc282
+                        - link "#2375" [ref=e642] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/2375
+                        - link ")" [ref=e643] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/82bdc6fe942da59a62643c17ddb63ec3d45fc282
+                    - cell "last year" [ref=e644]
+                  - row [ref=e646]:
+                    - cell [ref=e647]:
+                      - link "CODE_OF_CONDUCT, (File)" [ref=e654] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/blob/main/CODE_OF_CONDUCT
+                        - text: CODE_OF_CONDUCT
+                    - cell [ref=e655]:
+                      - link "Added CODE_OF_CONDUCT file" [ref=e658] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/commit/e74e37f8187206466c9db028c5018f6e5954883e
+                    - cell "3 years ago" [ref=e659]
+                  - row [ref=e661]:
+                    - cell [ref=e662]:
+                      - link "CONTRIBUTING.md, (File)" [ref=e669] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/blob/main/CONTRIBUTING.md
+                        - text: CONTRIBUTING.md
+                    - cell [ref=e670]:
+                      - generic [ref=e672]:
+                        - 'link "docs: update CONTRIBUTING.md to use uv package manager (" [ref=e673] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/934229c8ad35fac26a70c75a82b4df3d7d6e64ca
+                        - link "#2855" [ref=e674] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/2855
+                        - link ")" [ref=e675] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/934229c8ad35fac26a70c75a82b4df3d7d6e64ca
+                    - cell "last year" [ref=e676]
+                  - row [ref=e678]:
+                    - cell [ref=e679]:
+                      - link "DB-GPT-Core-Code-Design-Analysis.md, (File)" [ref=e686] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/blob/main/DB-GPT-Core-Code-Design-Analysis.md
+                        - text: DB-GPT-Core-Code-Design-Analysis.md
+                    - cell [ref=e687]:
+                      - generic [ref=e689]:
+                        - link "🎉 DB-GPT V0.8.0 - Beta Testing (" [ref=e690] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/ef83851b312f7481a80d4da88650eb0099b37e79
+                        - link "#2988" [ref=e691] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/2988
+                        - link ")" [ref=e692] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/ef83851b312f7481a80d4da88650eb0099b37e79
+                    - cell "8 months ago" [ref=e693]
+                  - row [ref=e695]:
+                    - cell [ref=e696]:
+                      - link "DISCKAIMER.md, (File)" [ref=e703] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/blob/main/DISCKAIMER.md
+                        - text: DISCKAIMER.md
+                    - cell [ref=e704]:
+                      - generic [ref=e706]:
+                        - 'link "chore: add disckaimer (" [ref=e707] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/56670f00847a2b085d912ecce2280f6a56e11862
+                        - link "#2274" [ref=e708] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/2274
+                        - link ")" [ref=e709] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/56670f00847a2b085d912ecce2280f6a56e11862
+                    - cell "2 years ago" [ref=e710]
+                  - row [ref=e712]:
+                    - cell [ref=e713]:
+                      - link "LICENSE, (File)" [ref=e720] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/blob/main/LICENSE
+                        - text: LICENSE
+                    - cell [ref=e721]:
+                      - link "Initial commit" [ref=e724] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/commit/717ab6439d4eb677916d3db6a2433cb92ca6fe14
+                    - cell "3 years ago" [ref=e725]
+                  - row [ref=e727]:
+                    - cell [ref=e728]:
+                      - link "MANIFEST.in, (File)" [ref=e735] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/blob/main/MANIFEST.in
+                        - text: MANIFEST.in
+                    - cell [ref=e736]:
+                      - generic [ref=e738]:
+                        - 'link "docs: SMMF introduction and usage (" [ref=e739] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/a35b612ac51fca76a1ac65b83034300526331a50
+                        - link "#878" [ref=e740] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/878
+                        - link ")" [ref=e741] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/a35b612ac51fca76a1ac65b83034300526331a50
+                    - cell "3 years ago" [ref=e742]
+                  - row [ref=e744]:
+                    - cell [ref=e745]:
+                      - link "Makefile, (File)" [ref=e752] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/blob/main/Makefile
+                        - text: Makefile
+                    - cell [ref=e753]:
+                      - generic [ref=e755]:
+                        - 'link "chore: update pacakge version (" [ref=e756] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/9def9feb4306cc8220df3d61c5fbfde88bc8f237
+                        - link "#2992" [ref=e757] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/2992
+                        - link ")" [ref=e758] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/9def9feb4306cc8220df3d61c5fbfde88bc8f237
+                    - cell "8 months ago" [ref=e759]
+                  - row [ref=e761]:
+                    - cell [ref=e762]:
+                      - link "README.hi.md, (File)" [ref=e769] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/blob/main/README.hi.md
+                        - text: README.hi.md
+                    - cell [ref=e770]:
+                      - generic [ref=e772]:
+                        - 'link "fix: reset new task session (" [ref=e773] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/283128542b95f9e3c2773d3ef44eb4e12a66de81
+                        - link "#3214" [ref=e774] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/3214
+                        - link ")" [ref=e775] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/283128542b95f9e3c2773d3ef44eb4e12a66de81
+                    - cell "3 months ago" [ref=e776]
+                  - row [ref=e778]:
+                    - cell [ref=e779]:
+                      - link "README.ja.md, (File)" [ref=e786] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/blob/main/README.ja.md
+                        - text: README.ja.md
+                    - cell [ref=e787]:
+                      - generic [ref=e789]:
+                        - 'link "fix: reset new task session (" [ref=e790] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/283128542b95f9e3c2773d3ef44eb4e12a66de81
+                        - link "#3214" [ref=e791] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/3214
+                        - link ")" [ref=e792] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/283128542b95f9e3c2773d3ef44eb4e12a66de81
+                    - cell "3 months ago" [ref=e793]
+                  - row [ref=e795]:
+                    - cell [ref=e796]:
+                      - link "README.ma.md, (File)" [ref=e803] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/blob/main/README.ma.md
+                        - text: README.ma.md
+                    - cell [ref=e804]:
+                      - generic [ref=e806]:
+                        - 'link "fix: reset new task session (" [ref=e807] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/283128542b95f9e3c2773d3ef44eb4e12a66de81
+                        - link "#3214" [ref=e808] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/3214
+                        - link ")" [ref=e809] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/283128542b95f9e3c2773d3ef44eb4e12a66de81
+                    - cell "3 months ago" [ref=e810]
+                  - row [ref=e812]:
+                    - cell [ref=e813]:
+                      - link "README.md, (File)" [ref=e820] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/blob/main/README.md
+                        - text: README.md
+                    - cell [ref=e821]:
+                      - generic [ref=e823]:
+                        - 'link "fix: reset new task session (" [ref=e824] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/283128542b95f9e3c2773d3ef44eb4e12a66de81
+                        - link "#3214" [ref=e825] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/3214
+                        - link ")" [ref=e826] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/283128542b95f9e3c2773d3ef44eb4e12a66de81
+                    - cell "3 months ago" [ref=e827]
+                  - row [ref=e829]:
+                    - cell [ref=e830]:
+                      - link "README.ta.md, (File)" [ref=e837] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/blob/main/README.ta.md
+                        - text: README.ta.md
+                    - cell [ref=e838]:
+                      - generic [ref=e840]:
+                        - 'link "fix: reset new task session (" [ref=e841] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/283128542b95f9e3c2773d3ef44eb4e12a66de81
+                        - link "#3214" [ref=e842] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/3214
+                        - link ")" [ref=e843] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/283128542b95f9e3c2773d3ef44eb4e12a66de81
+                    - cell "3 months ago" [ref=e844]
+                  - row [ref=e846]:
+                    - cell [ref=e847]:
+                      - link "README.zh.md, (File)" [ref=e854] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/blob/main/README.zh.md
+                        - text: README.zh.md
+                    - cell [ref=e855]:
+                      - generic [ref=e857]:
+                        - 'link "fix: reset new task session (" [ref=e858] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/283128542b95f9e3c2773d3ef44eb4e12a66de81
+                        - link "#3214" [ref=e859] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/3214
+                        - link ")" [ref=e860] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/283128542b95f9e3c2773d3ef44eb4e12a66de81
+                    - cell "3 months ago" [ref=e861]
+                  - row [ref=e863]:
+                    - cell [ref=e864]:
+                      - link "docker-compose.yml, (File)" [ref=e871] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/blob/main/docker-compose.yml
+                        - text: docker-compose.yml
+                    - cell [ref=e872]:
+                      - generic [ref=e874]:
+                        - 'link "fix(docker): install tzdata and configure container timezone (" [ref=e875] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/7e1a9be705c6e0c2b2dbc4434b1cca5e99fc8114
+                        - link "#3219" [ref=e876] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/3219
+                        - link ")" [ref=e877] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/7e1a9be705c6e0c2b2dbc4434b1cca5e99fc8114
+                    - cell "last month" [ref=e878]
+                  - row [ref=e880]:
+                    - cell [ref=e881]:
+                      - link "install_help.py, (File)" [ref=e888] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/blob/main/install_help.py
+                        - text: install_help.py
+                    - cell [ref=e889]:
+                      - generic [ref=e891]:
+                        - 'link "feat(agent): More general ReAct Agent (" [ref=e892] [cursor=pointer]':
+                          - /url: /eosphoros-ai/DB-GPT/commit/3bfbdc3fc7d78937d0fff0272052413fc3832e8f
+                        - link "#2556" [ref=e893] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/2556
+                        - link ")" [ref=e894] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/3bfbdc3fc7d78937d0fff0272052413fc3832e8f
+                    - cell "last year" [ref=e895]
+                  - row [ref=e897]:
+                    - cell [ref=e898]:
+                      - link "pyproject.toml, (File)" [ref=e905] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/blob/main/pyproject.toml
+                        - text: pyproject.toml
+                    - cell [ref=e906]:
+                      - generic [ref=e908]:
+                        - link "feat(knowledge):add llm wiki index for knowledge module (" [ref=e909] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/5905245a6750bafa636aa36a904b7fd4ead75334
+                        - link "#3276" [ref=e910] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/3276
+                        - link ")" [ref=e911] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/5905245a6750bafa636aa36a904b7fd4ead75334
+                    - cell "last month" [ref=e912]
+                  - row [ref=e914]:
+                    - cell [ref=e915]:
+                      - link "skills.py, (File)" [ref=e922] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/blob/main/skills.py
+                        - text: skills.py
+                    - cell [ref=e923]:
+                      - generic [ref=e925]:
+                        - link "🎉 DB-GPT V0.8.0 - Beta Testing (" [ref=e926] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/ef83851b312f7481a80d4da88650eb0099b37e79
+                        - link "#2988" [ref=e927] [cursor=pointer]:
+                          - /url: https://github.com/eosphoros-ai/DB-GPT/pull/2988
+                        - link ")" [ref=e928] [cursor=pointer]:
+                          - /url: /eosphoros-ai/DB-GPT/commit/ef83851b312f7481a80d4da88650eb0099b37e79
+                    - cell "8 months ago" [ref=e929]
+                  - row [ref=e931]:
+                    - cell [ref=e932]:
+                      - link "uv.lock, (File)" [ref=e939] [cursor=pointer]:
+                        - /url: /eosphoros-ai/DB-GPT/blob/main/uv.lock
+                        - text: uv.lock
+                    - cell [ref=e940]:
+                      - 'link "feat(dashboard): add dashboard workspace with Next.js 16 toolchain up…" [ref=e943] [cursor=pointer]':
+                        - /url: /eosphoros-ai/DB-GPT/commit/61a0460e363552e2e9722905605c86622a216d40
+                    - cell "last month" [ref=e944]
+            - generic [ref=e947]:
+              - generic [ref=e948]:
+                - heading "Repository files navigation" [level=2] [ref=e949]
+                - navigation "Repository files" [ref=e950]:
+                  - list [ref=e951]:
+                    - listitem [ref=e952]:
+                      - link "README" [ref=e953] [cursor=pointer]:
+                        - /url: "#"
+                    - listitem [ref=e958]:
+                      - link "Code of conduct" [ref=e959] [cursor=pointer]:
+                        - /url: "#"
+                    - listitem [ref=e964]:
+                      - link "Contributing" [ref=e965] [cursor=pointer]:
+                        - /url: "#"
+                    - listitem [ref=e970]:
+                      - link "MIT license" [ref=e971] [cursor=pointer]:
+                        - /url: "#"
+                - button "Outline" [ref=e976] [cursor=pointer]
+              - article [ref=e980]:
+                - generic [ref=e981]:
+                  - heading [level=1] [ref=e982]:
+                    - link [ref=e983] [cursor=pointer]:
+                      - /url: /eosphoros-ai/DB-GPT/blob/main/assets/LOGO_SMALL.png
+                      - img "Logo" [ref=e984]
+                    - text: "DB-GPT: Open-Source Agentic AI Data Assistant"
+                  - 'link "Permalink: DB-GPT: Open-Source Agentic AI Data Assistant" [ref=e985] [cursor=pointer]':
+                    - /url: "#-db-gpt-open-source-agentic-ai-data-assistant"
+                - paragraph [ref=e988]:
+                  - link [ref=e989] [cursor=pointer]:
+                    - /url: /eosphoros-ai/DB-GPT/blob/main/assets/dbgpt_vision.png
+                - generic [ref=e991]:
+                  - paragraph [ref=e992]:
+                    - link [ref=e993] [cursor=pointer]:
+                      - /url: https://github.com/eosphoros-ai/DB-GPT
+                      - img "stars" [ref=e994]
+                    - link [ref=e995] [cursor=pointer]:
+                      - /url: https://github.com/eosphoros-ai/DB-GPT
+                      - img "forks" [ref=e996]
+                    - link [ref=e997] [cursor=pointer]:
+                      - /url: http://dbgpt.cn/
+                      - img "Official Website" [ref=e998]
+                    - link [ref=e999] [cursor=pointer]:
+                      - /url: https://opensource.org/licenses/MIT
+                      - 'img "License: MIT" [ref=e1000]'
+                    - link [ref=e1001] [cursor=pointer]:
+                      - /url: https://github.com/eosphoros-ai/DB-GPT/releases
+                      - img "Release Notes" [ref=e1002]
+                    - link [ref=e1003] [cursor=pointer]:
+                      - /url: https://github.com/eosphoros-ai/DB-GPT/issues
+                      - img "Open Issues" [ref=e1004]
+                    - link [ref=e1005] [cursor=pointer]:
+                      - /url: https://x.com/DBGPT_AI
+                      - img "X (formerly Twitter) Follow" [ref=e1006]
+                    - link [ref=e1007] [cursor=pointer]:
+                      - /url: https://medium.com/@dbgpt0506
+                      - img "Medium Follow" [ref=e1008]
+                    - link [ref=e1009] [cursor=pointer]:
+                      - /url: https://space.bilibili.com/3537113070963392
+                      - img "Bilibili Space" [ref=e1010]
+                    - link [ref=e1011] [cursor=pointer]:
+                      - /url: https://join.slack.com/t/slack-inu2564/shared_invite/zt-29rcnyw2b-N~ubOD9kFc7b7MDOAM1otA
+                      - img "Slack" [ref=e1012]
+                    - link [ref=e1013] [cursor=pointer]:
+                      - /url: https://codespaces.new/eosphoros-ai/DB-GPT
+                      - img "Open in GitHub Codespaces" [ref=e1014]
+                  - paragraph [ref=e1015]:
+                    - link [ref=e1016] [cursor=pointer]:
+                      - /url: /eosphoros-ai/DB-GPT/blob/main/README.md
+                      - img "English" [ref=e1017]
+                    - link [ref=e1018] [cursor=pointer]:
+                      - /url: /eosphoros-ai/DB-GPT/blob/main/README.zh.md
+                      - img "简体中文" [ref=e1019]
+                    - link [ref=e1020] [cursor=pointer]:
+                      - /url: /eosphoros-ai/DB-GPT/blob/main/README.ja.md
+                      - img "日本語" [ref=e1021]
+                  - paragraph [ref=e1022]:
+                    - link [ref=e1023] [cursor=pointer]:
+                      - /url: http://docs.dbgpt.cn/docs/overview/
+                      - strong [ref=e1024]: Documents
+                    - text: "|"
+                    - link [ref=e1025] [cursor=pointer]:
+                      - /url: https://github.com/eosphoros-ai/DB-GPT/blob/main/README.zh.md#%E8%81%94%E7%B3%BB%E6%88%91%E4%BB%AC
+                      - strong [ref=e1026]: Contact Us
+                    - text: "|"
+                    - link [ref=e1027] [cursor=pointer]:
+                      - /url: https://github.com/eosphoros-ai/community
+                      - strong [ref=e1028]: Community
+                    - text: "|"
+                    - link [ref=e1029] [cursor=pointer]:
+                      - /url: https://arxiv.org/pdf/2312.17449.pdf
+                      - strong [ref=e1030]: Paper
+                - blockquote [ref=e1031]:
+                  - paragraph [ref=e1032]:
+                    - strong [ref=e1033]: An open-source AI data assistant that connects to your data, writes SQL and code, runs skills in sandboxed environments, and turns analysis into reports, insights, and action.
+                - paragraph [ref=e1034]:
+                  - link [ref=e1035] [cursor=pointer]:
+                    - /url: https://private-user-images.githubusercontent.com/13723926/561054934-ff9beb32-7db5-487a-bd81-d4489d853ea5.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3OTQ1NTM3OTksIm5iZiI6MTc5NDU1MzQ5OSwicGF0aCI6Ii8xMzcyMzkyNi81NjEwNTQ5MzQtZmY5YmViMzItN2RiNS00ODdhLWJkODEtZDQ0ODlkODUzZWE1LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNjExMTMlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjYxMTEzVDA3MDQ1OVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTRjZWI5ZGJjNjAxYjQ3ZGJhZmY3MGY0NTEyNTMzMjFiNDQ5YWJkYjJmNDhjMDIxMGUxY2Y2Zjg0OTJlYmUzZGUmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JnJlc3BvbnNlLWNvbnRlbnQtdHlwZT1pbWFnZSUyRnBuZyJ9.MbpBeUijkiZijXM9y6Re9fO-gOwkjAjZMK3cNrFeym0
+                    - img "welcome_page" [ref=e1036]
+                - generic [ref=e1037]:
+                  - heading "What is DB-GPT?" [level=2] [ref=e1038]
+                  - 'link "Permalink: What is DB-GPT?" [ref=e1039] [cursor=pointer]':
+                    - /url: "#what-is-db-gpt"
+                - paragraph [ref=e1042]:
+                  - text: DB-GPT is an open-source
+                  - strong [ref=e1043]: agentic AI data assistant
+                  - text: for the next generation of
+                  - strong [ref=e1044]: AI + Data
+                  - text: products.
+                - paragraph [ref=e1045]: "It helps users and teams:"
+                - list [ref=e1046]:
+                  - listitem [ref=e1047]:
+                    - text: connect to
+                    - strong [ref=e1048]: databases, CSV / Excel files, warehouses, and knowledge bases
+                  - listitem [ref=e1049]:
+                    - text: ask questions in natural language and let AI
+                    - strong [ref=e1050]: write SQL autonomously
+                  - listitem [ref=e1051]:
+                    - text: run
+                    - strong [ref=e1052]: Python- and code-driven analysis
+                    - text: workflows
+                  - listitem [ref=e1053]:
+                    - text: load and execute reusable
+                    - strong [ref=e1054]: skills
+                    - text: for domain-specific tasks
+                  - listitem [ref=e1055]:
+                    - text: generate
+                    - strong [ref=e1056]: charts, dashboards, HTML reports, and analysis summaries
+                  - listitem [ref=e1057]:
+                    - text: execute tasks safely in
+                    - strong [ref=e1058]: sandboxed environments
+                - paragraph [ref=e1059]:
+                  - text: DB-GPT is also a platform for building
+                  - strong [ref=e1060]: AI-native data agents, workflows, and applications
+                  - text: with agents, AWEL, RAG, and multi-model support.
+                - generic [ref=e1061]:
+                  - heading "Why DB-GPT?" [level=2] [ref=e1062]
+                  - 'link "Permalink: Why DB-GPT?" [ref=e1063] [cursor=pointer]':
+                    - /url: "#why-db-gpt"
+                - generic [ref=e1066]:
+                  - heading "1. Agentic data analysis" [level=3] [ref=e1067]
+                  - 'link "Permalink: 1. Agentic data analysis" [ref=e1068] [cursor=pointer]':
+                    - /url: "#1-agentic-data-analysis"
+                - paragraph [ref=e1071]:
+                  - text: Plan tasks, break work into steps, call tools, and complete analysis workflows end to end.
+                  - link [ref=e1072] [cursor=pointer]:
+                    - /url: https://private-user-images.githubusercontent.com/40684202/563685792-4921fa40-20f7-4a9c-b908-c0b4e7caa9d6.jpg?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3OTQ1NTM3OTksIm5iZiI6MTc5NDU1MzQ5OSwicGF0aCI6Ii80MDY4NDIwMi81NjM2ODU3OTItNDkyMWZhNDAtMjBmNy00YTljLWI5MDgtYzBiNGU3Y2FhOWQ2LmpwZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNjExMTMlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjYxMTEzVDA3MDQ1OVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWRmY2MwZmJhNzUxNGFkMGFkMzhkZGM4YWZkZTMxYjAxZDYwZGNlOWExYTU4NDVmNzU0ZTMwNTUxOGMxMDNmNDYmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JnJlc3BvbnNlLWNvbnRlbnQtdHlwZT1pbWFnZSUyRmpwZWcifQ.DR7QQjAEgK84jUzoPLTUG5zsRM522iha7RS5vuOemH4
+                    - img "csv_data_analysis_demo_en" [ref=e1073]
+                - generic [ref=e1074]:
+                  - heading "2. Autonomous SQL + code execution" [level=3] [ref=e1075]
+                  - 'link "Permalink: 2. Autonomous SQL + code execution" [ref=e1076] [cursor=pointer]':
+                    - /url: "#2-autonomous-sql--code-execution"
+                - paragraph [ref=e1079]:
+                  - text: Generate SQL and code to query data, clean datasets, compute metrics, and produce outputs.
+                  - link [ref=e1080] [cursor=pointer]:
+                    - /url: https://private-user-images.githubusercontent.com/13723926/561060054-aeebc2b8-6c50-4ebb-96fd-07b860faa044.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3OTQ1NTM3OTksIm5iZiI6MTc5NDU1MzQ5OSwicGF0aCI6Ii8xMzcyMzkyNi81NjEwNjAwNTQtYWVlYmMyYjgtNmM1MC00ZWJiLTk2ZmQtMDdiODYwZmFhMDQ0LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNjExMTMlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjYxMTEzVDA3MDQ1OVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTU5MWNmZWY5ZGIxYzEyZGUxMWE0NTE5NzMyNjU4ZjVjM2Y2Y2QwMDNlMDcyMGEzMjM0NTY3NDFlMjliOTQ1MzYmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JnJlc3BvbnNlLWNvbnRlbnQtdHlwZT1pbWFnZSUyRnBuZyJ9.LojjYb0hQkOtt9dRFYWFpW4MXkG2U8-qlirfHa1KQws
+                    - img "agentic_write_code" [ref=e1081]
+                  - link [ref=e1082] [cursor=pointer]:
+                    - /url: https://private-user-images.githubusercontent.com/13723926/561059003-da45de20-3768-4f0d-ab20-e939ddf21361.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3OTQ1NTM3OTksIm5iZiI6MTc5NDU1MzQ5OSwicGF0aCI6Ii8xMzcyMzkyNi81NjEwNTkwMDMtZGE0NWRlMjAtMzc2OC00ZjBkLWFiMjAtZTkzOWRkZjIxMzYxLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNjExMTMlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjYxMTEzVDA3MDQ1OVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTEyYTAyMWIzNWNiNmM3ZTVjMzA1Y2EzZGZmYmRkOTJlODJiN2U0OGRiN2JhMWJlNjg4MTg4YzNkNzAxZDZjYTYmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JnJlc3BvbnNlLWNvbnRlbnQtdHlwZT1pbWFnZSUyRnBuZyJ9.UGBccD_aHZLfkxEBpFUkLhMepPGdfxlwAkELUX3ZC_4
+                    - img "sql_query" [ref=e1083]
+                - generic [ref=e1084]:
+                  - heading "3. Multi-source data access" [level=3] [ref=e1085]
+                  - 'link "Permalink: 3. Multi-source data access" [ref=e1086] [cursor=pointer]':
+                    - /url: "#3-multi-source-data-access"
+                - paragraph [ref=e1089]: Work across structured and unstructured sources, including databases, spreadsheets, documents, and knowledge bases.
+                - paragraph [ref=e1090]:
+                  - link [ref=e1091] [cursor=pointer]:
+                    - /url: /eosphoros-ai/DB-GPT/blob/main/assets/datasources.png
+                    - img "datasource" [ref=e1092]
+                - generic [ref=e1093]:
+                  - heading "4. Skills-driven extensibility" [level=3] [ref=e1094]
+                  - 'link "Permalink: 4. Skills-driven extensibility" [ref=e1095] [cursor=pointer]':
+                    - /url: "#4-skills-driven-extensibility"
+                - paragraph [ref=e1098]: Package domain knowledge, analysis methods, and execution workflows into reusable skills.
+                - paragraph [ref=e1099]:
+                  - link [ref=e1100] [cursor=pointer]:
+                    - /url: https://private-user-images.githubusercontent.com/40684202/563499933-39f39c36-a014-4a2e-8e14-b3af3f1d2f1c.jpg?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3OTQ1NTM3OTksIm5iZiI6MTc5NDU1MzQ5OSwicGF0aCI6Ii80MDY4NDIwMi81NjM0OTk5MzMtMzlmMzljMzYtYTAxNC00YTJlLThlMTQtYjNhZjNmMWQyZjFjLmpwZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNjExMTMlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjYxMTEzVDA3MDQ1OVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTNhOThmYmE3Yjc5Y2M4ZWZhMWZkYWYwNzE1YTQ4YjgwZmNkMzgxMzI2YzJlY2M2NWFmYTE5YjNhZmZkM2RlMDcmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JnJlc3BvbnNlLWNvbnRlbnQtdHlwZT1pbWFnZSUyRmpwZWcifQ.ECTGn05h7gadkCBEZ5z8r2nA0x3rUl0hykwxYgIwqs0
+                    - img "import_github_skill" [ref=e1101]
+                - generic [ref=e1102]:
+                  - heading "5. Sandboxed execution" [level=3] [ref=e1103]
+                  - 'link "Permalink: 5. Sandboxed execution" [ref=e1104] [cursor=pointer]':
+                    - /url: "#5-sandboxed-execution"
+                - paragraph [ref=e1107]:
+                  - text: Run code and tools in isolated environments for safer, more reliable analysis.
+                  - link [ref=e1108] [cursor=pointer]:
+                    - /url: https://private-user-images.githubusercontent.com/13723926/561059357-bfbd78e0-15e2-42ac-876f-5b91847aadc1.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3OTQ1NTM3OTksIm5iZiI6MTc5NDU1MzQ5OSwicGF0aCI6Ii8xMzcyMzkyNi81NjEwNTkzNTctYmZiZDc4ZTAtMTVlMi00MmFjLTg3NmYtNWI5MTg0N2FhZGMxLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNjExMTMlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjYxMTEzVDA3MDQ1OVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWJkMDA4ODg5YWIwYTdmODJmN2M5MWVlYjYzNzZiMjg4YTk4ZmNmOGM4N2EyNTYzMjNhODNmNjIzYzk3M2E2MWMmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JnJlc3BvbnNlLWNvbnRlbnQtdHlwZT1pbWFnZSUyRnBuZyJ9.su0bXZ3W6B5e8hahd6smb6H8fwidSvr-zKiMDxKCWto
+                    - img "sandbox" [ref=e1109]
+                - generic [ref=e1110]:
+                  - heading "What you can do with DB-GPT" [level=2] [ref=e1111]
+                  - 'link "Permalink: What you can do with DB-GPT" [ref=e1112] [cursor=pointer]':
+                    - /url: "#what-you-can-do-with-db-gpt"
+                - list [ref=e1115]:
+                  - listitem [ref=e1116]:
+                    - strong [ref=e1117]: Analyze CSV / Excel files
+                    - text: and generate visual reports
+                  - listitem [ref=e1118]:
+                    - strong [ref=e1119]: Connect to databases
+                    - text: and produce profiling reports
+                  - listitem [ref=e1120]:
+                    - text: Ask business questions in natural language and let AI
+                    - strong [ref=e1121]: write SQL automatically
+                  - listitem [ref=e1122]:
+                    - text: Perform
+                    - strong [ref=e1123]: financial report analysis
+                    - text: with code, charts, and narrative summaries
+                  - listitem [ref=e1124]:
+                    - text: Create and reuse
+                    - strong [ref=e1125]: SQL analysis skills
+                    - text: and domain workflows
+                  - listitem [ref=e1126]:
+                    - text: Combine
+                    - strong [ref=e1127]: code, SQL, retrieval, and tools
+                    - text: in a single agentic workflow
+                  - listitem [ref=e1128]:
+                    - text: Build next-generation
+                    - strong [ref=e1129]: AI + Data assistants
+                    - text: for your team or product
+                - generic [ref=e1130]:
+                  - heading "Product Workflow" [level=2] [ref=e1131]
+                  - 'link "Permalink: Product Workflow" [ref=e1132] [cursor=pointer]':
+                    - /url: "#product-workflow"
+                - generic [ref=e1135]:
+                  - heading "Explore data" [level=3] [ref=e1136]
+                  - 'link "Permalink: Explore data" [ref=e1137] [cursor=pointer]':
+                    - /url: "#explore-data"
+                - paragraph [ref=e1140]: Connect files, databases, and knowledge bases in one workspace.
+                - generic [ref=e1141]:
+                  - heading "Plan and execute" [level=3] [ref=e1142]
+                  - 'link "Permalink: Plan and execute" [ref=e1143] [cursor=pointer]':
+                    - /url: "#plan-and-execute"
+                - paragraph [ref=e1146]: Let AI reason through the task, write SQL and code, and execute step by step.
+                - generic [ref=e1147]:
+                  - heading "Use skills" [level=3] [ref=e1148]
+                  - 'link "Permalink: Use skills" [ref=e1149] [cursor=pointer]':
+                    - /url: "#use-skills"
+                - paragraph [ref=e1152]: Load reusable skills for repeatable business analysis workflows.
+                - generic [ref=e1153]:
+                  - heading "Generate reports" [level=3] [ref=e1154]
+                  - 'link "Permalink: Generate reports" [ref=e1155] [cursor=pointer]':
+                    - /url: "#generate-reports"
+                - paragraph [ref=e1158]: Produce charts, dashboards, HTML reports, and decision-ready outputs.
+                - generic [ref=e1159]:
+                  - heading "Quick Start" [level=2] [ref=e1160]
+                  - 'link "Permalink: Quick Start" [ref=e1161] [cursor=pointer]':
+                    - /url: "#quick-start"
+                - paragraph [ref=e1164]: "Get DB-GPT running in minutes with the one-line installer (macOS & Linux):"
+                - generic [ref=e1165]:
+                  - generic [ref=e1166]: curl -fsSL https://raw.githubusercontent.com/eosphoros-ai/DB-GPT/main/scripts/install/install.sh | bash
+                  - button "Copy code to clipboard" [ref=e1168] [cursor=pointer]
+                - paragraph [ref=e1172]: "Or specify a profile and API key directly:"
+                - generic [ref=e1173]:
+                  - generic [ref=e1174]: curl -fsSL https://raw.githubusercontent.com/eosphoros-ai/DB-GPT/main/scripts/install/install.sh \ | OPENAI_API_KEY=sk-xxx bash -s -- --profile openai
+                  - button "Copy code to clipboard" [ref=e1176] [cursor=pointer]
+                - paragraph [ref=e1180]: "For Kimi 2.5 via Moonshot API:"
+                - generic [ref=e1181]:
+                  - generic [ref=e1182]: curl -fsSL https://raw.githubusercontent.com/eosphoros-ai/DB-GPT/main/scripts/install/install.sh \ | MOONSHOT_API_KEY=sk-xxx bash -s -- --profile kimi
+                  - button "Copy code to clipboard" [ref=e1184] [cursor=pointer]
+                - paragraph [ref=e1188]: "For MiniMax via the OpenAI-compatible API:"
+                - generic [ref=e1189]:
+                  - generic [ref=e1190]: curl -fsSL https://raw.githubusercontent.com/eosphoros-ai/DB-GPT/main/scripts/install/install.sh \ | MINIMAX_API_KEY=sk-xxx bash -s -- --profile minimax
+                  - button "Copy code to clipboard" [ref=e1192] [cursor=pointer]
+                - paragraph [ref=e1196]:
+                  - text: Already have a local DB-GPT checkout? Reuse it instead of cloning
+                  - code [ref=e1197]: ~/.dbgpt/DB-GPT
+                  - text: ":"
+                - generic [ref=e1198]:
+                  - generic [ref=e1199]:
+                    - text: OPENAI_API_KEY=sk-xxx \ bash scripts/install/install.sh --profile openai --repo-dir
+                    - generic [ref=e1200]:
+                      - text: "\""
+                      - generic [ref=e1201]: $(pwd)
+                      - text: "\""
+                    - text: "--yes"
+                  - button "Copy code to clipboard" [ref=e1203] [cursor=pointer]
+                - paragraph [ref=e1207]: "Or reuse your local repo with Kimi 2.5:"
+                - generic [ref=e1208]:
+                  - generic [ref=e1209]:
+                    - text: MOONSHOT_API_KEY=sk-xxx \ bash scripts/install/install.sh --profile kimi --repo-dir
+                    - generic [ref=e1210]:
+                      - text: "\""
+                      - generic [ref=e1211]: $(pwd)
+                      - text: "\""
+                    - text: "--yes"
+                  - button "Copy code to clipboard" [ref=e1213] [cursor=pointer]
+                - paragraph [ref=e1217]: "Or reuse your local repo with MiniMax:"
+                - generic [ref=e1218]:
+                  - generic [ref=e1219]:
+                    - text: MINIMAX_API_KEY=sk-xxx \ bash scripts/install/install.sh --profile minimax --repo-dir
+                    - generic [ref=e1220]:
+                      - text: "\""
+                      - generic [ref=e1221]: $(pwd)
+                      - text: "\""
+                    - text: "--yes"
+                  - button "Copy code to clipboard" [ref=e1223] [cursor=pointer]
+                - paragraph [ref=e1227]: "After installation, start the server with the generated profile config:"
+                - generic [ref=e1228]:
+                  - generic [ref=e1229]: cd ~/.dbgpt/DB-GPT && uv run dbgpt start webserver --profile <profile>
+                  - button "Copy code to clipboard" [ref=e1231] [cursor=pointer]
+                - paragraph [ref=e1235]:
+                  - text: Then open
+                  - link "http://localhost:5670" [ref=e1236] [cursor=pointer]:
+                    - /url: http://localhost:5670
+                  - text: .
+                - blockquote [ref=e1237]:
+                  - paragraph [ref=e1238]:
+                    - strong [ref=e1239]: Prefer to review the script first?
+                  - generic [ref=e1240]:
+                    - generic [ref=e1241]: curl -fsSL https://raw.githubusercontent.com/eosphoros-ai/DB-GPT/main/scripts/install/install.sh -o install.sh less install.sh bash install.sh --profile openai
+                    - button "Copy code to clipboard" [ref=e1243] [cursor=pointer]
+                - generic [ref=e1247]:
+                  - heading "Install via PyPI" [level=3] [ref=e1248]
+                  - 'link "Permalink: Install via PyPI" [ref=e1249] [cursor=pointer]':
+                    - /url: "#install-via-pypi"
+                - paragraph [ref=e1252]: Install DB-GPT from PyPI and start it with a single command — no source checkout required.
+                - blockquote [ref=e1253]:
+                  - paragraph [ref=e1254]:
+                    - strong [ref=e1255]: "Prerequisites:"
+                    - text: Python
+                    - strong [ref=e1256]: 3.10+
+                    - text: and
+                    - link "uv" [ref=e1257] [cursor=pointer]:
+                      - /url: https://docs.astral.sh/uv/getting-started/installation/
+                    - text: (recommended) or pip.
+                - paragraph [ref=e1258]:
+                  - strong [ref=e1259]: 1. Install
+                - generic [ref=e1260]:
+                  - generic [ref=e1261]:
+                    - generic [ref=e1262]: "# Recommended: use uv"
+                    - text: uv pip install dbgpt-app
+                    - generic [ref=e1263]: "# Or with pip"
+                    - text: pip install dbgpt-app
+                  - button "Copy code to clipboard" [ref=e1265] [cursor=pointer]
+                - paragraph [ref=e1269]: The default installation includes the core framework (CLI, FastAPI, Agent), OpenAI-compatible LLM support, DashScope / Tongyi support, RAG document parsing, and ChromaDB vector store.
+                - paragraph [ref=e1270]:
+                  - strong [ref=e1271]: 2. Start
+                - generic [ref=e1272]:
+                  - generic [ref=e1273]: dbgpt start
+                  - button "Copy code to clipboard" [ref=e1275] [cursor=pointer]
+                - paragraph [ref=e1279]: On first run, an interactive setup wizard will guide you through choosing an LLM provider and entering your API key. Once complete, the web server starts automatically.
+                - paragraph [ref=e1280]:
+                  - strong [ref=e1281]: 3. Open the Web UI
+                - paragraph [ref=e1282]:
+                  - text: Visit
+                  - link "http://localhost:5670" [ref=e1283] [cursor=pointer]:
+                    - /url: http://localhost:5670
+                  - text: — you're all set! 🎉
+                - generic [ref=e1284]:
+                  - heading "Advanced Installation" [level=3] [ref=e1285]
+                  - 'link "Permalink: Advanced Installation" [ref=e1286] [cursor=pointer]':
+                    - /url: "#advanced-installation"
+                - paragraph [ref=e1289]:
+                  - link [ref=e1290] [cursor=pointer]:
+                    - /url: https://camo.githubusercontent.com/592deaf2aa89571cc18064205f90aeb02ad6df3594fa01225d66468927f78d41/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f646f636b65722d2532333064623765642e7376673f7374796c653d666f722d7468652d6261646765266c6f676f3d646f636b6572266c6f676f436f6c6f723d7768697465
+                    - img "Docker" [ref=e1291]
+                  - link [ref=e1292] [cursor=pointer]:
+                    - /url: https://camo.githubusercontent.com/0b14d158310d582b33a5334216ac5d8070de0f9a4000ec71243c69c41c3dbba1/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f4c696e75782d4643433632343f7374796c653d666f722d7468652d6261646765266c6f676f3d6c696e7578266c6f676f436f6c6f723d626c61636b
+                    - img "Linux" [ref=e1293]
+                  - link [ref=e1294] [cursor=pointer]:
+                    - /url: https://camo.githubusercontent.com/b76bb5406e60626d93f458bc180de0da9f770328d836b169e4e9e81fbe4071b1/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f6d61632532306f732d3030303030303f7374796c653d666f722d7468652d6261646765266c6f676f3d6d61636f73266c6f676f436f6c6f723d463046304630
+                    - img "macOS" [ref=e1295]
+                  - link [ref=e1296] [cursor=pointer]:
+                    - /url: https://camo.githubusercontent.com/b6fed6f9ceb1a15bc204c3bc7b616b49c5e1a6ab81609548c2e5ce9057ed4381/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f57696e646f77732d3030373844363f7374796c653d666f722d7468652d6261646765266c6f676f3d77696e646f7773266c6f676f436f6c6f723d7768697465
+                    - img "Windows" [ref=e1297]
+                - paragraph [ref=e1298]: "For Docker, local GPU models (vLLM, llama.cpp), or manual source-code setup, see the full docs:"
+                - list [ref=e1299]:
+                  - listitem [ref=e1300]:
+                    - link [ref=e1301] [cursor=pointer]:
+                      - /url: http://docs.dbgpt.cn/docs/installation
+                      - strong [ref=e1302]: Install
+                    - list [ref=e1303]:
+                      - listitem [ref=e1304]:
+                        - link "Docker" [ref=e1305] [cursor=pointer]:
+                          - /url: http://docs.dbgpt.cn/docs/installation/docker
+                      - listitem [ref=e1306]:
+                        - link "Source Code" [ref=e1307] [cursor=pointer]:
+                          - /url: http://docs.dbgpt.cn/docs/getting-started/deploy/source-code
+                  - listitem [ref=e1308]:
+                    - link [ref=e1309] [cursor=pointer]:
+                      - /url: http://docs.dbgpt.cn/docs/overview
+                      - strong [ref=e1310]: Quickstart
+                  - listitem [ref=e1311]:
+                    - link [ref=e1312] [cursor=pointer]:
+                      - /url: http://docs.dbgpt.cn/docs/use_cases
+                      - strong [ref=e1313]: Application
+                    - list [ref=e1314]:
+                      - listitem [ref=e1315]:
+                        - link "Development Guide" [ref=e1316] [cursor=pointer]:
+                          - /url: http://docs.dbgpt.cn/docs/cookbook/app/data_analysis_app_develop
+                      - listitem [ref=e1317]:
+                        - link "AWEL Flow Usage" [ref=e1318] [cursor=pointer]:
+                          - /url: http://docs.dbgpt.cn/docs/application/awel_flow_usage
+                  - listitem [ref=e1319]:
+                    - link [ref=e1320] [cursor=pointer]:
+                      - /url: http://docs.dbgpt.cn/docs/operation_manual/advanced_tutorial/debugging
+                      - strong [ref=e1321]: Debugging
+                  - listitem [ref=e1322]:
+                    - link [ref=e1323] [cursor=pointer]:
+                      - /url: http://docs.dbgpt.cn/docs/application/advanced_tutorial/cli
+                      - strong [ref=e1324]: Advanced Usage
+                    - list [ref=e1325]:
+                      - listitem [ref=e1326]:
+                        - link "SMMF" [ref=e1327] [cursor=pointer]:
+                          - /url: http://docs.dbgpt.cn/docs/application/advanced_tutorial/smmf
+                      - listitem [ref=e1328]:
+                        - link "Finetune" [ref=e1329] [cursor=pointer]:
+                          - /url: http://docs.dbgpt.cn/docs/application/fine_tuning_manual/dbgpt_hub
+                      - listitem [ref=e1330]:
+                        - link "AWEL" [ref=e1331] [cursor=pointer]:
+                          - /url: http://docs.dbgpt.cn/docs/awel/tutorial
+                - generic [ref=e1332]:
+                  - heading "Core Capabilities" [level=2] [ref=e1333]
+                  - 'link "Permalink: Core Capabilities" [ref=e1334] [cursor=pointer]':
+                    - /url: "#core-capabilities"
+                - generic [ref=e1337]:
+                  - heading "Agentic Analysis" [level=3] [ref=e1338]
+                  - 'link "Permalink: Agentic Analysis" [ref=e1339] [cursor=pointer]':
+                    - /url: "#agentic-analysis"
+                - list [ref=e1342]:
+                  - listitem [ref=e1343]: task planning
+                  - listitem [ref=e1344]: step-by-step execution
+                  - listitem [ref=e1345]: tool use
+                  - listitem [ref=e1346]: iterative reasoning
+                - generic [ref=e1347]:
+                  - heading "SQL + Code Execution" [level=3] [ref=e1348]
+                  - 'link "Permalink: SQL + Code Execution" [ref=e1349] [cursor=pointer]':
+                    - /url: "#sql--code-execution"
+                - list [ref=e1352]:
+                  - listitem [ref=e1353]: natural language to SQL
+                  - listitem [ref=e1354]: Python-based analysis and transformation
+                  - listitem [ref=e1355]: metric calculation
+                  - listitem [ref=e1356]: chart generation
+                - generic [ref=e1357]:
+                  - heading "Multi-Source Data Access" [level=3] [ref=e1358]
+                  - 'link "Permalink: Multi-Source Data Access" [ref=e1359] [cursor=pointer]':
+                    - /url: "#multi-source-data-access"
+                - list [ref=e1362]:
+                  - listitem [ref=e1363]: relational databases
+                  - listitem [ref=e1364]: CSV / Excel
+                  - listitem [ref=e1365]: documents
+                  - listitem [ref=e1366]: knowledge bases
+                  - listitem [ref=e1367]: mixed-source workflows
+                - generic [ref=e1368]:
+                  - heading "Skills and Agents" [level=3] [ref=e1369]
+                  - 'link "Permalink: Skills and Agents" [ref=e1370] [cursor=pointer]':
+                    - /url: "#skills-and-agents"
+                - list [ref=e1373]:
+                  - listitem [ref=e1374]: reusable skills
+                  - listitem [ref=e1375]: domain workflows
+                  - listitem [ref=e1376]: agent orchestration
+                  - listitem [ref=e1377]: customizable execution flows
+                - generic [ref=e1378]:
+                  - heading "Reporting and Decision Support" [level=3] [ref=e1379]
+                  - 'link "Permalink: Reporting and Decision Support" [ref=e1380] [cursor=pointer]':
+                    - /url: "#reporting-and-decision-support"
+                - list [ref=e1383]:
+                  - listitem [ref=e1384]: database profiling reports
+                  - listitem [ref=e1385]: financial analysis reports
+                  - listitem [ref=e1386]: visual reports and dashboards
+                  - listitem [ref=e1387]: summaries and business insights
+                - generic [ref=e1388]:
+                  - heading "Safe Execution" [level=3] [ref=e1389]
+                  - 'link "Permalink: Safe Execution" [ref=e1390] [cursor=pointer]':
+                    - /url: "#safe-execution"
+                - list [ref=e1393]:
+                  - listitem [ref=e1394]: sandboxed code execution
+                  - listitem [ref=e1395]: controlled tool use
+                  - listitem [ref=e1396]: reproducible outputs and artifacts
+                - generic [ref=e1397]:
+                  - heading "Text2SQL Finetune" [level=4] [ref=e1398]
+                  - 'link "Permalink: Text2SQL Finetune" [ref=e1399] [cursor=pointer]':
+                    - /url: "#text2sql-finetune"
+                - table [ref=e1403]:
+                  - rowgroup [ref=e1404]:
+                    - row [ref=e1405]:
+                      - columnheader "LLM" [ref=e1406]
+                      - columnheader "Supported" [ref=e1407]
+                  - rowgroup [ref=e1408]:
+                    - row [ref=e1409]:
+                      - cell "LLaMA" [ref=e1410]
+                      - cell "✅" [ref=e1411]
+                    - row [ref=e1412]:
+                      - cell "LLaMA-2" [ref=e1413]
+                      - cell "✅" [ref=e1414]
+                    - row [ref=e1415]:
+                      - cell "BLOOM" [ref=e1416]
+                      - cell "✅" [ref=e1417]
+                    - row [ref=e1418]:
+                      - cell "BLOOMZ" [ref=e1419]
+                      - cell "✅" [ref=e1420]
+                    - row [ref=e1421]:
+                      - cell "Falcon" [ref=e1422]
+                      - cell "✅" [ref=e1423]
+                    - row [ref=e1424]:
+                      - cell "Baichuan" [ref=e1425]
+                      - cell "✅" [ref=e1426]
+                    - row [ref=e1427]:
+                      - cell "Baichuan2" [ref=e1428]
+                      - cell "✅" [ref=e1429]
+                    - row [ref=e1430]:
+                      - cell "InternLM" [ref=e1431]
+                      - cell "✅" [ref=e1432]
+                    - row [ref=e1433]:
+                      - cell "Qwen" [ref=e1434]
+                      - cell "✅" [ref=e1435]
+                    - row [ref=e1436]:
+                      - cell "XVERSE" [ref=e1437]
+                      - cell "✅" [ref=e1438]
+                    - row [ref=e1439]:
+                      - cell "ChatGLM2" [ref=e1440]
+                      - cell "✅" [ref=e1441]
+                - paragraph [ref=e1442]:
+                  - link "More Information about Text2SQL finetune" [ref=e1443] [cursor=pointer]:
+                    - /url: https://github.com/eosphoros-ai/DB-GPT-Hub
+                - generic [ref=e1444]:
+                  - heading "Supported Models" [level=3] [ref=e1445]
+                  - 'link "Permalink: Supported Models" [ref=e1446] [cursor=pointer]':
+                    - /url: "#supported-models"
+                - table [ref=e1450]:
+                  - rowgroup [ref=e1451]:
+                    - row [ref=e1452]:
+                      - columnheader "Provider" [ref=e1453]
+                      - columnheader "Supported" [ref=e1454]
+                      - columnheader "Models" [ref=e1455]
+                  - rowgroup [ref=e1456]:
+                    - row [ref=e1457]:
+                      - cell "DeepSeek" [ref=e1458]
+                      - cell "✅" [ref=e1459]
+                      - cell [ref=e1460]:
+                        - text: 🔥🔥🔥
+                        - link "DeepSeek-R1-0528" [ref=e1461] [cursor=pointer]:
+                          - /url: https://huggingface.co/deepseek-ai/DeepSeek-R1-0528
+                        - text: 🔥🔥🔥
+                        - link "DeepSeek-V3-0324" [ref=e1462] [cursor=pointer]:
+                          - /url: https://huggingface.co/deepseek-ai/DeepSeek-V3-0324
+                        - text: 🔥🔥🔥
+                        - link "DeepSeek-R1" [ref=e1463] [cursor=pointer]:
+                          - /url: https://huggingface.co/deepseek-ai/DeepSeek-R1
+                        - text: 🔥🔥🔥
+                        - link "DeepSeek-V3" [ref=e1464] [cursor=pointer]:
+                          - /url: https://huggingface.co/deepseek-ai/DeepSeek-V3
+                        - text: 🔥🔥🔥
+                        - link "DeepSeek-R1-Distill-Llama-70B" [ref=e1465] [cursor=pointer]:
+                          - /url: https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-70B
+                        - text: 🔥🔥🔥
+                        - link "DeepSeek-R1-Distill-Qwen-32B" [ref=e1466] [cursor=pointer]:
+                          - /url: https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B
+                        - text: 🔥🔥🔥
+                        - link "DeepSeek-Coder-V2-Instruct" [ref=e1467] [cursor=pointer]:
+                          - /url: https://huggingface.co/deepseek-ai/DeepSeek-Coder-V2-Instruct
+                    - row [ref=e1468]:
+                      - cell "Qwen" [ref=e1469]
+                      - cell "✅" [ref=e1470]
+                      - cell [ref=e1471]:
+                        - text: 🔥🔥🔥
+                        - link "Qwen3-235B-A22B" [ref=e1472] [cursor=pointer]:
+                          - /url: https://huggingface.co/Qwen/Qwen3-235B-A22B
+                        - text: 🔥🔥🔥
+                        - link "Qwen3-30B-A3B" [ref=e1473] [cursor=pointer]:
+                          - /url: https://huggingface.co/Qwen/Qwen3-30B-A3B
+                        - text: 🔥🔥🔥
+                        - link "Qwen3-32B" [ref=e1474] [cursor=pointer]:
+                          - /url: https://huggingface.co/Qwen/Qwen3-32B
+                        - text: 🔥🔥🔥
+                        - link "QwQ-32B" [ref=e1475] [cursor=pointer]:
+                          - /url: https://huggingface.co/Qwen/QwQ-32B
+                        - text: 🔥🔥🔥
+                        - link "Qwen2.5-Coder-32B-Instruct" [ref=e1476] [cursor=pointer]:
+                          - /url: https://huggingface.co/Qwen/Qwen2.5-Coder-32B-Instruct
+                        - text: 🔥🔥🔥
+                        - link "Qwen2.5-Coder-14B-Instruct" [ref=e1477] [cursor=pointer]:
+                          - /url: https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct
+                        - text: 🔥🔥🔥
+                        - link "Qwen2.5-72B-Instruct" [ref=e1478] [cursor=pointer]:
+                          - /url: https://huggingface.co/Qwen/Qwen2.5-72B-Instruct
+                        - text: 🔥🔥🔥
+                        - link "Qwen2.5-32B-Instruct" [ref=e1479] [cursor=pointer]:
+                          - /url: https://huggingface.co/Qwen/Qwen2.5-32B-Instruct
+                    - row [ref=e1480]:
+                      - cell "GLM" [ref=e1481]
+                      - cell "✅" [ref=e1482]
+                      - cell [ref=e1483]:
+                        - text: 🔥🔥🔥
+                        - link "GLM-Z1-32B-0414" [ref=e1484] [cursor=pointer]:
+                          - /url: https://huggingface.co/THUDM/GLM-Z1-32B-0414
+                        - text: 🔥🔥🔥
+                        - link "GLM-4-32B-0414" [ref=e1485] [cursor=pointer]:
+                          - /url: https://huggingface.co/THUDM/GLM-4-32B-0414
+                        - text: 🔥🔥🔥
+                        - link "Glm-4-9b-chat" [ref=e1486] [cursor=pointer]:
+                          - /url: https://huggingface.co/THUDM/glm-4-9b-chat
+                    - row [ref=e1487]:
+                      - cell "Llama" [ref=e1488]
+                      - cell "✅" [ref=e1489]
+                      - cell [ref=e1490]:
+                        - text: 🔥🔥🔥
+                        - link "Meta-Llama-3.1-405B-Instruct" [ref=e1491] [cursor=pointer]:
+                          - /url: https://huggingface.co/meta-llama/Meta-Llama-3.1-405B-Instruct
+                        - text: 🔥🔥🔥
+                        - link "Meta-Llama-3.1-70B-Instruct" [ref=e1492] [cursor=pointer]:
+                          - /url: https://huggingface.co/meta-llama/Meta-Llama-3.1-70B-Instruct
+                        - text: 🔥🔥🔥
+                        - link "Meta-Llama-3.1-8B-Instruct" [ref=e1493] [cursor=pointer]:
+                          - /url: https://huggingface.co/meta-llama/Meta-Llama-3.1-8B-Instruct
+                        - text: 🔥🔥🔥
+                        - link "Meta-Llama-3-70B-Instruct" [ref=e1494] [cursor=pointer]:
+                          - /url: https://huggingface.co/meta-llama/Meta-Llama-3-70B-Instruct
+                        - text: 🔥🔥🔥
+                        - link "Meta-Llama-3-8B-Instruct" [ref=e1495] [cursor=pointer]:
+                          - /url: https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct
+                    - row [ref=e1496]:
+                      - cell "Gemma" [ref=e1497]
+                      - cell "✅" [ref=e1498]
+                      - cell [ref=e1499]:
+                        - text: 🔥🔥🔥
+                        - link "gemma-2-27b-it" [ref=e1500] [cursor=pointer]:
+                          - /url: https://huggingface.co/google/gemma-2-27b-it
+                        - text: 🔥🔥🔥
+                        - link "gemma-2-9b-it" [ref=e1501] [cursor=pointer]:
+                          - /url: https://huggingface.co/google/gemma-2-9b-it
+                        - text: 🔥🔥🔥
+                        - link "gemma-7b-it" [ref=e1502] [cursor=pointer]:
+                          - /url: https://huggingface.co/google/gemma-7b-it
+                        - text: 🔥🔥🔥
+                        - link "gemma-2b-it" [ref=e1503] [cursor=pointer]:
+                          - /url: https://huggingface.co/google/gemma-2b-it
+                    - row [ref=e1504]:
+                      - cell "Yi" [ref=e1505]
+                      - cell "✅" [ref=e1506]
+                      - cell [ref=e1507]:
+                        - text: 🔥🔥🔥
+                        - link "Yi-1.5-34B-Chat" [ref=e1508] [cursor=pointer]:
+                          - /url: https://huggingface.co/01-ai/Yi-1.5-34B-Chat
+                        - text: 🔥🔥🔥
+                        - link "Yi-1.5-9B-Chat" [ref=e1509] [cursor=pointer]:
+                          - /url: https://huggingface.co/01-ai/Yi-1.5-9B-Chat
+                        - text: 🔥🔥🔥
+                        - link "Yi-1.5-6B-Chat" [ref=e1510] [cursor=pointer]:
+                          - /url: https://huggingface.co/01-ai/Yi-1.5-6B-Chat
+                        - text: 🔥🔥🔥
+                        - link "Yi-34B-Chat" [ref=e1511] [cursor=pointer]:
+                          - /url: https://huggingface.co/01-ai/Yi-34B-Chat
+                    - row [ref=e1512]:
+                      - cell "Starling" [ref=e1513]
+                      - cell "✅" [ref=e1514]
+                      - cell [ref=e1515]:
+                        - text: 🔥🔥🔥
+                        - link "Starling-LM-7B-beta" [ref=e1516] [cursor=pointer]:
+                          - /url: https://huggingface.co/Nexusflow/Starling-LM-7B-beta
+                    - row [ref=e1517]:
+                      - cell "SOLAR" [ref=e1518]
+                      - cell "✅" [ref=e1519]
+                      - cell [ref=e1520]:
+                        - text: 🔥🔥🔥
+                        - link "SOLAR-10.7B" [ref=e1521] [cursor=pointer]:
+                          - /url: https://huggingface.co/upstage/SOLAR-10.7B-Instruct-v1.0
+                    - row [ref=e1522]:
+                      - cell "Mixtral" [ref=e1523]
+                      - cell "✅" [ref=e1524]
+                      - cell [ref=e1525]:
+                        - text: 🔥🔥🔥
+                        - link "Mixtral-8x7B" [ref=e1526] [cursor=pointer]:
+                          - /url: https://huggingface.co/mistralai/Mixtral-8x7B-Instruct-v0.1
+                    - row [ref=e1527]:
+                      - cell "Phi" [ref=e1528]
+                      - cell "✅" [ref=e1529]
+                      - cell [ref=e1530]:
+                        - text: 🔥🔥🔥
+                        - link "Phi-3" [ref=e1531] [cursor=pointer]:
+                          - /url: https://huggingface.co/collections/microsoft/phi-3-6626e15e9585a200d2d761e3
+                - list [ref=e1532]:
+                  - listitem [ref=e1533]:
+                    - link "More Supported LLMs" [ref=e1534] [cursor=pointer]:
+                      - /url: http://docs.dbgpt.cn/docs/modules/smmf
+                - generic [ref=e1535]:
+                  - heading "Privacy and Security" [level=3] [ref=e1536]
+                  - 'link "Permalink: Privacy and Security" [ref=e1537] [cursor=pointer]':
+                    - /url: "#privacy-and-security"
+                - paragraph [ref=e1540]: We protect data privacy and execution safety through private model deployment, proxy desensitization, and sandboxed execution mechanisms.
+                - generic [ref=e1541]:
+                  - heading "Data Sources" [level=3] [ref=e1542]
+                  - 'link "Permalink: Data Sources" [ref=e1543] [cursor=pointer]':
+                    - /url: "#data-sources"
+                - list [ref=e1546]:
+                  - listitem [ref=e1547]:
+                    - link "Datasources" [ref=e1548] [cursor=pointer]:
+                      - /url: http://docs.dbgpt.cn/docs/modules/connections
+                - generic [ref=e1549]:
+                  - heading "Vision" [level=2] [ref=e1550]
+                  - 'link "Permalink: Vision" [ref=e1551] [cursor=pointer]':
+                    - /url: "#vision"
+                - paragraph [ref=e1554]: We believe the future of data products goes beyond dashboards.
+                - paragraph [ref=e1555]:
+                  - text: The next generation of
+                  - strong [ref=e1556]: AI + Data
+                  - text: "products will be:"
+                - list [ref=e1557]:
+                  - listitem [ref=e1558]:
+                    - strong [ref=e1559]: agentic
+                  - listitem [ref=e1560]:
+                    - strong [ref=e1561]: multi-source
+                  - listitem [ref=e1562]:
+                    - strong [ref=e1563]: skill-driven
+                  - listitem [ref=e1564]:
+                    - strong [ref=e1565]: sandboxed
+                  - listitem [ref=e1566]:
+                    - text: capable of writing
+                    - strong [ref=e1567]: SQL and code
+                  - listitem [ref=e1568]:
+                    - text: able to turn analysis into
+                    - strong [ref=e1569]: reports, decisions, and action
+                - paragraph [ref=e1570]: DB-GPT aims to help developers and enterprises build that future.
+                - generic [ref=e1571]:
+                  - heading "Contribution" [level=2] [ref=e1572]
+                  - 'link "Permalink: Contribution" [ref=e1573] [cursor=pointer]':
+                    - /url: "#contribution"
+                - list [ref=e1576]:
+                  - listitem [ref=e1577]:
+                    - text: To check detailed guidelines for new contributions, please refer
+                    - link "how to contribute" [ref=e1578] [cursor=pointer]:
+                      - /url: https://github.com/eosphoros-ai/DB-GPT/blob/main/CONTRIBUTING.md
+                - generic [ref=e1579]:
+                  - heading "Contributors Wall" [level=3] [ref=e1580]
+                  - 'link "Permalink: Contributors Wall" [ref=e1581] [cursor=pointer]':
+                    - /url: "#contributors-wall"
+                - link [ref=e1584] [cursor=pointer]:
+                  - /url: https://github.com/eosphoros-ai/DB-GPT/graphs/contributors
+                - generic [ref=e1586]:
+                  - heading "Licence" [level=2] [ref=e1587]
+                  - 'link "Permalink: Licence" [ref=e1588] [cursor=pointer]':
+                    - /url: "#licence"
+                - paragraph [ref=e1591]: The MIT License (MIT)
+                - generic [ref=e1592]:
+                  - heading "DISCKAIMER" [level=2] [ref=e1593]
+                  - 'link "Permalink: DISCKAIMER" [ref=e1594] [cursor=pointer]':
+                    - /url: "#disckaimer"
+                - list [ref=e1597]:
+                  - listitem [ref=e1598]:
+                    - link "disckaimer" [ref=e1599] [cursor=pointer]:
+                      - /url: /eosphoros-ai/DB-GPT/blob/main/DISCKAIMER.md
+                - generic [ref=e1600]:
+                  - heading "Citation" [level=2] [ref=e1601]
+                  - 'link "Permalink: Citation" [ref=e1602] [cursor=pointer]':
+                    - /url: "#citation"
+                - paragraph [ref=e1605]:
+                  - text: If you want to understand the overall architecture of DB-GPT, please cite
+                  - link "Paper" [ref=e1606] [cursor=pointer]:
+                    - /url: https://arxiv.org/abs/2312.17449
+                  - text: and
+                  - link "Paper" [ref=e1607] [cursor=pointer]:
+                    - /url: https://arxiv.org/abs/2404.10209
+                - paragraph [ref=e1608]:
+                  - text: If you want to learn about using DB-GPT for Agent development, please cite the
+                  - link "Paper" [ref=e1609] [cursor=pointer]:
+                    - /url: https://arxiv.org/abs/2412.13520
+                - generic [ref=e1610]:
+                  - generic [ref=e1611]:
+                    - text: "@article{xue2023dbgpt, title="
+                    - generic [ref=e1612]: "{DB-GPT: Empowering Database Interactions with Private Large Language Models}"
+                    - text: ", author="
+                    - generic [ref=e1613]: "{Siqiao Xue and Caigao Jiang and Wenhui Shi and Fangyin Cheng and Keting Chen and Hongjun Yang and Zhiping Zhang and Jianshan He and Hongyang Zhang and Ganglin Wei and Wang Zhao and Fan Zhou and Danrui Qi and Hong Yi and Shaodong Liu and Faqiang Chen}"
+                    - text: ", year="
+                    - generic [ref=e1614]: "{2023}"
+                    - text: ", journal="
+                    - generic [ref=e1615]: "{arXiv preprint arXiv:2312.17449}"
+                    - text: ", url="
+                    - generic [ref=e1616]: "{https://arxiv.org/abs/2312.17449}"
+                    - text: "} @misc{huang2024romasrolebasedmultiagentdatabase, title="
+                    - generic [ref=e1617]: "{ROMAS: A Role-Based Multi-Agent System for Database monitoring and Planning}"
+                    - text: ", author="
+                    - generic [ref=e1618]: "{Yi Huang and Fangyin Cheng and Fan Zhou and Jiahui Li and Jian Gong and Hongjun Yang and Zhidong Fan and Caigao Jiang and Siqiao Xue and Faqiang Chen}"
+                    - text: ", year="
+                    - generic [ref=e1619]: "{2024}"
+                    - text: ", eprint="
+                    - generic [ref=e1620]: "{2412.13520}"
+                    - text: ", archivePrefix="
+                    - generic [ref=e1621]: "{arXiv}"
+                    - text: ", primaryClass="
+                    - generic [ref=e1622]: "{cs.AI}"
+                    - text: ", url="
+                    - generic [ref=e1623]: "{https://arxiv.org/abs/2412.13520}"
+                    - text: ", } @inproceedings{xue2024demonstration, title="
+                    - generic [ref=e1624]: "{Demonstration of DB-GPT: Next Generation Data Interaction System Empowered by Large Language Models}"
+                    - text: ", author="
+                    - generic [ref=e1625]: "{Siqiao Xue and Danrui Qi and Caigao Jiang and Wenhui Shi and Fangyin Cheng and Keting Chen and Hongjun Yang and Zhiping Zhang and Jianshan He and Hongyang Zhang and Ganglin Wei and Wang Zhao and Fan Zhou and Hong Yi and Shaodong Liu and Hongjun Yang and Faqiang Chen}"
+                    - text: ", year="
+                    - generic [ref=e1626]: "{2024}"
+                    - text: ", booktitle ="
+                    - generic [ref=e1627]: "\"Proceedings of the VLDB Endowment\""
+                    - text: ", url="
+                    - generic [ref=e1628]: "{https://arxiv.org/abs/2404.10209}"
+                    - text: "}"
+                  - button "Copy code to clipboard" [ref=e1630] [cursor=pointer]
+                - generic [ref=e1634]:
+                  - heading "Contact Information" [level=2] [ref=e1635]
+                  - 'link "Permalink: Contact Information" [ref=e1636] [cursor=pointer]':
+                    - /url: "#contact-information"
+                - paragraph [ref=e1639]: Thanks to everyone who has contributed to DB-GPT! Your ideas, code, comments, and even sharing them at events and on social platforms can make DB-GPT better. We are working on building a community, if you have any ideas for building the community, feel free to contact us.
+                - list [ref=e1640]:
+                  - listitem [ref=e1641]:
+                    - link "Github Issues" [ref=e1642] [cursor=pointer]:
+                      - /url: https://github.com/eosphoros-ai/DB-GPT/issues
+                    - text: ⭐️：For questions about using GB-DPT, see the CONTRIBUTING.
+                  - listitem [ref=e1643]:
+                    - link "Github Discussions" [ref=e1644] [cursor=pointer]:
+                      - /url: https://github.com/orgs/eosphoros-ai/discussions
+                    - text: ⭐️：Share your experience or unique apps.
+                  - listitem [ref=e1645]:
+                    - link "Twitter" [ref=e1646] [cursor=pointer]:
+                      - /url: https://x.com/DBGPT_AI
+                    - text: ⭐️：Please feel free to talk to us.
+                - paragraph [ref=e1647]:
+                  - link [ref=e1648] [cursor=pointer]:
+                    - /url: https://star-history.com/#csunny/DB-GPT
+                    - img "Star History Chart" [ref=e1649]
+        - generic [ref=e1652]:
+          - generic [ref=e1653]:
+            - heading "About" [level=2] [ref=e1654]
+            - paragraph [ref=e1655]: open-source agentic AI data assistant for the next generation of AI + Data products.
+            - generic "http://docs.dbgpt.cn" [ref=e1659]:
+              - link "docs.dbgpt.cn" [ref=e1660] [cursor=pointer]:
+                - /url: http://docs.dbgpt.cn
+            - heading "Topics" [level=3] [ref=e1661]
+            - generic [ref=e1662]:
+              - link "agents" [ref=e1663] [cursor=pointer]:
+                - /url: /topics/agents
+              - link "bgi" [ref=e1664] [cursor=pointer]:
+                - /url: /topics/bgi
+              - link "database" [ref=e1665] [cursor=pointer]:
+                - /url: /topics/database
+              - link "deepseek" [ref=e1666] [cursor=pointer]:
+                - /url: /topics/deepseek
+              - link "gpt" [ref=e1667] [cursor=pointer]:
+                - /url: /topics/gpt
+              - link "gpt-4" [ref=e1668] [cursor=pointer]:
+                - /url: /topics/gpt-4
+              - link "hacktoberfest" [ref=e1669] [cursor=pointer]:
+                - /url: /topics/hacktoberfest
+              - link "llm" [ref=e1670] [cursor=pointer]:
+                - /url: /topics/llm
+              - link "private" [ref=e1671] [cursor=pointer]:
+                - /url: /topics/private
+              - link "rag" [ref=e1672] [cursor=pointer]:
+                - /url: /topics/rag
+              - link "security" [ref=e1673] [cursor=pointer]:
+                - /url: /topics/security
+              - link "vicuna" [ref=e1674] [cursor=pointer]:
+                - /url: /topics/vicuna
+            - heading "Resources" [level=3] [ref=e1675]
+            - link "Readme" [ref=e1677] [cursor=pointer]:
+              - /url: "#readme-ov-file"
+            - link "MIT license" [ref=e1681] [cursor=pointer]:
+              - /url: "#MIT-1-ov-file"
+            - heading "Code of conduct" [level=3] [ref=e1684]
+            - link "Code of conduct" [ref=e1686] [cursor=pointer]:
+              - /url: /eosphoros-ai/DB-GPT#coc-ov-file
+            - heading "Contributing" [level=3] [ref=e1689]
+            - link "Contributing" [ref=e1691] [cursor=pointer]:
+              - /url: "#contributing-ov-file"
+            - generic [ref=e1694]:
+              - generic [ref=e1695]:
+                - link "Activity" [ref=e1697] [cursor=pointer]:
+                  - /url: /eosphoros-ai/DB-GPT/activity
+                - link "Custom properties" [ref=e1701] [cursor=pointer]:
+                  - /url: /eosphoros-ai/DB-GPT/custom-properties
+              - generic [ref=e1704]:
+                - heading "Stars" [level=3] [ref=e1705]
+                - generic [ref=e1707]:
+                  - strong [ref=e1710]: 20.3k
+                  - text: stars
+                - heading "Watchers" [level=3] [ref=e1711]
+                - generic [ref=e1713]:
+                  - strong [ref=e1716]: "144"
+                  - text: watching
+                - heading "Forks" [level=3] [ref=e1717]
+                - link [ref=e1719] [cursor=pointer]:
+                  - /url: /eosphoros-ai/DB-GPT/forks
+                  - strong [ref=e1723]: 3.0k
+                  - text: forks
+            - link "Report repository" [ref=e1725] [cursor=pointer]:
+              - /url: /contact/report-content?content_url=https%3A%2F%2Fgithub.com%2Feosphoros-ai%2FDB-GPT&report=eosphoros-ai+%28user%29
+          - generic [ref=e1726]:
+            - heading "Releases (55)" [level=2] [ref=e1727]:
+              - generic [ref=e1728]:
+                - link "Releases" [ref=e1729] [cursor=pointer]:
+                  - /url: /eosphoros-ai/DB-GPT/releases
+                - generic [aria-hidden] [ref=e1730]: "55"
+                - generic [ref=e1731]: (55)
+            - link "v0.8.2 Latest 3 months ago" [ref=e1732] [cursor=pointer]:
+              - /url: /eosphoros-ai/DB-GPT/releases/tag/v0.8.2
+              - generic [ref=e1736]:
+                - generic [ref=e1737]:
+                  - generic "v0.8.2" [ref=e1738]
+                  - generic [ref=e1739]: Latest
+                - generic [ref=e1740]: 3 months ago
+            - link "+ 54 releases" [ref=e1742] [cursor=pointer]:
+              - /url: /eosphoros-ai/DB-GPT/releases
+          - generic [ref=e1743]:
+            - heading "Contributors (214)" [level=2] [ref=e1744]:
+              - generic [ref=e1745]:
+                - link "Contributors" [ref=e1746] [cursor=pointer]:
+                  - /url: /eosphoros-ai/DB-GPT/graphs/contributors
+                - generic [aria-hidden] [ref=e1747]: "214"
+                - generic [ref=e1748]: (214)
+            - list [ref=e1749]:
+              - listitem [ref=e1750]:
+                - link [ref=e1751] [cursor=pointer]:
+                  - /url: /csunny
+                  - img "@csunny" [ref=e1752]
+              - listitem [ref=e1753]:
+                - link [ref=e1754] [cursor=pointer]:
+                  - /url: /Aries-ckt
+                  - img "@Aries-ckt" [ref=e1755]
+              - listitem [ref=e1756]:
+                - link [ref=e1757] [cursor=pointer]:
+                  - /url: /fangyinc
+                  - img "@fangyinc" [ref=e1758]
+              - listitem [ref=e1759]:
+                - link [ref=e1760] [cursor=pointer]:
+                  - /url: /yhjun1026
+                  - img "@yhjun1026" [ref=e1761]
+              - listitem [ref=e1762]:
+                - link [ref=e1763] [cursor=pointer]:
+                  - /url: /xuyuan23
+                  - img "@xuyuan23" [ref=e1764]
+              - listitem [ref=e1765]:
+                - link [ref=e1766] [cursor=pointer]:
+                  - /url: /chenliang15405
+                  - img "@chenliang15405" [ref=e1767]
+              - listitem [ref=e1768]:
+                - link [ref=e1769] [cursor=pointer]:
+                  - /url: /claude
+                  - img "@claude" [ref=e1770]
+              - listitem [ref=e1771]:
+                - link [ref=e1772] [cursor=pointer]:
+                  - /url: /yyhhyyyyyy
+                  - img "@yyhhyyyyyy" [ref=e1773]
+              - listitem [ref=e1774]:
+                - link [ref=e1775] [cursor=pointer]:
+                  - /url: /zhanghy-sketchzh
+                  - img "@zhanghy-sketchzh" [ref=e1776]
+              - listitem [ref=e1777]:
+                - link [ref=e1778] [cursor=pointer]:
+                  - /url: /yihong0618
+                  - img "@yihong0618" [ref=e1779]
+              - listitem [ref=e1780]:
+                - link [ref=e1781] [cursor=pointer]:
+                  - /url: /codearranger
+                  - img "@codearranger" [ref=e1782]
+              - listitem [ref=e1783]:
+                - link [ref=e1784] [cursor=pointer]:
+                  - /url: /xudafeng
+                  - img "@xudafeng" [ref=e1785]
+              - listitem [ref=e1786]:
+                - link [ref=e1787] [cursor=pointer]:
+                  - /url: /qidanrui
+                  - img "@qidanrui" [ref=e1788]
+              - listitem [ref=e1789]:
+                - link [ref=e1790] [cursor=pointer]:
+                  - /url: /Aralhi
+                  - img "@Aralhi" [ref=e1791]
+            - link "+ 200 contributors" [ref=e1793] [cursor=pointer]:
+              - /url: /eosphoros-ai/DB-GPT/graphs/contributors
+          - generic [ref=e1794]:
+            - heading "Languages" [level=2] [ref=e1795]
+            - generic [ref=e1797]:
+              - 'progressbar "Python: 67.5%" [ref=e1798]'
+              - 'progressbar "TypeScript: 25.8%" [ref=e1799]'
+              - 'progressbar "HTML: 5.3%" [ref=e1800]'
+              - 'progressbar "CSS: 0.8%" [ref=e1801]'
+              - 'progressbar "Shell: 0.3%" [ref=e1802]'
+              - 'progressbar "JavaScript: 0.2%" [ref=e1803]'
+              - 'progressbar "Other: 0.1%" [ref=e1804]'
+            - list [ref=e1805]:
+              - listitem [ref=e1806]:
+                - link "Python 67.5%" [ref=e1807] [cursor=pointer]:
+                  - /url: /eosphoros-ai/DB-GPT/search?l=python
+                  - generic [ref=e1809]: Python
+                  - generic [ref=e1810]: 67.5%
+              - listitem [ref=e1811]:
+                - link "TypeScript 25.8%" [ref=e1812] [cursor=pointer]:
+                  - /url: /eosphoros-ai/DB-GPT/search?l=typescript
+                  - generic [ref=e1814]: TypeScript
+                  - generic [ref=e1815]: 25.8%
+              - listitem [ref=e1816]:
+                - link "HTML 5.3%" [ref=e1817] [cursor=pointer]:
+                  - /url: /eosphoros-ai/DB-GPT/search?l=html
+                  - generic [ref=e1819]: HTML
+                  - generic [ref=e1820]: 5.3%
+              - listitem [ref=e1821]:
+                - link "CSS 0.8%" [ref=e1822] [cursor=pointer]:
+                  - /url: /eosphoros-ai/DB-GPT/search?l=css
+                  - generic [ref=e1824]: CSS
+                  - generic [ref=e1825]: 0.8%
+              - listitem [ref=e1826]:
+                - link "Shell 0.3%" [ref=e1827] [cursor=pointer]:
+                  - /url: /eosphoros-ai/DB-GPT/search?l=shell
+                  - generic [ref=e1829]: Shell
+                  - generic [ref=e1830]: 0.3%
+              - listitem [ref=e1831]:
+                - link "JavaScript 0.2%" [ref=e1832] [cursor=pointer]:
+                  - /url: /eosphoros-ai/DB-GPT/search?l=javascript
+                  - generic [ref=e1834]: JavaScript
+                  - generic [ref=e1835]: 0.2%
+              - listitem [ref=e1836]:
+                - link "Other 0.1%" [ref=e1837] [cursor=pointer]:
+                  - /url: /eosphoros-ai/DB-GPT/search?l=Other
+                  - generic [ref=e1839]: Other
+                  - generic [ref=e1840]: 0.1%
+  - contentinfo [ref=e1842]:
+    - heading "Footer" [level=2] [ref=e1843]
+    - generic [ref=e1844]:
+      - generic [ref=e1845]:
+        - link "GitHub Homepage" [ref=e1846] [cursor=pointer]:
+          - /url: https://github.com
+        - generic [ref=e1849]: © 2026 GitHub, Inc.
+      - navigation "Footer" [ref=e1850]:
+        - heading "Footer navigation" [level=3] [ref=e1851]
+        - list "Footer navigation" [ref=e1852]:
+          - listitem [ref=e1853]:
+            - link "Terms" [ref=e1854] [cursor=pointer]:
+              - /url: https://docs.github.com/site-policy/github-terms/github-terms-of-service
+          - listitem [ref=e1855]:
+            - link "Privacy" [ref=e1856] [cursor=pointer]:
+              - /url: https://docs.github.com/site-policy/privacy-policies/github-privacy-statement
+          - listitem [ref=e1857]:
+            - link "Security" [ref=e1858] [cursor=pointer]:
+              - /url: https://github.com/security
+          - listitem [ref=e1859]:
+            - link "Status" [ref=e1860] [cursor=pointer]:
+              - /url: https://www.githubstatus.com/
+          - listitem [ref=e1861]:
+            - link "Community" [ref=e1862] [cursor=pointer]:
+              - /url: https://github.community/
+          - listitem [ref=e1863]:
+            - link "Docs" [ref=e1864] [cursor=pointer]:
+              - /url: https://docs.github.com/
+          - listitem [ref=e1865]:
+            - link "Contact" [ref=e1866] [cursor=pointer]:
+              - /url: https://support.github.com?tags=dotcom-footer
+          - listitem [ref=e1867]:
+            - button "Manage cookies" [ref=e1869] [cursor=pointer]
+          - listitem [ref=e1870]:
+            - button "Do not share my personal information" [ref=e1872] [cursor=pointer]

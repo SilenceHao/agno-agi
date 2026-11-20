@@ -1,0 +1,67 @@
+- generic [ref=f3e2]:
+  - region "Skip to main content":
+    - link "Skip to main content" [ref=f3e3] [cursor=pointer]:
+      - /url: "#__docusaurus_skipToContent_fallback"
+  - navigation "Main" [ref=f3e4]:
+    - generic [ref=f3e5]:
+      - generic [ref=f3e6]:
+        - link [ref=f3e7] [cursor=pointer]:
+          - /url: /
+          - img "DB-GPT Logo" [ref=f3e9]
+        - link "Docs" [ref=f3e10] [cursor=pointer]:
+          - /url: /docs/overview
+        - button "English" [ref=f3e12] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f3e13]: 🇺🇸
+          - text: English
+      - generic [ref=f3e14]:
+        - link "Community" [ref=f3e15] [cursor=pointer]:
+          - /url: https://github.com/eosphoros-ai/community
+        - link "Blog" [ref=f3e18] [cursor=pointer]:
+          - /url: /blog
+        - button "v0.8.1" [ref=f3e20] [cursor=pointer]
+        - link "Releases" [ref=f3e21] [cursor=pointer]:
+          - /url: https://github.com/eosphoros-ai/DB-GPT/releases
+        - link "GitHub repository" [ref=f3e24] [cursor=pointer]:
+          - /url: https://github.com/eosphoros-ai/DB-GPT
+        - button "Switch between dark and light mode (currently light mode)" [ref=f3e26] [cursor=pointer]
+        - generic [ref=f3e30]:
+          - textbox "Search" [ref=f3e31]
+          - generic:
+            - generic: ctrl
+            - generic: K
+  - main [ref=f3e33]:
+    - generic [ref=f3e35]:
+      - heading "Page Not Found" [level=1] [ref=f3e36]
+      - paragraph [ref=f3e37]: We could not find what you were looking for.
+      - paragraph [ref=f3e38]: Please contact the owner of the site that linked you to the original URL and let them know their link is broken.
+  - contentinfo [ref=f3e39]:
+    - generic [ref=f3e40]:
+      - generic [ref=f3e41]:
+        - generic [ref=f3e42]:
+          - generic [ref=f3e43]: Community
+          - list [ref=f3e44]:
+            - listitem [ref=f3e45]:
+              - link "Discord" [ref=f3e46] [cursor=pointer]:
+                - /url: https://discord.gg/erwfqcMP
+            - listitem [ref=f3e49]:
+              - link "Dockerhub" [ref=f3e50] [cursor=pointer]:
+                - /url: https://hub.docker.com/u/eosphorosai
+        - generic [ref=f3e53]:
+          - generic [ref=f3e54]: Github
+          - list [ref=f3e55]:
+            - listitem [ref=f3e56]:
+              - link "Github" [ref=f3e57] [cursor=pointer]:
+                - /url: https://github.com/eosphoros-ai/DB-GPT
+            - listitem [ref=f3e60]:
+              - link "HuggingFace" [ref=f3e61] [cursor=pointer]:
+                - /url: https://huggingface.co/eosphoros
+        - generic [ref=f3e64]:
+          - generic [ref=f3e65]: More
+          - list [ref=f3e66]:
+            - listitem [ref=f3e67]:
+              - link "Hacker News" [ref=f3e68] [cursor=pointer]:
+                - /url: https://news.ycombinator.com/item?id=36038815
+            - listitem [ref=f3e71]:
+              - link "Twitter" [ref=f3e72] [cursor=pointer]:
+                - /url: https://twitter.com/DbGpt80100
+      - generic [ref=f3e75]: Copyright © 2026 DB-GPT

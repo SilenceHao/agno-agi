@@ -1,0 +1,38 @@
+- generic [ref=e2]:
+  - complementary "应用导航" [ref=e3]:
+    - generic [ref=e4]:
+      - link "智能体首页" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e6]: Silence
+      - button "收起侧边栏" [expanded] [ref=e7] [cursor=pointer]
+    - button "开始新对话" [ref=e11] [cursor=pointer]:
+      - generic [ref=e12]: 新对话
+    - generic [ref=e13]:
+      - generic [ref=e14]: 最近对话
+      - generic [ref=e15]: "0"
+    - generic "最近对话" [ref=e16]
+    - button "账号菜单" [ref=e18] [cursor=pointer]:
+      - generic [aria-hidden] [ref=e19]: "1"
+      - generic [ref=e20]:
+        - strong [ref=e21]: "16602024093"
+        - generic [ref=e22]: 超级管理员
+  - main [ref=e27]:
+    - generic [ref=e29]:
+      - generic [ref=e30]: 工作区
+      - generic [ref=e31]: /
+      - strong [ref=e32]: 新对话
+    - region "智能体对话" [ref=e33]:
+      - status [ref=e34]: 已开始新对话。
+      - heading "Hi. How can I help?" [level=1] [ref=e37]
+      - generic [ref=e40]:
+        - textbox "给智能体发送消息" [active] [ref=e41]:
+          - /placeholder: 给智能体发送消息…
+        - generic [ref=e42]:
+          - generic [ref=e43]:
+            - button "添加附件" [ref=e44] [cursor=pointer]
+            - button "开启深度思考" [ref=e47] [cursor=pointer]:
+              - generic [ref=e51]: 深度思考
+            - generic [ref=e52] [cursor=pointer]:
+              - checkbox "检索知识库" [checked] [ref=e53]
+              - generic [ref=e54]: 检索知识库
+          - button "发送消息" [ref=e55] [cursor=pointer]

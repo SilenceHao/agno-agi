@@ -1,0 +1,77 @@
+- generic [active] [ref=f5e1]:
+  - generic [ref=f5e2]:
+    - banner [ref=f5e3]:
+      - generic [ref=f5e4]:
+        - link [ref=f5e6] [cursor=pointer]:
+          - /url: /
+          - img "Agno" [ref=f5e8]
+        - button "Search… Ctrl K" [ref=f5e14] [cursor=pointer]:
+          - text: Search…
+          - generic [ref=f5e18]:
+            - generic [ref=f5e19]: Ctrl
+            - generic [ref=f5e20]: K
+        - button "Ask AI" [ref=f5e21] [cursor=pointer]:
+          - text: Ask AI
+          - generic [ref=f5e25]:
+            - generic [ref=f5e26]: Ctrl
+            - generic [ref=f5e27]: I
+        - generic [ref=f5e28]:
+          - generic [ref=f5e29]:
+            - link "Support" [ref=f5e30] [cursor=pointer]:
+              - /url: /get-help
+            - link "GitHub" [ref=f5e31] [cursor=pointer]:
+              - /url: https://github.com/agno-agi/agno
+            - link "Try AgentOS" [ref=f5e34] [cursor=pointer]:
+              - /url: https://os.agno.com
+          - button "Toggle theme" [ref=f5e39] [cursor=pointer]
+      - generic [ref=f5e46]:
+        - link "Home" [ref=f5e47] [cursor=pointer]:
+          - /url: /
+        - link "SDK" [ref=f5e48] [cursor=pointer]:
+          - /url: /sdk/introduction
+        - link "AgentOS" [ref=f5e49] [cursor=pointer]:
+          - /url: /agent-os/introduction
+        - link "Templates" [ref=f5e50] [cursor=pointer]:
+          - /url: /deploy/introduction
+        - link "Examples" [ref=f5e51] [cursor=pointer]:
+          - /url: /examples/introduction
+        - link "Reference" [ref=f5e52] [cursor=pointer]:
+          - /url: /reference/agents/agent
+        - link "FAQs" [ref=f5e53] [cursor=pointer]:
+          - /url: /faq/environment-variables
+    - main [ref=f5e54]:
+      - generic [ref=f5e55]:
+        - generic [ref=f5e56]:
+          - paragraph [aria-hidden] [ref=f5e57]: "404"
+          - heading "Page not found" [level=1] [ref=f5e58]
+          - paragraph [ref=f5e59]: We couldn’t find this page. Maybe you were looking for any of these pages below?
+        - navigation "Suggested documentation pages" [ref=f5e60]:
+          - link "Welcome to Agno The self-managing agent platform." [ref=f5e61] [cursor=pointer]:
+            - /url: /
+            - generic [ref=f5e62]: Welcome to Agno
+            - generic [ref=f5e63]: The self-managing agent platform.
+          - link "Build a personal agent Learn Agno by building an agent that remembers your projects, tasks, and decisions." [ref=f5e64] [cursor=pointer]:
+            - /url: /first-agent
+            - generic [ref=f5e65]: Build a personal agent
+            - generic [ref=f5e66]: Learn Agno by building an agent that remembers your projects, tasks, and decisions.
+          - link "Add Agno to your coding agent Give your coding agent access to the Agno docs using MCP." [ref=f5e67] [cursor=pointer]:
+            - /url: /coding-agents
+            - generic [ref=f5e68]: Add Agno to your coding agent
+            - generic [ref=f5e69]: Give your coding agent access to the Agno docs using MCP.
+          - link "Agent SDK Build agents, teams, and workflows using the Agno SDK." [ref=f5e70] [cursor=pointer]:
+            - /url: /features/sdk
+            - generic [ref=f5e71]: Agent SDK
+            - generic [ref=f5e72]: Build agents, teams, and workflows using the Agno SDK.
+          - link "What is AgentOS? Run agents, teams, and workflows using FastAPI." [ref=f5e73] [cursor=pointer]:
+            - /url: /agent-os/introduction
+            - generic [ref=f5e74]: What is AgentOS?
+            - generic [ref=f5e75]: Run agents, teams, and workflows using FastAPI.
+          - link "Examples Runnable patterns for agents, teams, workflows, tools, knowledge, and AgentOS." [ref=f5e76] [cursor=pointer]:
+            - /url: /examples/introduction
+            - generic [ref=f5e77]: Examples
+            - generic [ref=f5e78]: Runnable patterns for agents, teams, workflows, tools, knowledge, and AgentOS.
+        - link "Go home" [ref=f5e79] [cursor=pointer]:
+          - /url: /
+  - region "Notifications alt+T"
+  - button "Open assistant" [ref=f5e83] [cursor=pointer]
+  - alert [ref=f5e86]

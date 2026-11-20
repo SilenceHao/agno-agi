@@ -1,0 +1,55 @@
+[    1293ms] [ERROR] Docusaurus React Root onRecoverableError: Error: Minified React error #418; visit https://reactjs.org/docs/error-decoder.html?invariant=418 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at lr (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:627112)
+    at Sc (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:700278)
+    at yd (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:687752)
+    at vd (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:687724)
+    at rd (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:682774)
+    at w (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:748108)
+    at MessagePort.L (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:748640) {componentStack: 
+    at h1
+    at l (http://docs.dbgpt.cn/assets/j…ocs.dbgpt.cn/assets/js/main.fa43a53f.js:2:717131), digest: null} @ http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2
+[    1293ms] [ERROR] Docusaurus React Root onRecoverableError: Error: Minified React error #418; visit https://reactjs.org/docs/error-decoder.html?invariant=418 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at lr (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:627112)
+    at Sc (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:700278)
+    at yd (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:687752)
+    at vd (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:687724)
+    at rd (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:682774)
+    at w (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:748108)
+    at MessagePort.L (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:748640) {componentStack: 
+    at p
+    at div
+    at div
+    at main
+    at…ocs.dbgpt.cn/assets/js/main.fa43a53f.js:2:717131), digest: null} @ http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2
+[    1293ms] [ERROR] Docusaurus React Root onRecoverableError: Error: Minified React error #418; visit https://reactjs.org/docs/error-decoder.html?invariant=418 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at lr (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:627112)
+    at Sc (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:700278)
+    at yd (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:687752)
+    at vd (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:687724)
+    at rd (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:682774)
+    at w (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:748108)
+    at MessagePort.L (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:748640) {componentStack: 
+    at p
+    at div
+    at div
+    at main
+    at…ocs.dbgpt.cn/assets/js/main.fa43a53f.js:2:717131), digest: null} @ http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2
+[    1293ms] [ERROR] Docusaurus React Root onRecoverableError: Error: Minified React error #418; visit https://reactjs.org/docs/error-decoder.html?invariant=418 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at lr (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:627112)
+    at Sc (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:700278)
+    at yd (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:687752)
+    at vd (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:687724)
+    at rd (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:682774)
+    at w (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:748108)
+    at MessagePort.L (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:748640) {componentStack: 
+    at footer
+    at Ct (http://docs.dbgpt.cn/ass…ocs.dbgpt.cn/assets/js/main.fa43a53f.js:2:717131), digest: null} @ http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2
+[    1293ms] [ERROR] Docusaurus React Root onRecoverableError: Error: Minified React error #423; visit https://reactjs.org/docs/error-decoder.html?invariant=423 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at Sc (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:699964)
+    at yd (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:687752)
+    at hd (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:687680)
+    at bd (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:687543)
+    at id (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:684350)
+    at rd (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:682902)
+    at w (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:748108)
+    at MessagePort.L (http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2:748640) {componentStack: , digest: null} @ http://docs.dbgpt.cn/assets/js/main.fa43a53f.js:2

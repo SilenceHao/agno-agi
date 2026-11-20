@@ -1,0 +1,63 @@
+0 verbose cli D:\node-v24.14.0\node.exe C:\Users\Administrator\AppData\Roaming\npm\node_modules\npm\bin\npm-cli.js
+1 info using npm@11.11.0
+2 info using node@v24.14.0
+3 silly config load:file:C:\Users\Administrator\AppData\Roaming\npm\node_modules\npm\npmrc
+4 silly config load:file:E:\work\AI\agno-agi\.tmp-markdown-vendor\.npmrc
+5 silly config load:file:C:\Users\Administrator\.npmrc
+6 silly config load:file:E:\work\AI\agno-agi\.tmp-markdown-vendor\etc\npmrc
+7 verbose title npm install marked@15.0.12 highlight.js@11.11.1 dompurify@3.4.12
+8 verbose argv "install" "--no-save" "--no-audit" "--no-fund" "--cache" "E:\\work\\AI\\agno-agi\\.tmp-markdown-vendor\\npm-cache" "--prefix" "E:\\work\\AI\\agno-agi\\.tmp-markdown-vendor" "marked@15.0.12" "highlight.js@11.11.1" "dompurify@3.4.12"
+9 verbose logfile logs-max:10 dir:E:\work\AI\agno-agi\.tmp-markdown-vendor\npm-cache\_logs\2026-11-10T07_26_51_082Z-
+10 verbose logfile E:\work\AI\agno-agi\.tmp-markdown-vendor\npm-cache\_logs\2026-11-10T07_26_51_082Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+13 silly idealTree buildDeps
+14 silly fetch manifest marked@15.0.12
+15 silly packumentCache full:https://registry.npmjs.org/marked cache-miss
+16 http fetch GET 200 https://registry.npmjs.org/npm 878ms
+17 http fetch GET 200 https://registry.npmjs.org/marked 1069ms (cache miss)
+18 silly packumentCache full:https://registry.npmjs.org/marked set size:undefined disposed:false
+19 silly fetch manifest highlight.js@11.11.1
+20 silly packumentCache full:https://registry.npmjs.org/highlight.js cache-miss
+21 http fetch GET 200 https://registry.npmjs.org/highlight.js 424ms (cache miss)
+22 silly packumentCache full:https://registry.npmjs.org/highlight.js set size:undefined disposed:false
+23 silly fetch manifest dompurify@3.4.12
+24 silly packumentCache full:https://registry.npmjs.org/dompurify cache-miss
+25 http fetch GET 200 https://registry.npmjs.org/dompurify 422ms (cache miss)
+26 silly packumentCache full:https://registry.npmjs.org/dompurify set size:undefined disposed:false
+27 silly placeDep ROOT dompurify@3.4.12 OK for:  want: 3.4.12
+28 silly placeDep ROOT highlight.js@11.11.1 OK for:  want: 11.11.1
+29 silly placeDep ROOT marked@15.0.12 OK for:  want: 15.0.12
+30 silly fetch manifest @types/trusted-types@^2.0.7
+31 silly packumentCache full:https://registry.npmjs.org/@types%2ftrusted-types cache-miss
+32 http fetch GET 200 https://registry.npmjs.org/@types%2ftrusted-types 414ms (cache miss)
+33 silly packumentCache full:https://registry.npmjs.org/@types%2ftrusted-types set size:undefined disposed:false
+34 silly placeDep ROOT @types/trusted-types@2.0.7 OK for: dompurify@3.4.12 want: ^2.0.7
+35 silly reify moves {}
+36 http cache marked@https://registry.npmjs.org/marked/-/marked-15.0.12.tgz 0ms (cache hit)
+37 http cache @types/trusted-types@https://registry.npmjs.org/@types/trusted-types/-/trusted-types-2.0.7.tgz 0ms (cache hit)
+38 http cache highlight.js@https://registry.npmjs.org/highlight.js/-/highlight.js-11.11.1.tgz 0ms (cache hit)
+39 http cache dompurify@https://registry.npmjs.org/dompurify/-/dompurify-3.4.12.tgz 0ms (cache hit)
+40 silly tarball no local data for marked@https://registry.npmjs.org/marked/-/marked-15.0.12.tgz. Extracting by manifest.
+41 silly tarball no local data for @types/trusted-types@https://registry.npmjs.org/@types/trusted-types/-/trusted-types-2.0.7.tgz. Extracting by manifest.
+42 silly tarball no local data for highlight.js@https://registry.npmjs.org/highlight.js/-/highlight.js-11.11.1.tgz. Extracting by manifest.
+43 silly tarball no local data for dompurify@https://registry.npmjs.org/dompurify/-/dompurify-3.4.12.tgz. Extracting by manifest.
+44 http fetch GET 200 https://registry.npmjs.org/@types/trusted-types/-/trusted-types-2.0.7.tgz 457ms (cache miss)
+45 http fetch GET 200 https://registry.npmjs.org/marked/-/marked-15.0.12.tgz 645ms (cache miss)
+46 http fetch GET 200 https://registry.npmjs.org/dompurify/-/dompurify-3.4.12.tgz 1270ms (cache miss)
+47 http fetch GET 200 https://registry.npmjs.org/highlight.js/-/highlight.js-11.11.1.tgz 2049ms (cache miss)
+48 silly ADD node_modules/@types/trusted-types
+49 silly ADD node_modules/marked
+50 silly ADD node_modules/highlight.js
+51 silly ADD node_modules/dompurify
+52 verbose cwd E:\work\AI\agno-agi
+53 verbose os Windows_NT 10.0.19045
+54 verbose node v24.14.0
+55 verbose npm  v11.11.0
+56 notice
+56 notice New minor version of npm available! 11.11.0 -> 11.21.2
+56 notice Changelog: https://github.com/npm/cli/releases/tag/v11.21.2
+56 notice To update run: npm install -g npm@11.21.2
+56 notice  { force: true, Symbol(proc-log.meta): true }
+57 verbose exit 0
+58 info ok

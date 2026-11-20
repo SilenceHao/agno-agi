@@ -1,0 +1,83 @@
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  min-height: 0;
+  overscroll-behavior: none;
+}
+
+.app-shell {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sidebar {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sidebar-heading,
+.new-chat,
+.knowledge-nav,
+.tools-nav,
+.history-heading,
+.sidebar-bottom {
+  flex: 0 0 auto;
+}
+
+.conversation-list {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+}
+
+.sidebar.collapsed .conversation-list {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.main-panel {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.chat-layout {
+  height: auto;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.conversation {
+  overscroll-behavior-y: contain;
+}
+
+.composer-wrap {
+  z-index: 2;
+  flex: 0 0 auto;
+}
+
+.knowledge-layout,
+.tools-layout {
+  height: auto;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+@media (max-width: 700px) {
+  .sidebar.open {
+    height: 100dvh;
+    min-height: 0;
+  }
+}

@@ -1,0 +1,66 @@
+- generic [ref=f8e2]:
+  - complementary "应用导航" [ref=f8e3]:
+    - link "作文辅导助手首页" [ref=f8e4] [cursor=pointer]:
+      - /url: /
+      - generic [ref=f8e9]:
+        - strong [ref=f8e10]: 作文辅导
+        - generic [ref=f8e11]: AI 写作伙伴
+    - button "开始新对话" [ref=f8e12] [cursor=pointer]: ＋ 开始新对话
+    - generic [ref=f8e13]: 写作工具
+    - generic [ref=f8e14]: 作文题解答
+    - generic [ref=f8e16]:
+      - generic [ref=f8e21]:
+        - strong [ref=f8e22]: 私有部署
+        - generic [ref=f8e23]: 对话仅发送至 DeepSeek
+      - generic "服务在线" [ref=f8e24]
+  - main [ref=f8e25]:
+    - generic [ref=f8e26]:
+      - generic [ref=f8e27]:
+        - generic [ref=f8e28]: 工作区
+        - generic [ref=f8e29]: /
+        - strong [ref=f8e30]: 作文题解答
+      - generic [ref=f8e31]:
+        - generic [ref=f8e32]: DeepSeek
+        - button "本地用户" [ref=f8e34] [cursor=pointer]: 学
+    - region "作文辅导对话" [ref=f8e35]:
+      - status [ref=f8e36]
+      - generic [ref=f8e38]:
+        - generic [ref=f8e43]: 你的写作搭档
+        - heading "把作文题发给我， 一起理清写作思路。" [level=1] [ref=f8e44]: 把作文题发给我，一起理清写作思路。
+        - paragraph [ref=f8e45]: 上传题目、材料或老师的要求，我会先帮你拆解题意，再给出构思与写作建议。
+        - generic [ref=f8e46]:
+          - button "✳ 分析作文题 提炼要求与立意方向 ↗" [ref=f8e47] [cursor=pointer]:
+            - generic [ref=f8e48]: ✳
+            - generic [ref=f8e49]:
+              - strong [ref=f8e50]: 分析作文题
+              - generic [ref=f8e51]: 提炼要求与立意方向
+            - generic [ref=f8e52]: ↗
+          - button "≡ 生成写作提纲 搭建文章结构与段落 ↗" [ref=f8e53] [cursor=pointer]:
+            - generic [ref=f8e54]: ≡
+            - generic [ref=f8e55]:
+              - strong [ref=f8e56]: 生成写作提纲
+              - generic [ref=f8e57]: 搭建文章结构与段落
+            - generic [ref=f8e58]: ↗
+          - button "✎ 参考范文 结合题目要求完成写作 ↗" [ref=f8e59] [cursor=pointer]:
+            - generic [ref=f8e60]: ✎
+            - generic [ref=f8e61]:
+              - strong [ref=f8e62]: 参考范文
+              - generic [ref=f8e63]: 结合题目要求完成写作
+            - generic [ref=f8e64]: ↗
+          - button "✓ 检查写作要求 避免遗漏与偏题 ↗" [ref=f8e65] [cursor=pointer]:
+            - generic [ref=f8e66]: ✓
+            - generic [ref=f8e67]:
+              - strong [ref=f8e68]: 检查写作要求
+              - generic [ref=f8e69]: 避免遗漏与偏题
+            - generic [ref=f8e70]: ↗
+      - generic [ref=f8e72]:
+        - generic [ref=f8e73]:
+          - textbox "输入作文问题" [ref=f8e74]:
+            - /placeholder: 描述你的作文问题，或先上传作文题…
+          - generic [ref=f8e75]:
+            - generic [ref=f8e76]:
+              - button "上传作文题附件" [ref=f8e77] [cursor=pointer]:
+                - generic [ref=f8e80]: 添加附件
+              - generic [ref=f8e81]: PDF、DOCX、TXT、MD · 单个文件最大 10 MB
+            - button "发送消息" [ref=f8e82] [cursor=pointer]
+        - generic [ref=f8e85]: AI 生成的内容仅供写作参考，请结合自己的理解进行修改。

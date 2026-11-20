@@ -1,0 +1,12 @@
+[     151ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/favicon.ico:1
+[   14195ms] RangeError: Maximum call stack size exceeded
+    at window.loadWorkflowSettings (http://127.0.0.1:8000/static/admin/workflows.js?v=4:237:31)
+    at window.loadWorkflowSettings (http://127.0.0.1:8000/static/admin/workflows.js?v=4:237:37)
+    at window.loadWorkflowSettings (http://127.0.0.1:8000/static/admin/workflows.js?v=4:237:37)
+    at window.loadWorkflowSettings (http://127.0.0.1:8000/static/admin/workflows.js?v=4:237:37)
+    at window.loadWorkflowSettings (http://127.0.0.1:8000/static/admin/workflows.js?v=4:237:37)
+    at window.loadWorkflowSettings (http://127.0.0.1:8000/static/admin/workflows.js?v=4:237:37)
+    at window.loadWorkflowSettings (http://127.0.0.1:8000/static/admin/workflows.js?v=4:237:37)
+    at window.loadWorkflowSettings (http://127.0.0.1:8000/static/admin/workflows.js?v=4:237:37)
+    at window.loadWorkflowSettings (http://127.0.0.1:8000/static/admin/workflows.js?v=4:237:37)
+    at window.loadWorkflowSettings (http://127.0.0.1:8000/static/admin/workflows.js?v=4:237:37)

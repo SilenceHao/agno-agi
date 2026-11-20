@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101114">
+  <title>AGNO 管理工作台</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v=agent-mark-v1">
+  <link rel="stylesheet" href="/static/knowledge.css?v=admin-workbench-v5">
+  <link rel="stylesheet" href="/static/tools.css?v=admin-workbench-v2">
+  <link rel="stylesheet" href="/static/admin/admin.css?v=27">
+
+</head>
+<body>
+  <svg aria-hidden="true" width="0" height="0" style="position:absolute;overflow:hidden">
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></symbol>
+    <symbol id="i-bot" viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="13" rx="3"/><path d="M12 3v4M8.5 12h.01M15.5 12h.01M8 16h8"/><path d="M2.5 12h1.5M20 12h1.5"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M5 4.5h12a2 2 0 0 1 2 2V20H6a2 2 0 0 1-2-2V5.5a1 1 0 0 1 1-1Z"/><path d="M4 17.5a2.5 2.5 0 0 1 2.5-2.5H19M8 8h7M8 11h5"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="M14.5 6.5a5 5 0 0 0-6.8 6.8L3.5 17.5a2.1 2.1 0 0 0 3 3l4.2-4.2a5 5 0 0 0 6.8-6.8l-3 3-3.5-3.5 3.5-2.5Z"/></symbol>
+    <symbol id="i-flow" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="6" height="5" rx="1.2"/><rect x="14.5" y="15.5" width="6" height="5" rx="1.2"/><path d="M9.5 6h4a3 3 0 0 1 3 3v6.5M12 9l3 3 3-3"/></symbol>
+    <symbol id="i-plug" viewBox="0 0 24 24"><path d="M8 7v5M16 7v5M6 12h12v1a6 6 0 0 1-6 6h0a6 6 0 0 1-6-6v-1ZM12 19v2M7 4v3M17 4v3"/></symbol>
+    <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8.5" ry="3"/><path d="M3.5 5v7c0 1.7 3.8 3 8.5 3s8.5-1.3 8.5-3V5M3.5 12v7c0 1.7 3.8 3 8.5 3s8.5-1.3 8.5-3v-7"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 20 6v5.5c0 5-3.4 8-8 9.5-4.6-1.5-8-4.5-8-9.5V6l8-3Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20M9.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM17 4.2a3.5 3.5 0 0 1 0 6.8M18 14.5a4 4 0 0 1 3 3.9V20"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4.5"/><path d="m11.5 11.5 9-9M16 7l2 2M18.5 4.5l2 2"/></symbol>
+    <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4M7 12l3-3 2 2 4-4"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-dots" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3.5h8l5 5V20a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 20V5a1.5 1.5 0 0 1 1-1.5Z"/><path d="M14 4v5h5M8 13h8M8 16.5h6"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+    <symbol id="i-exit" viewBox="0 0 24 24"><path d="M10 4H5.5A1.5 1.5 0 0 0 4 5.5v13A1.5 1.5 0 0 0 5.5 20H10M14 8l4 4-4 4M8 12h10"/></symbol>
+  </svg>
+  <div class="app" id="app">
+    <aside class="sidebar" id="sidebar" aria-label="管理系统主导航">
+      <div class="brand-row">
+        <div class="brand-symbol" aria-hidden="true">S</div>
+        <div class="brand-copy"><div class="brand-name">SILENCE</div><div class="brand-caption">AGENT WORKSPACE</div></div>
+        <button class="collapse-btn" id="collapse-btn" type="button" aria-label="收起侧边栏" title="收起侧边栏"><svg><use href="#i-menu"/></svg></button>
+      </div>
+      <nav class="nav-scroll" aria-label="管理菜单">
+        <div class="nav-group" data-group="workspace">
+          <button class="nav-label" type="button" aria-expanded="true"><span>工作台</span><svg aria-hidden="true"><use href="#i-down"/></svg></button>
+          <button class="nav-item" data-view="overview" data-title="总览" aria-current="page" title="总览"><svg><use href="#i-grid"/></svg><span>总览</span></button>
+        </div>
+        <div class="nav-group" data-group="agents">
+          <button class="nav-label" type="button" aria-expanded="true"><span>智能体管理</span><svg aria-hidden="true"><use href="#i-down"/></svg></button>
+          <button class="nav-item" data-view="agents" data-title="智能体列表" title="智能体列表"><svg><use href="#i-bot"/></svg><span>智能体列表</span></button>
+          <button class="nav-item" data-view="models" data-title="模型与提示词" title="模型与提示词"><svg><use href="#i-list"/></svg><span>模型与提示词</span></button>
+          <button class="nav-item" data-view="retrieval" data-title="检索策略" title="检索策略"><svg><use href="#i-search"/></svg><span>检索策略</span></button>
+          <button class="nav-item" data-view="policy" data-title="对话与工具调用策略" title="对话与工具调用策略"><svg><use href="#i-shield"/></svg><span>对话与工具调用策略</span></button>
+          <button class="nav-item" data-view="releases" data-title="版本与发布" title="版本与发布"><svg><use href="#i-clock"/></svg><span>版本与发布</span></button>
+        </div>
+        <div class="nav-group" data-group="resources">
+          <button class="nav-label" type="button" aria-expanded="true"><span>资源中心</span><svg aria-hidden="true"><use href="#i-down"/></svg></button>
+          <button class="nav-item" data-view="resources" data-title="全部资源" title="全部资源"><svg><use href="#i-grid"/></svg><span>全部资源</span></button>
+          <button class="nav-item" data-view="knowledge" data-title="知识库管理" title="知识库管理"><svg><use href="#i-book"/></svg><span>知识库管理</span><span class="nav-count">0</span></button>
+          <button class="nav-item" data-view="tools" data-title="工具管理" title="工具管理"><svg><use href="#i-tool"/></svg><span>工具管理</span><span class="nav-count">0</span></button>
+          <button class="nav-item" data-view="workflows" data-title="工作流管理" title="工作流管理"><svg><use href="#i-flow"/></svg><span>工作流管理</span></button>
+          <button class="nav-item" data-view="mcp" data-title="MCP / 外部服务" title="MCP / 外部服务"><svg><use href="#i-plug"/></svg><span>MCP / 外部服务</span></button>
+          <button class="nav-item" data-view="datasources" data-title="数据源管理" title="数据源管理"><svg><use href="#i-database"/></svg><span>数据源管理</span></button>
+        </div>
+        <div class="nav-group" data-group="security">
+          <button class="nav-label" type="button" aria-expanded="true"><span>安全与权限</span><svg aria-hidden="true"><use href="#i-down"/></svg></button>
+          <button class="nav-item" data-view="users" data-title="用户管理" title="用户管理"><svg><use href="#i-users"/></svg><span>用户管理</span></button>
+          <button class="nav-item" data-view="roles" data-title="角色管理" title="角色管理"><svg><use href="#i-shield"/></svg><span>角色管理</span></button>
+          <button class="nav-item" data-view="grants" data-title="资源授权" title="资源授权"><svg><use href="#i-key"/></svg><span>资源授权</span></button>
+          <button class="nav-item" data-view="matrix" data-title="权限矩阵" title="权限矩阵"><svg><use href="#i-grid"/></svg><span>权限矩阵</span></button>
+        </div>
+        <div class="nav-group" data-group="operations">
+          <button class="nav-label" type="button" aria-expanded="true"><span>运维中心</span><svg aria-hidden="true"><use href="#i-down"/></svg></button>
+          <button class="nav-item" data-view="monitoring" data-title="运行监控" title="运行监控"><svg><use href="#i-monitor"/></svg><span>运行监控</span></button>
+          <button class="nav-item" data-view="logs" data-title="会话与调用日志" title="会话与调用日志"><svg><use href="#i-list"/></svg><span>会话与调用日志</span></button>
+          <button class="nav-item" data-view="audit" data-title="操作审计" title="操作审计"><svg><use href="#i-file"/></svg><span>操作审计</span></button>
+        </div>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="workspace-pill" title="当前工作空间：默认工作空间">
+          <div class="workspace-avatar">S</div>
+          <div class="workspace-info"><strong>默认工作空间</strong><small>个人部署 · 管理员</small></div>
+          <svg><use href="#i-down"/></svg>
+        </div>
+      </div>
+    </aside>
+    <button class="scrim" id="scrim" type="button" aria-label="关闭导航"></button>
+    <main class="main" id="main">
+      <header class="topbar">
+        <div class="top-left">
+          <button class="mobile-menu" id="mobile-menu" type="button" aria-label="打开导航"><svg><use href="#i-menu"/></svg></button>
+          <div class="breadcrumb"><span>管理工作台</span><svg><use href="#i-chevron"/></svg><strong id="breadcrumb-title">总览</strong></div>
+        </div>
+        <div class="top-actions">
+          <label class="searchbox"><svg><use href="#i-search"/></svg><input id="global-search" type="search" aria-label="搜索管理内容" placeholder="搜索资源、用户或智能体"><span class="shortcut">⌘ K</span></label>
+          <a class="top-chat-link" href="/">智能体对话</a>
+          <div class="top-divider"></div>
+          <button class="icon-btn notification-btn" id="notification-btn" type="button" aria-label="通知" data-toast="通知中心将在后续模块中接入"><svg><use href="#i-bell"/></svg><span class="notification-dot"></span></button>
+          <button class="icon-btn" id="admin-logout" type="button" aria-label="退出登录" title="退出登录"><svg><use href="#i-exit"/></svg></button>
+          <div class="profile"><div class="profile-avatar" aria-hidden="true">A</div><div class="profile-copy"><strong id="admin-username">管理员</strong><small id="admin-role">超级管理员</small></div></div>
+        </div>
+      </header>
+      <div class="content">
+        <section id="overview-view">
+          <div class="page-heading">
+            <div><h1>管理工作台</h1><p class="page-description">集中维护智能体使用的知识资料与外部工具。</p></div>
+            <div class="button-row"><span class="status-chip" id="system-status"><span class="dot"></span>正在检查服务</span><a class="btn" href="/">返回对话</a></div>
+          </div>
+          <div class="stats-grid">
+            <article class="stat-card"><div class="stat-top"><span class="stat-label">知识文档</span><span class="stat-icon"><svg><use href="#i-book"/></svg></span></div><div class="stat-value-row"><strong class="stat-value" id="metric-documents">—</strong><span class="stat-unit">份</span></div><div class="stat-foot" id="metric-ready-documents">正在读取索引状态</div></article>
+            <article class="stat-card"><div class="stat-top"><span class="stat-label">HTTP 工具</span><span class="stat-icon"><svg><use href="#i-tool"/></svg></span></div><div class="stat-value-row"><strong class="stat-value" id="metric-tools">—</strong><span class="stat-unit">个</span></div><div class="stat-foot" id="metric-tool-state">当前工作空间已配置</div></article>
+            <article class="stat-card"><div class="stat-top"><span class="stat-label">已启用工具</span><span class="stat-icon"><svg><use href="#i-shield"/></svg></span></div><div class="stat-value-row"><strong class="stat-value" id="metric-enabled-tools">—</strong><span class="stat-unit">个</span></div><div class="stat-foot">只会注册已启用的接口</div></article>
+            <article class="stat-card"><div class="stat-top"><span class="stat-label">本机向量模型</span><span class="stat-icon"><svg><use href="#i-database"/></svg></span></div><div class="stat-value-row"><strong class="stat-value" id="metric-index-model" style="font-size:19px">检查中</strong></div><div class="stat-foot" id="metric-index-model-detail">Ollama 连接状态</div></article>
+          </div>
+          <div class="dashboard-grid">
+            <section class="card">
+              <div class="card-header"><div><div class="card-title">已接入资源</div><div class="card-subtitle">知识库和 HTTP 工具已连接到当前智能体服务</div></div><button class="btn btn-quiet" type="button" data-open-view="resources">资源概览 <svg><use href="#i-arrow"/></svg></button></div>
+              <div class="card-body resource-list">
+      <button class="resource-item resource-link" type="button" data-open-view="knowledge"><span class="resource-kind"><svg><use href="#i-book"/></svg></span><span class="resource-copy"><strong>知识库管理</strong><small>上传资料、查看索引状态、重新索引或删除</small></span><span class="resource-count" id="resource-document-count">— 份</span><svg class="resource-arrow"><use href="#i-chevron"/></svg></button>
+                <button class="resource-item resource-link" type="button" data-open-view="tools"><span class="resource-kind"><svg><use href="#i-tool"/></svg></span><span class="resource-copy"><strong>HTTP 工具管理</strong><small>维护接口参数、鉴权配置与连通性测试</small></span><span class="resource-count" id="resource-tool-count">— 个</span><svg class="resource-arrow"><use href="#i-chevron"/></svg></button>
+              </div>
+            </section>
+            <section class="card">
+              <div class="card-header"><div><div class="card-title">服务状态</div><div class="card-subtitle">当前运行服务的基础连通状态</div></div><span class="status-chip" id="health-summary"><span class="dot"></span>检查中</span></div>
+              <div class="card-body health-list">
+                <div class="health-row"><span class="health-icon"><svg><use href="#i-bot"/></svg></span><div class="health-copy"><strong>DeepSeek 模型服务</strong><small>对话生成服务配置</small></div><span class="health-state" id="health-model">检查中</span></div>
+                <div class="health-row"><span class="health-icon"><svg><use href="#i-book"/></svg></span><div class="health-copy"><strong>Ollama 向量模型</strong><small id="health-vector-detail">本机知识库向量化服务</small></div><span class="health-state" id="health-vector">检查中</span></div>
+                <div class="health-row"><span class="health-icon"><svg><use href="#i-database"/></svg></span><div class="health-copy"><strong>智能体 API</strong><small>本机管理与对话服务</small></div><span class="health-state" id="health-api">已连接</span></div>
+              </div>
+            </section>
+          </div>
+          <div class="bottom-grid">
+            <section class="card">
+              <div class="card-header"><div><div class="card-title">智能体接入</div><div class="card-subtitle">资源由现有通用智能体按服务端配置使用</div></div><span class="status-chip neutral">当前版本</span></div>
+              <div class="card-body agent-summary"><div class="agent-logo">S</div><div class="agent-summary-copy"><strong>通用智能体</strong><span>知识库检索与已启用 HTTP 工具</span></div><a class="btn btn-quiet" href="/">打开对话 <svg><use href="#i-arrow"/></svg></a></div>
+            </section>
+            <section class="card">
+              <div class="card-header"><div><div class="card-title">其他管理模块</div><div class="card-subtitle">按同一资源与权限模型继续扩展</div></div></div>
+              <div class="card-body planned-list"><span><svg><use href="#i-users"/></svg>用户与资源权限</span><span><svg><use href="#i-tool"/></svg>MCP 服务与数据源</span><span><svg><use href="#i-monitor"/></svg>运行监控与审计</span></div>
+            </section>
+          </div>
+        </section>
+        <section class="module-wrap" id="module-view" aria-live="polite" hidden>
+          <div class="page-heading" id="module-page-heading"><div><h1 id="module-title"></h1><p class="page-description" id="module-description"></p></div></div>
+          <section class="resource-summary" id="resource-summary" hidden>
+            <div class="dashboard-grid">
+              <article class="card"><div class="card-header"><div><div class="card-title">知识库资源</div><div class="card-subtitle">本机长期资料及索引状态</div></div></div><div class="card-body resource-summary-body"><span class="resource-kind"><svg><use href="#i-book"/></svg></span><div class="resource-summary-copy"><strong id="resource-summary-documents">—</strong><small>份文档</small></div><button class="btn btn-quiet" type="button" data-open-view="knowledge">管理知识库 <svg><use href="#i-arrow"/></svg></button></div></article>
+              <article class="card"><div class="card-header"><div><div class="card-title">HTTP 工具</div><div class="card-subtitle">为通用智能体配置的外部接口</div></div></div><div class="card-body resource-summary-body"><span class="resource-kind"><svg><use href="#i-tool"/></svg></span><div class="resource-summary-copy"><strong id="resource-summary-tools">—</strong><small>个已配置接口</small></div><button class="btn btn-quiet" type="button" data-open-view="tools">管理工具 <svg><use href="#i-arrow"/></svg></button></div></article>
+            </div>
+            <p class="resource-summary-note">工作流已支持顺序编排与发布；MCP 服务和数据源可继续接入此资源中心。</p>
+          </section>
+          <section class="workflow-layout" id="workflow-layout" hidden>
+            <section class="workflow-list-page" id="workflow-list-page">
+              <div class="workflow-toolbar">
+                <label class="workflow-search"><svg><use href="#i-search"/></svg><input id="workflow-search" type="search" maxlength="100" placeholder="搜索工作流" aria-label="搜索工作流" /></label>
+                <span id="workflow-count"></span>
+                <button class="btn btn-primary" id="workflow-create" type="button">＋ 新建工作流</button>
+              </div>
+              <div id="workflow-list" class="workflow-list" aria-label="工作流列表"></div>
+            </section>
+            <section class="workflow-editor-panel" id="workflow-editor-panel" hidden>
+              <div class="workflow-editor-topbar">
+                <button class="workflow-back" id="workflow-back" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7"/></svg><span>返回工作流列表</span></button>
+                <span class="workflow-editor-status status-chip neutral" id="workflow-editor-status">草稿</span>
+              </div>
+              <div class="workflow-editor-heading"><div><span class="workflow-editor-eyebrow">工作流管理 / 编辑</span><h1 id="workflow-editor-title">新建工作流</h1><p>按顺序执行节点；可用 <code>{{input}}</code> 表示用户输入，<code>{{previous}}</code> 表示上一步结果。</p></div></div>
+              <form id="workflow-form">
+                <input type="hidden" name="id" />
+                <section class="workflow-editor-section">
+                  <div class="workflow-section-heading"><div><h2>基本信息</h2><p>为工作流设置名称和用途说明。</p></div></div>
+                  <div class="workflow-form-grid"><label>工作流名称<input name="name" maxlength="100" required placeholder="例如：订单查询与摘要" /></label><label>说明<input name="description" maxlength="500" placeholder="说明这个工作流解决什么问题" /></label></div>
+                </section>
+                <section class="workflow-editor-section workflow-flow-section">
+                  <div class="workflow-nodes-heading"><div><h2>执行节点</h2><span id="workflow-node-count">0 个节点</span></div><div class="workflow-node-actions"><button class="btn" type="button" data-add-node="agent">＋ 智能体</button><button class="btn" type="button" data-add-node="knowledge">＋ 知识库</button><button class="btn" type="button" data-add-node="http">＋ HTTP 工具</button></div></div>
+                  <div id="workflow-nodes" class="workflow-nodes"></div>
+                </section>
+                <section class="workflow-editor-section workflow-run-box"><div><div><h2>预览运行</h2><p>预览不会写入会话；会真实调用节点中的 HTTP 接口，写请求可能修改外部数据。</p></div></div><div class="workflow-run-controls"><input id="workflow-run-input" type="text" maxlength="12000" placeholder="输入一条测试内容" /><button class="btn" id="workflow-run" type="button">运行预览</button></div><pre id="workflow-run-result" hidden></pre></section>
+                <div class="workflow-editor-footer"><button class="btn workflow-delete" id="workflow-delete" type="button">删除</button><div><button class="btn" id="workflow-disable" type="button">停用</button><button class="btn btn-primary" id="workflow-save" type="submit">保存草稿</button><button class="btn btn-primary" id="workflow-publish" type="button">发布</button></div></div>
+              </form>
+            </section>
+          </section>
+          <section class="model-settings-layout" id="model-settings-layout" hidden aria-label="模型与提示词配置">
+            <form class="model-settings-form" id="model-settings-form">
+              <section class="model-settings-card">
+                <div class="model-settings-card-heading"><div><h2>模型服务</h2><p>当前提供商为 DeepSeek，配置会应用于后续对话和视觉文档处理。</p></div><span class="model-provider-badge">DeepSeek</span></div>
+                <div class="model-settings-grid">
+                  <label>普通对话模型<input name="model" required maxlength="120" placeholder="deepseek-chat" autocomplete="off" /><span>处理普通对话、知识库问答和工作流智能体节点。</span></label>
+                  <label>视觉模型<input name="vision_model" required maxlength="120" placeholder="deepseek-v4-flash-vision-exp" autocomplete="off" /><span>处理聊天图片及知识库中的图片描述。</span></label>
+                  <label class="model-settings-wide">兼容 API 地址<input name="base_url" type="url" required maxlength="500" placeholder="https://api.deepseek.com" autocomplete="url" /><span>填写 API 根地址，不要带 /chat/completions。</span></label>
+                  <label class="model-settings-wide">API Key<input name="api_key" type="password" maxlength="1000" placeholder="留空保留已保存的密钥" autocomplete="new-password" /><span id="model-api-key-state">密钥不会返回到网页；留空保存时保留当前密钥。</span></label>
+                  <label class="model-clear-key"><input name="clear_api_key" type="checkbox" /><span>清除已保存的密钥，并忽略环境变量中的 API Key</span></label>
+                </div>
+              </section>
+              <section class="model-settings-card">
+                <div class="model-settings-card-heading"><div><h2>全局补充提示词</h2><p>用于设置回答风格、术语偏好和格式要求；核心安全与权限规则由服务端保留。</p></div><span class="model-prompt-count" id="model-prompt-count">0 / 20,000</span></div>
+                <label class="model-prompt-label">补充指令<textarea name="additional_prompt" rows="12" maxlength="20000" placeholder="例如：回答优先使用简体中文；先给结论，再列出关键步骤。"></textarea></label>
+              </section>
+              <div class="model-settings-footer"><span id="model-settings-status" role="status"></span><div><button class="btn" id="model-test-button" type="button">测试连接</button><button class="btn btn-primary" id="model-save-button" type="submit">保存配置</button></div></div>
+            </form>
+          </section>
+          <section class="retrieval-settings-layout" id="retrieval-settings-layout" hidden aria-label="知识库检索策略">
+            <form class="model-settings-form" id="retrieval-settings-form">
+              <section class="model-settings-card">
+                <div class="model-settings-card-heading"><div><h2>知识召回</h2><p>设置知识库问答和工作流知识节点使用的召回范围。更改会立即应用于后续请求。</p></div><span class="model-provider-badge">运行时生效</span></div>
+                <div class="retrieval-settings-grid">
+                  <label>返回片段数<input name="results" type="number" min="1" max="20" step="1" required /><span>向量和关键词混合排序后提供给回答模型的最多片段数。</span></label>
+                  <label>候选召回倍数<input name="overfetch_factor" type="number" min="1" max="10" step="1" required /><span>向量与全文检索分别召回“返回片段数 × 倍数”的候选，再使用 RRF 融合排序。</span></label>
+                  <label>相似度距离阈值<input name="max_cosine_distance" type="number" min="0" max="2" step="0.05" required /><span>Cosine distance 越低越相似；首轮不足时系统会自动放宽 0.30 再检索。</span></label>
+                  <label class="retrieval-expansion-option"><input name="query_expansion" type="checkbox" /><span><strong>启用口语化查询扩展</strong><small>与字段意图同义词扩展、关键词混合检索和低命中二次检索配合使用。</small></span></label>
+                </div>
+              </section>
+              <div class="model-settings-footer"><span id="retrieval-settings-status" role="status" aria-live="polite"></span><div><button class="btn btn-primary" id="retrieval-save-button" type="submit">保存检索策略</button></div></div>
+            </form>
+          </section>
+          <section class="monitoring-layout" id="monitoring-layout" hidden aria-label="运行监控">
+            <div class="monitoring-toolbar"><div><span class="monitoring-updated" id="monitoring-updated">尚未采样</span><span class="monitoring-next-check">每 30 秒自动刷新</span></div><button class="btn" id="monitoring-refresh" type="button">刷新状态</button></div>
+            <div class="monitoring-component-grid" id="monitoring-components" aria-live="polite"></div>
+            <section class="monitoring-resource-panel">
+              <div class="monitoring-panel-heading"><div><h2>资源与进程</h2><p>当前服务进程启动后统计的本地资源状态。</p></div><span class="monitoring-uptime" id="monitoring-uptime">—</span></div>
+              <div class="monitoring-resource-grid" id="monitoring-resources"></div>
+            </section>
+          </section>
+          <section class="call-logs-layout" id="call-logs-layout" hidden aria-label="会话与调用日志">
+            <div class="call-logs-summary" id="call-logs-summary"></div>
+            <section class="call-logs-panel">
+              <div class="call-logs-toolbar">
+                <label class="call-logs-search"><svg><use href="#i-search"/></svg><input id="call-logs-search" type="search" maxlength="120" placeholder="搜索账号、会话或资源" aria-label="搜索会话与调用日志" /></label>
+                <label class="call-logs-filter-label">类型<select id="call-logs-type" aria-label="按调用类型筛选"><option value="">全部类型</option><option value="chat">智能体对话</option><option value="workflow">工作流</option><option value="knowledge_search">知识检索</option><option value="http_tool">HTTP 工具</option></select></label>
+                <label class="call-logs-filter-label">状态<select id="call-logs-status" aria-label="按调用状态筛选"><option value="">全部状态</option><option value="success">成功</option><option value="failed">失败</option></select></label>
+                <button class="btn" id="call-logs-refresh" type="button">刷新</button>
+              </div>
+              <div class="call-logs-table-scroll"><table class="call-logs-table"><thead><tr><th>时间</th><th>账号</th><th>类型 / 资源</th><th>会话</th><th>结果</th><th>耗时</th><th>摘要</th></tr></thead><tbody id="call-logs-body"></tbody></table></div>
+              <div class="call-logs-empty" id="call-logs-empty" hidden>没有符合条件的调用记录。</div>
+              <div class="call-logs-pagination" id="call-logs-pagination"></div>
+            </section>
+            <p class="call-logs-privacy-note">日志仅保留调用类型、状态、耗时和统计摘要，不记录用户问题、模型回答、接口参数或鉴权信息。</p>
+          </section>
+          <section class="card module-placeholder" id="module-placeholder" hidden><span class="placeholder-icon"><svg><use href="#i-grid"/></svg></span><h2>此模块尚未接入</h2><p>当前阶段已将知识库和 HTTP 工具接入管理工作台。该模块可以在后续阶段按同一权限与资源模型扩展。</p><div class="button-row"><button class="btn" type="button" data-open-view="knowledge">打开知识库</button><button class="btn" type="button" data-open-view="tools">打开工具管理</button></div></section>
+          <section class="permission-layout" id="permission-layout" hidden>
+            <section class="permission-panel" id="permission-users-panel" hidden>
+              <div class="permission-user-toolbar"><label class="permission-user-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg><input id="permission-user-search" type="search" maxlength="100" placeholder="搜索账号或角色" aria-label="搜索账号或角色" /></label><span id="permission-user-count"></span></div>
+              <div class="permission-user-list-heading" aria-hidden="true"><span>用户账号</span><span>已分配角色</span><span>操作</span></div>
+              <div class="permission-user-list" id="permission-user-list"></div>
+              <div class="permission-pagination" id="permission-user-pagination"></div>
+            </section>
+            <section class="permission-panel" id="permission-roles-panel" hidden>
+              <div class="permission-role-toolbar"><label class="permission-user-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg><input id="permission-role-search" type="search" maxlength="100" placeholder="搜索角色名称或说明" aria-label="搜索角色" /></label><span id="permission-role-count"></span><button class="btn btn-primary" id="permission-role-create" type="button">＋ 新建角色</button></div>
+              <div class="permission-role-workspace">
+                <div class="permission-role-list-column"><div class="permission-role-list" id="permission-role-list" aria-label="业务角色"></div><div class="permission-pagination" id="permission-role-pagination"></div></div>
+                <div class="permission-role-detail-column">
+                  <section class="permission-role-summary" id="permission-role-summary" hidden>
+                    <div class="permission-role-summary-copy"><h2 id="permission-role-detail-name"></h2><p id="permission-role-detail-description"></p><span id="permission-role-user-count"></span></div>
+                    <button class="permission-delete-role" id="permission-role-delete" type="button">删除角色</button>
+                  </section>
+                  <form class="permission-role-editor" id="permission-role-editor" hidden>
+                    <input type="hidden" name="id" />
+                    <div class="permission-role-form-fields"><label>角色名称<input name="name" maxlength="80" required /></label><label>角色说明<input name="description" maxlength="500" /></label></div>
+                    <div class="permission-role-editor-footer"><span>保存后立即更新角色信息。</span><div><button class="btn permission-role-edit-cancel" id="permission-role-edit-cancel" type="button">取消</button><button class="btn btn-primary" type="submit">保存角色</button></div></div>
+                  </form>
+                  <div class="permission-role-empty" id="permission-role-empty">选择一个角色查看详细信息，或新建角色。</div>
+                  <section class="permission-role-insights" id="permission-role-insights" hidden>
+                    <div class="permission-insight-block"><div class="permission-section-heading"><h3>角色权限</h3><span id="permission-role-permission-count"></span></div><div class="permission-role-metrics" id="permission-role-permissions" aria-label="角色权限摘要"></div><button class="permission-inline-link" id="permission-open-role-grants" type="button">查看 / 编辑完整授权</button></div>
+                    <div class="permission-insight-block"><div class="permission-section-heading"><h3>已分配用户</h3><span id="permission-role-member-count"></span></div><details class="permission-member-details"><summary>查看用户列表</summary><div class="permission-member-details-body"><label class="permission-member-search"><input id="permission-role-member-search" type="search" maxlength="100" placeholder="搜索此角色下的用户" aria-label="搜索该角色下的用户" /></label><div class="permission-role-associations" id="permission-role-members"></div><div class="permission-pagination" id="permission-role-member-pagination"></div></div></details></div>
+                  </section>
+                </div>
+              </div>
+            </section>
+            <section class="permission-panel" id="permission-grants-panel" hidden>
+              <div class="permission-grant-workspace">
+                <section class="permission-grant-role-column" aria-label="角色列表">
+                  <div class="permission-grant-toolbar"><label class="permission-user-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg><input id="permission-grant-role-search" type="search" maxlength="100" placeholder="搜索角色" aria-label="搜索授权角色" /></label><span id="permission-grant-role-count"></span></div>
+                  <div class="permission-grant-role-list" id="permission-grant-role-list"></div>
+                  <div class="permission-pagination" id="permission-grant-role-pagination"></div>
+                </section>
+                <section class="permission-grant-editor" id="permission-grant-editor" aria-label="资源授权配置">
+                  <div class="permission-grant-role-summary" id="permission-grant-role-summary">选择角色以查看和配置资源授权。</div>
+                  <div class="permission-grant-grid" id="permission-grant-grid">
+                    <section>
+                      <div class="permission-section-heading"><h3>知识库目录</h3><span>可检索并读取这些目录中的资料</span></div>
+                      <div class="permission-grant-resource-toolbar"><label class="permission-grant-resource-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg><input id="permission-folder-grant-search" type="search" maxlength="100" placeholder="搜索知识库目录" aria-label="搜索可授权知识库目录" /></label><span id="permission-folder-grant-count"></span></div>
+                      <div id="permission-folder-grants" class="permission-resource-list"></div>
+                    </section>
+                    <section>
+                      <div class="permission-section-heading"><h3>HTTP 工具</h3><span>仅授权且启用的工具会交给智能体</span></div>
+                      <div class="permission-grant-resource-toolbar"><label class="permission-grant-resource-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg><input id="permission-tool-grant-search" type="search" maxlength="100" placeholder="搜索 HTTP 工具" aria-label="搜索可授权 HTTP 工具" /></label><span id="permission-tool-grant-count"></span></div>
+                      <div id="permission-tool-grants" class="permission-resource-list"></div>
+                    </section>
+                  </div>
+                  <div class="permission-grant-footer"><span id="permission-grant-save-status" role="status"></span><div><button class="btn permission-grant-reset" id="permission-grant-reset" type="button" hidden>放弃更改</button><button class="btn btn-primary" id="permission-grant-save" type="button" disabled>保存资源授权</button></div></div>
+                </section>
+              </div>
+            </section>
+            <section class="permission-panel" id="permission-matrix-panel" hidden>
+              <div class="permission-matrix-toolbar"><label class="permission-user-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg><input id="permission-matrix-search" type="search" maxlength="100" placeholder="搜索角色、成员或资源" aria-label="搜索权限矩阵" /></label><span id="permission-matrix-count"></span></div>
+              <div class="permission-matrix" id="permission-matrix"></div>
+              <div class="permission-pagination" id="permission-matrix-pagination"></div>
+            </section>
+            <dialog class="permission-dialog" id="permission-role-dialog" aria-labelledby="permission-role-dialog-title">
+              <form id="permission-role-create-form"><div class="permission-panel-heading"><div><h2 id="permission-role-dialog-title">新建角色</h2><p>先创建角色，再为角色授权知识库目录与 HTTP 工具。</p></div><button type="button" id="permission-role-dialog-close" aria-label="关闭">×</button></div><label>角色名称<input name="name" maxlength="80" required placeholder="例如：运营人员" /></label><label>角色说明<input name="description" maxlength="500" placeholder="描述该角色的资源访问范围" /></label><div class="permission-dialog-actions"><button class="btn" type="button" id="permission-role-dialog-cancel">取消</button><button class="btn btn-primary" type="submit">创建角色</button></div></form>
+            </dialog>
+            <dialog class="permission-dialog permission-assignment-dialog" id="permission-assignment-dialog" aria-labelledby="permission-assignment-title">
+              <form id="permission-assignment-form"><div class="permission-panel-heading"><div><h2 id="permission-assignment-title">分配用户角色</h2><p id="permission-assignment-description"></p></div><button type="button" id="permission-assignment-close" aria-label="关闭">×</button></div><label class="permission-user-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg><input id="permission-assignment-search" type="search" maxlength="100" placeholder="搜索角色名称或说明" aria-label="搜索可分配角色" /></label><div class="permission-assignment-count" id="permission-assignment-count"></div><div class="permission-assignment-list" id="permission-assignment-list"></div><div class="permission-dialog-actions"><button class="btn" type="button" id="permission-assignment-cancel">取消</button><button class="btn btn-primary" id="permission-assignment-save" type="submit">保存角色分配</button></div></form>
+            </dialog>
+          </section>
+        </section>
+        <section class="knowledge-layout" id="knowledge-layout" aria-label="知识库管理" hidden>
+          <div class="knowledge-header">
+            <div><h1>知识库</h1><p>仅在此页面明确导入的文件会保存为长期资料，聊天附件不会自动加入。</p></div>
+            <div class="knowledge-header-actions"><button class="knowledge-back" id="knowledge-back" type="button">返回总览</button><button class="knowledge-refresh" id="knowledge-refresh" type="button" aria-label="刷新知识库列表"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9a7 7 0 0 1 11.8-2L20 12M4 12l2.6 5a7 7 0 0 0 11.8-2"/></svg><span>刷新</span></button></div>
+          </div>
+          <div class="knowledge-status-card" id="knowledge-status" role="status"></div>
+          <div class="knowledge-browser-toolbar">
+            <nav class="knowledge-breadcrumb" aria-label="知识库目录路径" aria-live="polite">
+              <button class="knowledge-breadcrumb-home" id="knowledge-breadcrumb-home" type="button" hidden>知识库目录</button>
+              <span class="knowledge-breadcrumb-separator" id="knowledge-breadcrumb-separator" aria-hidden="true" hidden>/</span>
+              <span id="knowledge-breadcrumb-label">知识库目录</span>
+              <button class="knowledge-back-to-folders" id="knowledge-back-to-folders" type="button" aria-label="返回上一级目录" title="返回上一级目录" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7"/></svg></button>
+            </nav>
+            <div class="knowledge-browser-actions">
+              <label class="knowledge-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg><input id="knowledge-search" type="search" maxlength="200" placeholder="搜索目录名称" aria-label="搜索目录名称" /></label>
+              <button class="knowledge-folder-create" id="knowledge-folder-create" type="button">＋ 新建目录</button>
+            </div>
+          </div>
+          <div class="knowledge-list-heading" id="knowledge-folder-heading"><div><strong>知识库目录</strong><span id="knowledge-folder-count">0 个目录</span></div><span class="knowledge-local-hint">目录权限可用于后续资源授权</span></div>
+          <div class="knowledge-folders" id="knowledge-folders"></div>
+          <div class="knowledge-pagination" id="knowledge-folder-pagination" aria-label="知识库目录分页">
+            <label class="knowledge-page-size">每页<select id="knowledge-folder-page-size" aria-label="每页显示目录数量"><option value="10">10</option><option value="20" selected>20</option><option value="50">50</option><option value="100">100</option></select></label>
+            <button id="knowledge-folder-page-prev" type="button" aria-label="上一页目录" disabled>上一页</button>
+            <span id="knowledge-folder-page-indicator" aria-live="polite">第 1 / 1 页</span>
+            <button id="knowledge-folder-page-next" type="button" aria-label="下一页目录" disabled>下一页</button>
+          </div>
+          <section id="knowledge-content-view" hidden aria-labelledby="knowledge-current-folder-name">
+            <div class="knowledge-current-folder">
+              <div><h2 id="knowledge-current-folder-name"></h2><span id="knowledge-list-count">0 个文件</span></div>
+              <button class="knowledge-select" id="knowledge-select" type="button">上传文件</button>
+            </div>
+            <div class="knowledge-import-card">
+              <div class="knowledge-import-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 15V3m-4 4 4-4 4 4"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></div>
+              <div class="knowledge-import-copy"><strong>选择要保存到此目录的资料</strong><span>支持 PDF、DOCX、TXT、Markdown、Excel（XLS、XLSX、XLSM）、图片和视频；最多 5 个文件，单个文件最大 100 MB。图片及 PDF/Word 内嵌图片、视频画面会发送给 DeepSeek 视觉模型生成可检索描述；视频需安装 FFmpeg，当前不转写音轨。</span></div>
+              <input id="knowledge-file-input" type="file" accept=".pdf,.docx,.txt,.md,.xls,.xlsx,.xlsm,.jpg,.jpeg,.png,.webp,.mp4,.mov,.mkv,.webm,.avi" multiple hidden />
+            </div>
+            <div class="knowledge-selection" id="knowledge-selection" hidden></div>
+            <div class="knowledge-actions" id="knowledge-actions" hidden><span>确认后才会写入长期知识库。</span><button id="knowledge-import" type="button">导入并建立索引</button></div>
+            <div class="knowledge-list-heading"><div><strong>目录内资料</strong><span id="knowledge-document-count">0 个文件</span></div><span class="knowledge-local-hint">文件与向量索引保存在本机</span></div>
+            <div class="knowledge-list-toolbar">
+              <span class="knowledge-search-context">在“<strong id="knowledge-search-folder-name"></strong>”中搜索文件名</span>
+              <div class="knowledge-pagination" id="knowledge-document-pagination" aria-label="知识库文档分页">
+                <label class="knowledge-page-size">每页<select id="knowledge-page-size" aria-label="每页显示文件数量"><option value="10">10</option><option value="20" selected>20</option><option value="50">50</option><option value="100">100</option></select></label>
+                <button id="knowledge-page-prev" type="button" aria-label="上一页文件" disabled>上一页</button>
+                <span id="knowledge-page-indicator" aria-live="polite">第 1 / 1 页</span>
+                <button id="knowledge-page-next" type="button" aria-label="下一页文件" disabled>下一页</button>
+              </div>
+            </div>
+            <div class="knowledge-documents" id="knowledge-documents"></div>
+          </section>
+          <dialog class="knowledge-folder-dialog" id="knowledge-folder-dialog" aria-labelledby="knowledge-folder-dialog-title">
+            <form id="knowledge-folder-form">
+              <div class="knowledge-folder-dialog-heading"><div><h2 id="knowledge-folder-dialog-title">新建知识库目录</h2><p>目录名称清晰易辨，之后可用于分配知识库访问权限。</p></div><button type="button" id="knowledge-folder-dialog-close" aria-label="关闭">×</button></div>
+              <label for="knowledge-folder-name">目录名称</label><input id="knowledge-folder-name" name="name" maxlength="80" required autocomplete="off" placeholder="例如：产品资料" />
+              <div class="knowledge-folder-dialog-actions"><button type="button" class="knowledge-dialog-secondary" id="knowledge-folder-dialog-cancel">取消</button><button type="submit" class="knowledge-dialog-primary" id="knowledge-folder-dialog-save">创建目录</button></div>
+            </form>
+          </dialog>
+          <dialog class="knowledge-folder-dialog knowledge-folder-delete-dialog" id="knowledge-folder-delete-dialog" aria-labelledby="knowledge-folder-delete-title">
+            <form method="dialog"><div class="knowledge-folder-dialog-heading"><div><h2 id="knowledge-folder-delete-title">删除空目录</h2><p id="knowledge-folder-delete-message">确定删除此目录吗？</p></div></div><div class="knowledge-folder-dialog-actions"><button class="knowledge-dialog-secondary" value="cancel">取消</button><button class="knowledge-dialog-danger" id="knowledge-folder-delete-confirm" value="confirm">删除目录</button></div></form>
+          </dialog>
+        </section>
+        <section class="tools-layout" id="tools-layout" aria-label="HTTP 工具管理" hidden>
+          <div class="tools-header">
+            <div><h1>工具管理</h1><p>配置后，智能体会在问题匹配时调用启用的接口。鉴权信息仅保存在本机服务端。</p></div>
+            <button class="tools-back" id="tools-back" type="button">返回总览</button>
+          </div>
+
+          <div class="tools-list-heading"><div><strong>已配置接口</strong><span id="tools-count">0 个工具</span></div><button class="tool-new-button" id="tool-new-button" type="button">＋ 新建接口</button></div>
+          <div class="tools-list" id="tools-list"></div>
+          <div class="tool-editor-overlay" id="tool-editor-overlay" hidden>
+            <div class="tool-editor-dialog" role="dialog" aria-modal="true" aria-labelledby="tool-editor-title">
+          <form class="tool-editor" id="tool-editor" hidden>
+            <div class="tool-editor-heading"><div><strong id="tool-editor-title">新增 HTTP 接口</strong><span>接口固定由你配置，模型只负责判断何时调用和提取参数。</span></div><button class="tool-reset" id="tool-reset" type="button">取消</button></div>
+            <div class="tool-form-grid">
+              <label>工具名称（英文标识）<input name="name" required maxlength="64" pattern="[A-Za-z][A-Za-z0-9_]{1,63}" placeholder="query_logistics" /></label>
+              <label>请求方式<select name="method"><option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option></select></label>
+              <label class="tool-description-field">用途说明<textarea name="description" rows="2" required maxlength="1000" placeholder="查询用户提供的订单号对应的物流状态。需要用户提供订单号后再调用。"></textarea></label>
+              <label class="tool-url-field">接口 URL<input name="url" type="url" required maxlength="2000" placeholder="https://api.example.com/orders/{order_no}/tracking" /></label>
+            </div>
+            <div class="tool-section-heading"><div><strong>接口参数</strong><span>模型会根据用户问题填写这些参数。</span></div><button class="tool-add-row" id="tool-add-parameter" type="button">添加参数</button></div>
+            <div class="tool-parameter-list" id="tool-parameter-list"></div>
+            <div class="tool-section-heading"><div><strong>固定请求头 / 鉴权</strong><span>例如 Authorization、X-API-Key。已保存的值不会返回到网页。</span></div><button class="tool-add-row" id="tool-add-header" type="button">添加请求头</button></div>
+            <div class="tool-header-list" id="tool-header-list"></div>
+            <label class="tool-enabled"><input name="enabled" type="checkbox" checked /><span>保存后启用此工具</span></label>
+            <div class="tool-form-actions"><button class="tool-save" type="submit">保存接口</button><span id="tool-form-status" role="status"></span></div>
+          </form>
+            </div>
+          </div>
+          <div class="tool-test-card" id="tool-test-card" hidden>
+            <div class="tool-section-heading"><div><strong>测试接口</strong><span>测试会向已配置地址发送真实 HTTP 请求。</span></div></div>
+            <div class="tool-test-parameters" id="tool-test-parameters"></div>
+            <div class="tool-form-actions"><button class="tool-test-button" id="tool-test-button" type="button">发送测试请求</button><span id="tool-test-status" role="status"></span></div>
+            <pre class="tool-test-result" id="tool-test-result" hidden></pre>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <dialog class="permission-dialog workflow-delete-dialog" id="workflow-delete-dialog" aria-labelledby="workflow-delete-title"><form method="dialog"><div class="permission-panel-heading"><div><h2 id="workflow-delete-title">删除工作流</h2><p id="workflow-delete-message">删除后无法恢复。</p></div></div><div class="permission-dialog-actions"><button class="btn" value="cancel">取消</button><button class="btn workflow-delete-confirm" value="confirm">删除工作流</button></div></form></dialog>
+  <script src="/static/admin/admin.js?v=10" defer></script>
+  <script src="/static/knowledge.js?v=excel-import-v2" defer></script>
+  <script src="/static/tools.js?v=admin-workbench-v1" defer></script>
+  <script src="/static/admin/permissions.js?v=7" defer></script>
+  <script src="/static/admin/workflows.js?v=5" defer></script>
+  <script src="/static/admin/models.js?v=2" defer></script>
+  <script src="/static/admin/retrieval.js?v=1" defer></script>
+  <script src="/static/admin/monitoring.js?v=1" defer></script>
+  <script src="/static/admin/call-logs.js?v=1" defer></script>
+</body>
+</html>

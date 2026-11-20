@@ -1,0 +1,76 @@
+- generic [ref=f1e1]:
+  - generic [ref=f1e2]:
+    - complementary "管理系统主导航" [ref=f1e3]:
+      - generic [ref=f1e4]:
+        - generic [aria-hidden] [ref=f1e5]: S
+        - generic [ref=f1e6]:
+          - generic [ref=f1e7]: SILENCE
+          - generic [ref=f1e8]: AGENT WORKSPACE
+        - button "收起侧边栏" [ref=f1e9] [cursor=pointer]
+      - navigation "管理菜单" [ref=f1e12]:
+        - generic [ref=f1e13]:
+          - button "工作台" [expanded] [ref=f1e14] [cursor=pointer]
+          - button "总览" [ref=f1e18] [cursor=pointer]
+        - generic [ref=f1e22]:
+          - button "智能体管理" [expanded] [ref=f1e23] [cursor=pointer]
+          - button "智能体列表" [ref=f1e27] [cursor=pointer]
+          - button "模型与提示词" [ref=f1e31] [cursor=pointer]
+          - button "检索策略" [ref=f1e35] [cursor=pointer]
+          - button "对话与工具调用策略" [ref=f1e39] [cursor=pointer]
+          - button "版本与发布" [ref=f1e43] [cursor=pointer]
+        - generic [ref=f1e47]:
+          - button "资源中心" [expanded] [ref=f1e48] [cursor=pointer]
+          - button "全部资源" [ref=f1e52] [cursor=pointer]
+          - button "知识库管理 14" [ref=f1e294] [cursor=pointer]:
+            - generic [ref=f1e59]: 知识库管理
+            - generic [ref=f1e60]: "14"
+          - button "工具管理 1" [ref=f1e295] [cursor=pointer]:
+            - generic [ref=f1e64]: 工具管理
+            - generic [ref=f1e65]: "1"
+          - button "工作流管理" [active] [ref=f1e66] [cursor=pointer]
+          - button "MCP / 外部服务" [ref=f1e70] [cursor=pointer]
+          - button "数据源管理" [ref=f1e74] [cursor=pointer]
+        - generic [ref=f1e78]:
+          - button "安全与权限" [expanded] [ref=f1e79] [cursor=pointer]
+          - button "用户管理" [ref=f1e83] [cursor=pointer]
+          - button "角色管理" [ref=f1e87] [cursor=pointer]
+          - button "资源授权" [ref=f1e91] [cursor=pointer]
+          - button "权限矩阵" [ref=f1e95] [cursor=pointer]
+        - generic [ref=f1e99]:
+          - button "运维中心" [expanded] [ref=f1e100] [cursor=pointer]
+          - button "运行监控" [ref=f1e104] [cursor=pointer]
+          - button "会话与调用日志" [ref=f1e108] [cursor=pointer]
+          - button "操作审计" [ref=f1e112] [cursor=pointer]
+      - generic "当前工作空间：默认工作空间" [ref=f1e117]:
+        - generic [ref=f1e118]: S
+        - generic [ref=f1e119]:
+          - strong [ref=f1e120]: 默认工作空间
+          - generic [ref=f1e121]: 个人部署 · 管理员
+    - main [ref=f1e124]:
+      - generic [ref=f1e125]:
+        - generic [ref=f1e127]:
+          - generic [ref=f1e128]: 管理工作台
+          - strong [ref=f1e131]: 工作流管理
+        - generic [ref=f1e132]:
+          - generic [ref=f1e133]:
+            - searchbox "搜索管理内容" [ref=f1e136]
+            - generic [ref=f1e137]: ⌘ K
+          - link "智能体对话" [ref=f1e138] [cursor=pointer]:
+            - /url: /
+          - button "通知" [ref=f1e140] [cursor=pointer]
+          - button "退出登录" [ref=f1e144] [cursor=pointer]
+          - generic [ref=f1e147]:
+            - generic [aria-hidden] [ref=f1e148]: A
+            - generic [ref=f1e149]:
+              - strong [ref=f1e150]: "16602024093"
+              - generic [ref=f1e151]: 超级管理员
+      - generic [ref=f1e298]:
+        - generic [ref=f1e300]:
+          - heading "工作流管理" [level=1] [ref=f1e301]
+          - paragraph [ref=f1e302]: 按顺序编排智能体、知识库和 HTTP 工具节点。
+        - generic [ref=f1e304]:
+          - generic [ref=f1e305]:
+            - searchbox "搜索工作流" [ref=f1e309]
+            - button "＋ 新建工作流" [ref=f1e310] [cursor=pointer]
+          - generic "工作流列表"
+  - status

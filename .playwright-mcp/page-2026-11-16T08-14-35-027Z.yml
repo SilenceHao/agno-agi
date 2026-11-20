@@ -1,0 +1,133 @@
+- generic [active] [ref=f2e1]:
+  - generic [ref=f2e2]:
+    - complementary "管理系统主导航" [ref=f2e3]:
+      - generic [ref=f2e4]:
+        - generic [aria-hidden] [ref=f2e5]: S
+        - generic [ref=f2e6]:
+          - generic [ref=f2e7]: SILENCE
+          - generic [ref=f2e8]: AGENT WORKSPACE
+        - button "收起侧边栏" [ref=f2e9] [cursor=pointer]
+      - navigation "管理菜单" [ref=f2e12]:
+        - generic [ref=f2e13]:
+          - button "工作台" [expanded] [ref=f2e14] [cursor=pointer]
+          - button "总览" [ref=f2e18] [cursor=pointer]
+        - generic [ref=f2e22]:
+          - button "智能体管理" [expanded] [ref=f2e23] [cursor=pointer]
+          - button "智能体列表" [ref=f2e27] [cursor=pointer]
+          - button "模型与提示词" [ref=f2e31] [cursor=pointer]
+          - button "检索策略" [ref=f2e35] [cursor=pointer]
+          - button "对话与工具调用策略" [ref=f2e39] [cursor=pointer]
+          - button "版本与发布" [ref=f2e43] [cursor=pointer]
+        - generic [ref=f2e47]:
+          - button "资源中心" [expanded] [ref=f2e48] [cursor=pointer]
+          - button "全部资源" [ref=f2e52] [cursor=pointer]
+          - button "知识库管理 14" [ref=f2e294] [cursor=pointer]:
+            - generic [ref=f2e59]: 知识库管理
+            - generic [ref=f2e60]: "14"
+          - button "工具管理 1" [ref=f2e295] [cursor=pointer]:
+            - generic [ref=f2e64]: 工具管理
+            - generic [ref=f2e65]: "1"
+          - button "工作流管理" [ref=f2e66] [cursor=pointer]
+          - button "MCP / 外部服务" [ref=f2e70] [cursor=pointer]
+          - button "数据源管理" [ref=f2e74] [cursor=pointer]
+        - generic [ref=f2e78]:
+          - button "安全与权限" [expanded] [ref=f2e79] [cursor=pointer]
+          - button "用户管理" [ref=f2e83] [cursor=pointer]
+          - button "角色管理" [ref=f2e87] [cursor=pointer]
+          - button "资源授权" [ref=f2e91] [cursor=pointer]
+          - button "权限矩阵" [ref=f2e95] [cursor=pointer]
+        - generic [ref=f2e99]:
+          - button "运维中心" [expanded] [ref=f2e100] [cursor=pointer]
+          - button "运行监控" [ref=f2e104] [cursor=pointer]
+          - button "会话与调用日志" [ref=f2e108] [cursor=pointer]
+          - button "操作审计" [ref=f2e112] [cursor=pointer]
+      - generic "当前工作空间：默认工作空间" [ref=f2e117]:
+        - generic [ref=f2e118]: S
+        - generic [ref=f2e119]:
+          - strong [ref=f2e120]: 默认工作空间
+          - generic [ref=f2e121]: 个人部署 · 管理员
+    - main [ref=f2e124]:
+      - generic [ref=f2e125]:
+        - generic [ref=f2e127]:
+          - generic [ref=f2e128]: 管理工作台
+          - strong [ref=f2e131]: 工作流编辑
+        - generic [ref=f2e132]:
+          - generic [ref=f2e133]:
+            - searchbox "搜索管理内容" [ref=f2e136]
+            - generic [ref=f2e137]: ⌘ K
+          - link "智能体对话" [ref=f2e138] [cursor=pointer]:
+            - /url: /
+          - button "通知" [ref=f2e140] [cursor=pointer]
+          - button "退出登录" [ref=f2e144] [cursor=pointer]
+          - generic [ref=f2e147]:
+            - generic [aria-hidden] [ref=f2e148]: A
+            - generic [ref=f2e149]:
+              - strong [ref=f2e150]: "16602024093"
+              - generic [ref=f2e151]: 超级管理员
+      - generic [ref=f2e321]:
+        - generic [ref=f2e322]:
+          - button "返回工作流列表" [ref=f2e323] [cursor=pointer]
+          - generic [ref=f2e327]: 草稿
+        - generic [ref=f2e329]:
+          - text: 工作流管理 / 编辑
+          - heading "演示工作流 - 会议纪要整理" [level=1] [ref=f2e330]
+          - paragraph [ref=f2e331]:
+            - text: 按顺序执行节点；可用
+            - code [ref=f2e332]: "{{input}}"
+            - text: 表示用户输入，
+            - code [ref=f2e333]: "{{previous}}"
+            - text: 表示上一步结果。
+        - generic [ref=f2e334]:
+          - generic [ref=f2e335]:
+            - generic [ref=f2e337]:
+              - heading "基本信息" [level=2] [ref=f2e338]
+              - paragraph [ref=f2e339]: 为工作流设置名称和用途说明。
+            - generic [ref=f2e340]:
+              - generic [ref=f2e341]:
+                - text: 工作流名称
+                - textbox "工作流名称" [ref=f2e342]:
+                  - /placeholder: 例如：订单查询与摘要
+                  - text: 演示工作流 - 会议纪要整理
+              - generic [ref=f2e343]:
+                - text: 说明
+                - textbox "说明" [ref=f2e344]:
+                  - /placeholder: 说明这个工作流解决什么问题
+                  - text: 用于验证独立工作流编辑页、节点配置和预览交互。
+          - generic [ref=f2e345]:
+            - generic [ref=f2e346]:
+              - generic [ref=f2e347]:
+                - heading "执行节点" [level=2] [ref=f2e348]
+                - text: 1 个节点
+              - generic [ref=f2e349]:
+                - button "＋ 智能体" [ref=f2e350] [cursor=pointer]
+                - button "＋ 知识库" [ref=f2e351] [cursor=pointer]
+                - button "＋ HTTP 工具" [ref=f2e352] [cursor=pointer]
+            - article [ref=f2e354]:
+              - generic [ref=f2e355]:
+                - generic [ref=f2e356]: "01"
+                - textbox [ref=f2e357]: 整理会议纪要
+                - combobox [ref=f2e358]:
+                  - option "智能体" [selected]
+                  - option "知识库"
+                  - option "HTTP 工具"
+                - button "删除" [ref=f2e359] [cursor=pointer]
+              - generic [ref=f2e360]:
+                - generic [ref=f2e361]:
+                  - text: 提示词
+                  - textbox "提示词" [ref=f2e362]: "请将以下会议记录整理为：一、会议主题；二、核心结论；三、待办事项（负责人、事项、期限，未提供的标记未提供）。 会议记录： {{input}}"
+                - generic [ref=f2e363]:
+                  - checkbox "启用深度思考" [ref=f2e364]
+                  - text: 启用深度思考
+          - generic [ref=f2e365]:
+            - generic [ref=f2e367]:
+              - heading "预览运行" [level=2] [ref=f2e368]
+              - paragraph [ref=f2e369]: 预览不会写入会话；会真实调用节点中的 HTTP 接口，写请求可能修改外部数据。
+            - generic [ref=f2e370]:
+              - textbox "输入一条测试内容" [ref=f2e371]
+              - button "运行预览" [ref=f2e372] [cursor=pointer]
+          - generic [ref=f2e373]:
+            - button "删除" [ref=f2e374] [cursor=pointer]
+            - generic [ref=f2e375]:
+              - button "保存草稿" [ref=f2e376] [cursor=pointer]
+              - button "发布" [ref=f2e377] [cursor=pointer]
+  - status

@@ -1,0 +1,17 @@
+- region "账号登录" [ref=e2]:
+  - generic [ref=e3]:
+    - generic [aria-hidden] [ref=e4]: S
+    - paragraph [ref=e5]: SILENCE AGENT
+    - heading "欢迎回来" [level=1] [ref=e6]
+    - paragraph [ref=e7]: 登录后继续使用你的智能体工作区。
+    - tablist "登录或注册" [ref=e8]:
+      - tab "登录" [selected] [ref=e9] [cursor=pointer]
+      - tab "注册账号" [ref=e10] [cursor=pointer]
+    - generic [ref=e11]:
+      - generic [ref=e12]: 账号
+      - textbox "账号" [active] [ref=e13]:
+        - /placeholder: 输入账号
+      - generic [ref=e14]: 密码
+      - textbox "密码" [ref=e15]:
+        - /placeholder: 输入密码
+      - button "登录" [ref=e16] [cursor=pointer]

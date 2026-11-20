@@ -1,0 +1,50 @@
+- generic [ref=f10e2]:
+  - complementary "应用导航" [ref=f10e3]:
+    - button "打开对话列表" [ref=f10e4] [cursor=pointer]
+    - link "本地智能体首页" [ref=f10e7] [cursor=pointer]:
+      - /url: /
+  - main [ref=f10e17]:
+    - generic [ref=f10e18]:
+      - generic [ref=f10e19]:
+        - generic [ref=f10e20]: 工作区
+        - generic [ref=f10e21]: /
+        - strong [ref=f10e22]: 新对话
+      - generic [ref=f10e23]:
+        - generic [ref=f10e24]: DeepSeek
+        - button "本地工作区" [ref=f10e26] [cursor=pointer]: AI
+    - region "智能体对话" [ref=f10e27]:
+      - status [ref=f10e28]
+      - generic [ref=f10e30]:
+        - generic [ref=f10e35]: 通用智能体
+        - heading "今天想处理什么？ 从一个问题开始。" [level=1] [ref=f10e36]: 今天想处理什么？从一个问题开始。
+        - paragraph [ref=f10e37]: 你可以提问、分析内容、写作、整理资料，也可以上传文件让我结合材料回答。
+        - generic [ref=f10e38]:
+          - button "梳理一个想法 拆清问题与下一步 ↗" [ref=f10e39] [cursor=pointer]:
+            - generic [ref=f10e43]:
+              - strong [ref=f10e44]: 梳理一个想法
+              - generic [ref=f10e45]: 拆清问题与下一步
+            - generic [ref=f10e46]: ↗
+          - button "总结与提炼 抓住重点，整理行动项 ↗" [ref=f10e47] [cursor=pointer]:
+            - generic [ref=f10e51]:
+              - strong [ref=f10e52]: 总结与提炼
+              - generic [ref=f10e53]: 抓住重点，整理行动项
+            - generic [ref=f10e54]: ↗
+          - button "起草一封邮件 调整结构与表达语气 ↗" [ref=f10e55] [cursor=pointer]:
+            - generic [ref=f10e59]:
+              - strong [ref=f10e60]: 起草一封邮件
+              - generic [ref=f10e61]: 调整结构与表达语气
+            - generic [ref=f10e62]: ↗
+          - button "制定一个计划 把目标变成可执行步骤 ↗" [ref=f10e63] [cursor=pointer]:
+            - generic [ref=f10e68]:
+              - strong [ref=f10e69]: 制定一个计划
+              - generic [ref=f10e70]: 把目标变成可执行步骤
+            - generic [ref=f10e71]: ↗
+      - generic [ref=f10e73]:
+        - generic [ref=f10e74]:
+          - textbox "给智能体发送消息" [ref=f10e75]:
+            - /placeholder: 给智能体发送消息…
+          - generic [ref=f10e76]:
+            - button "上传附件" [ref=f10e78] [cursor=pointer]:
+              - generic [ref=f10e81]: 添加附件
+            - button "发送消息" [ref=f10e82] [cursor=pointer]
+        - generic [ref=f10e85]: 模型回答可能有误，请核对重要信息。
