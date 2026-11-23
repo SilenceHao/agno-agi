@@ -56,6 +56,8 @@ let renderScheduled = false;
 let conversationId = null;
 let busy = false;
 let currentUser = null;
+const registrationAgentId = document.body.dataset.agentId;
+const registrationAgentName = document.body.dataset.agentName;
 let authMode = "login";
 let publishedAgents = [];
 let activeAgentId = localStorage.getItem("agno-active-agent-id") || "";
@@ -100,6 +102,7 @@ function showLoginRequired() {
 function setAuthMode(mode) {
   authMode = mode;
   const registering = mode === "register";
+  document.querySelector("#auth-login-brand").hidden = registering;
   document.querySelector("#auth-title").textContent = registering ? "创建账号" : "欢迎回来";
   document.querySelector("#auth-description").textContent = registering
     ? "注册后即可使用你的智能体工作区。"
@@ -108,6 +111,12 @@ function setAuthMode(mode) {
   document.querySelector("#auth-register-mode").classList.toggle("active", registering);
   document.querySelector("#auth-login-mode").setAttribute("aria-selected", String(!registering));
   document.querySelector("#auth-register-mode").setAttribute("aria-selected", String(registering));
+  if (registrationAgentId) {
+    document.querySelector("#auth-description").textContent = registrationAgentName;
+    authHint.textContent = "密码至少 8 位。";
+  } else if (registering) {
+    document.querySelector("#auth-description").textContent = "普通用户请通过业务专属链接注册。";
+  }
   authPassword.autocomplete = registering ? "new-password" : "current-password";
   authSubmit.textContent = registering ? "注册并登录" : "登录";
   authHint.hidden = !registering;
@@ -115,6 +124,9 @@ function setAuthMode(mode) {
 }
 
 async function showAuthenticatedApp(user, restoreConversation = false) {
+  if (registrationAgentId && window.location.pathname.endsWith("/register")) {
+    window.history.replaceState(null, "", `/agno/${encodeURIComponent(registrationAgentId)}/chat`);
+  }
   currentUser = user;
   startupScreen.hidden = true;
   appShell.hidden = false;
@@ -177,10 +189,12 @@ agentSelect.addEventListener("change", async () => {
 async function initializeAuthentication() {
   const response = await fetch("/api/auth/me", { cache: "no-store" });
   const payload = await response.json();
-  if (response.ok && payload.authenticated && payload.user) {
+  if (response.ok && payload.authenticated && payload.user &&
+      (!registrationAgentId || registrationAgentId === payload.user.agent_id)) {
     await showAuthenticatedApp(payload.user, true);
     return;
   }
+  setAuthMode(registrationAgentId && window.location.pathname.endsWith("/register") ? "register" : "login");
   startupScreen.hidden = true;
   appShell.hidden = true;
   authOverlay.hidden = false;
@@ -1056,7 +1070,7 @@ authForm.addEventListener("submit", async (event) => {
     const response = await fetch(`/api/auth/${authMode}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password, agent_id: registrationAgentId }),
       cache: "no-store",
     });
     const payload = await response.json();

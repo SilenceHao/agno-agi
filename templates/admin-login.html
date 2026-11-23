@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>工作台登录</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="stylesheet" href="/static/auth.css">
+  <script src="/static/admin/login.js" defer></script>
+</head>
+<body>
+  <main class="auth-overlay">
+    <div class="auth-card">
+      <h1>工作台登录</h1>
+      <p class="auth-description">使用超级管理员账号登录。</p>
+      <form id="admin-login-form" method="post" action="/api/auth/login">
+        <label for="username">账号</label>
+        <input id="username" name="username" autocomplete="username" maxlength="64" required autofocus>
+        <label for="password">密码</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" maxlength="128" required>
+        <p class="auth-error" id="login-error" role="alert" hidden></p>
+        <button class="auth-submit" type="submit">登录工作台</button>
+      </form>
+    </div>
+  </main>
+</body>
+</html>

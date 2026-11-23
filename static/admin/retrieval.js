@@ -8,7 +8,7 @@ async function retrievalSettingsRequest(options = {}) {
   });
   const payload = await response.json().catch(() => ({}));
   if (response.status === 401) {
-    window.location.replace("/");
+    window.location.replace("/admin/login");
     throw new Error("登录状态已失效。");
   }
   if (!response.ok) throw new Error(payload.detail || "检索策略请求失败。");

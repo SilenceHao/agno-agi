@@ -15,7 +15,7 @@ async function workflowRequest(url, options = {}) {
   const response = await fetch(url, { cache: "no-store", ...options });
   const payload = await response.json().catch(() => ({}));
   if (response.status === 401) {
-    window.location.replace("/");
+    window.location.replace("/admin/login");
     throw new Error("登录状态已失效。");
   }
   if (!response.ok) throw new Error(payload.detail || "工作流请求失败。");

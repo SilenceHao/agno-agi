@@ -24,6 +24,7 @@ import zipfile
 from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
+from html import escape
 from itertools import chain
 from pathlib import Path
 from typing import Annotated, Any
@@ -38,7 +39,7 @@ from agno.knowledge.reader.text_reader import TextReader
 from docx import Document
 from dotenv import load_dotenv
 from fastapi import BackgroundTasks, Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
-from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, Response, StreamingResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from PIL import Image as PillowImage
@@ -229,6 +230,14 @@ def database_connection() -> Iterator[sqlite3.Connection]:
         connection.close()
 
 
+def create_default_agent_role(connection: sqlite3.Connection, agent_id: str, timestamp: str) -> None:
+    connection.execute(
+        "INSERT INTO access_roles(id, agent_id, name, description, is_system, created_at, updated_at) "
+        "VALUES (?, ?, ?, ?, 1, ?, ?)",
+        (str(uuid.uuid4()), agent_id, DEFAULT_ACCESS_ROLE_NAME, DEFAULT_ACCESS_ROLE_DESCRIPTION, timestamp, timestamp),
+    )
+
+
 def initialize_database() -> None:
     """创建或修复本地数据库中的账号、智能体和业务资源结构。"""
     with database_connection() as connection:
@@ -281,8 +290,6 @@ def initialize_database() -> None:
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             );
-            CREATE UNIQUE INDEX IF NOT EXISTS idx_access_roles_name_unique
-                ON access_roles(lower(name));
             CREATE TABLE IF NOT EXISTS user_access_roles (
                 user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
                 role_id TEXT NOT NULL REFERENCES access_roles(id) ON DELETE CASCADE,
@@ -442,26 +449,20 @@ def initialize_database() -> None:
                 ON agent_call_logs(user_id, created_at DESC);
             """
         )
-        default_role_id = str(uuid.uuid5(uuid.NAMESPACE_URL, "agno:role:default-user"))
+        connection.execute("BEGIN IMMEDIATE")
+        for table in ("users", "access_roles"):
+            columns = {row["name"] for row in connection.execute(f"PRAGMA table_info({table})")}
+            if "agent_id" not in columns:
+                connection.execute(f"ALTER TABLE {table} ADD COLUMN agent_id TEXT REFERENCES agents(id) ON DELETE CASCADE")
+        connection.execute("DROP INDEX IF EXISTS idx_access_roles_name_unique")
+        connection.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_agent_role_names ON access_roles(agent_id, lower(name))")
+        connection.execute("CREATE INDEX IF NOT EXISTS idx_users_agent_created ON users(agent_id, created_at DESC)")
         timestamp = utc_timestamp()
-        connection.execute(
-            "INSERT INTO access_roles(id, name, description, is_system, created_at, updated_at) "
-            "VALUES (?, ?, ?, 1, ?, ?) "
-            "ON CONFLICT(id) DO UPDATE SET name=excluded.name, description=excluded.description, "
-            "is_system=1, updated_at=excluded.updated_at",
-            (
-                default_role_id,
-                DEFAULT_ACCESS_ROLE_NAME,
-                DEFAULT_ACCESS_ROLE_DESCRIPTION,
-                timestamp,
-                timestamp,
-            ),
-        )
-        connection.execute(
-            "INSERT OR IGNORE INTO user_access_roles(user_id, role_id, created_at) "
-            "SELECT id, ?, ? FROM users WHERE role = ?",
-            (default_role_id, timestamp, USER_ROLE),
-        )
+        for agent in connection.execute(
+            "SELECT id FROM agents WHERE NOT EXISTS "
+            "(SELECT 1 FROM access_roles WHERE agent_id = agents.id AND is_system = 1)"
+        ):
+            create_default_agent_role(connection, agent["id"], timestamp)
         connection.execute(
             "UPDATE users SET role = ? WHERE username_key = ?",
             (SUPER_ADMIN_ROLE, SUPER_ADMIN_ACCOUNT.casefold()),
@@ -889,6 +890,7 @@ def public_user(user: sqlite3.Row) -> dict[str, Any]:
         "id": user["id"],
         "username": user["username"],
         "is_super_admin": user["role"] == SUPER_ADMIN_ROLE,
+        "agent_id": user["agent_id"],
         "roles": [dict(role) for role in assigned_roles],
     }
 
@@ -903,6 +905,8 @@ def get_user_resource_scope(user_id: str) -> dict[str, set[str]]:
         grants = connection.execute(
             "SELECT DISTINCT g.resource_type, g.resource_id "
             "FROM user_access_roles ur JOIN role_resource_grants g ON g.role_id = ur.role_id "
+            "JOIN users u ON u.id = ur.user_id "
+            "JOIN access_roles r ON r.id = ur.role_id AND r.agent_id = u.agent_id "
             "WHERE ur.user_id = ?",
             (user_id,),
         ).fetchall()
@@ -932,15 +936,16 @@ def get_agent_resource_scope(agent_id: str) -> dict[str, set[str]]:
     }
 
 
-def get_default_access_role_id(connection: sqlite3.Connection) -> str:
+def get_default_access_role_id(connection: sqlite3.Connection, agent_id: str) -> str:
     """读取系统创建的普通用户默认角色 ID。
 
     @param connection 当前数据库连接
+    @param agent_id 角色所属智能体 UUID
     @return 默认业务角色 UUID
     """
     row = connection.execute(
-        "SELECT id FROM access_roles WHERE is_system = 1 AND name = ?",
-        (DEFAULT_ACCESS_ROLE_NAME,),
+        "SELECT id FROM access_roles WHERE is_system = 1 AND agent_id = ?",
+        (agent_id,),
     ).fetchone()
     if row is None:
         raise RuntimeError("Default access role was not initialized")
@@ -963,7 +968,7 @@ def get_current_user(request: Request) -> dict[str, Any]:
     token_hash = hashlib.sha256(raw_token.encode("ascii", errors="ignore")).hexdigest()
     with database_connection() as connection:
         row = connection.execute(
-            "SELECT users.id, users.username, users.role FROM sessions "
+            "SELECT users.id, users.username, users.role, users.agent_id FROM sessions "
             "JOIN users ON users.id = sessions.user_id "
             "WHERE sessions.token_hash = ? AND sessions.expires_at > ?",
             (token_hash, utc_timestamp()),
@@ -1327,8 +1332,15 @@ def normalize_agent_id(agent_id: str) -> str:
     """
     try:
         return str(uuid.UUID(agent_id))
-    except (TypeError, ValueError) as exc:
+    except (AttributeError, TypeError, ValueError) as exc:
         raise HTTPException(status_code=400, detail="智能体 ID 格式无效。") from exc
+
+
+def authorized_agent_id(user: dict[str, Any], agent_id: str) -> str:
+    normalized_id = normalize_agent_id(agent_id)
+    if user["role"] != SUPER_ADMIN_ROLE and user["agent_id"] != normalized_id:
+        raise HTTPException(status_code=403, detail="当前账号无权访问此业务。")
+    return normalized_id
 
 
 def get_agent_row(agent_id: str, require_published: bool = False) -> sqlite3.Row:
@@ -3534,22 +3546,69 @@ def home() -> FileResponse:
     return FileResponse(BASE_DIR / "static" / "index.html")
 
 
+@app.get("/agno/{agent_id}/register", include_in_schema=False)
+@app.get("/agno/{agent_id}/chat", include_in_schema=False)
+def business_agent_page(agent_id: str) -> HTMLResponse:
+    agent = get_agent_row(agent_id, require_published=True)
+    page = (BASE_DIR / "static" / "index.html").read_text(encoding="utf-8")
+    body = f'<body data-agent-id="{agent["id"]}" data-agent-name="{escape(agent["name"], quote=True)}">'
+    return HTMLResponse(page.replace("<body>", body, 1), headers={"Cache-Control": "no-store"})
+
+
+@app.get("/admin/login", include_in_schema=False, response_model=None)
+def admin_login_page(request: Request) -> FileResponse | RedirectResponse:
+    """显示工作台登录页，有效的超级管理员会话直接进入智能体列表。"""
+    try:
+        user = get_current_user(request)
+    except HTTPException as exc:
+        if exc.status_code != 401:
+            raise
+    else:
+        if user["role"] == SUPER_ADMIN_ROLE:
+            return RedirectResponse("/admin", status_code=303, headers={"Cache-Control": "no-store"})
+    return FileResponse(BASE_DIR / "templates" / "admin-login.html", headers={"Cache-Control": "no-store"})
+
+
 @app.get("/admin", include_in_schema=False, response_model=None)
 def admin_workbench(request: Request) -> FileResponse | RedirectResponse:
     """向超级管理员提供独立的智能体管理工作台。
 
     @param request 当前 HTTP 请求，用于解析现有登录会话
-    @return 管理端 HTML；未登录时跳转到聊天端登录页面
+    @return 管理端 HTML；未登录时跳转到工作台登录页面
+    @throws HTTPException 当前账号不是超级管理员时返回 403
+    """
+    return render_admin_workbench(request)
+
+
+@app.get("/admin/{agent_id}", include_in_schema=False, response_model=None)
+def admin_agent_workbench(request: Request, agent_id: str) -> FileResponse | RedirectResponse:
+    """向超级管理员返回指定智能体工作区，并校验路径中的智能体标识。
+
+    @param request 当前 HTTP 请求，用于解析现有登录会话
+    @param agent_id URL 路径中的智能体 UUID
+    @return 指定智能体的管理工作台；未登录时跳转到聊天端登录页面
+    @throws HTTPException 当前账号不是超级管理员，或智能体不存在时返回错误
+    """
+    return render_admin_workbench(request, agent_id)
+
+
+def render_admin_workbench(request: Request, agent_id: str | None = None) -> FileResponse | RedirectResponse:
+    """校验管理工作台访问身份并返回单页应用。
+
+    @param request 当前 HTTP 请求，用于解析现有登录会话
+    @return 管理端 HTML；未登录时跳转到工作台登录页面
     @throws HTTPException 当前账号不是超级管理员时返回 403
     """
     try:
         user = get_current_user(request)
     except HTTPException as exc:
         if exc.status_code == 401:
-            return RedirectResponse(url="/", status_code=303)
+            return RedirectResponse(url="/admin/login", status_code=303, headers={"Cache-Control": "no-store"})
         raise
     if user["role"] != SUPER_ADMIN_ROLE:
         raise HTTPException(status_code=403, detail="只有超级管理员可以访问管理工作台。")
+    if agent_id:
+        get_agent_row(normalize_agent_id(agent_id))
     return FileResponse(
         BASE_DIR / "templates" / "admin.html",
         headers={"Cache-Control": "no-store"},
@@ -3578,14 +3637,14 @@ def public_user_by_id(user_id: str) -> dict[str, Any] | None:
     """
     with database_connection() as connection:
         row = connection.execute(
-            "SELECT id, username, role FROM users WHERE id = ?", (user_id,)
+            "SELECT id, username, role, agent_id FROM users WHERE id = ?", (user_id,)
         ).fetchone()
     return public_user(row) if row else None
 
 
 @app.post("/api/auth/register", status_code=201)
 async def register_account(request: Request) -> JSONResponse:
-    """创建唯一账号并为指定超级管理员账号授予最高权限。
+    """注册指定已发布业务的账号，平台管理员通过本机入口注册。
 
     @param request 包含账号和密码的 JSON 请求
     @return 已登录的公开账号信息及 HttpOnly 会话 Cookie
@@ -3615,19 +3674,32 @@ async def register_account(request: Request) -> JSONResponse:
 
     user_id = str(uuid.uuid4())
     role = SUPER_ADMIN_ROLE if username_key == SUPER_ADMIN_ACCOUNT.casefold() else USER_ROLE
+    agent_id = None
+    if role == USER_ROLE:
+        if not payload.get("agent_id"):
+            raise HTTPException(status_code=400, detail="请通过业务专属注册链接创建账号。")
+        agent_id = normalize_agent_id(payload["agent_id"])
+        username_key = f"{agent_id}:{username_key}"
+    elif payload.get("agent_id") is not None:
+        raise HTTPException(status_code=400, detail="该账号为平台保留账号。")
     created_at = utc_timestamp()
     password_hash = hash_password(password)
     try:
         with database_connection() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            if agent_id and not connection.execute(
+                "SELECT 1 FROM agents WHERE id = ? AND status = 'published'", (agent_id,)
+            ).fetchone():
+                raise HTTPException(status_code=404, detail="此业务尚未开放注册。")
             connection.execute(
-                "INSERT INTO users(id, username, username_key, password_hash, role, created_at) "
-                "VALUES (?, ?, ?, ?, ?, ?)",
-                (user_id, username, username_key, password_hash, role, created_at),
+                "INSERT INTO users(id, username, username_key, password_hash, role, created_at, agent_id) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (user_id, username, username_key, password_hash, role, created_at, agent_id),
             )
             if role != SUPER_ADMIN_ROLE:
                 connection.execute(
                     "INSERT INTO user_access_roles(user_id, role_id, created_at) VALUES (?, ?, ?)",
-                    (user_id, get_default_access_role_id(connection), created_at),
+                    (user_id, get_default_access_role_id(connection, agent_id), created_at),
                 )
     except sqlite3.IntegrityError as exc:
         raise HTTPException(status_code=409, detail="该账号已注册，请直接登录。") from exc
@@ -3665,11 +3737,14 @@ async def login_account(request: Request) -> JSONResponse:
         raise HTTPException(status_code=401, detail="账号或密码错误。") from None
     if not MIN_PASSWORD_LENGTH <= len(password) <= MAX_PASSWORD_LENGTH:
         raise HTTPException(status_code=401, detail="账号或密码错误。")
+    if payload.get("agent_id") is not None:
+        agent_id = get_agent_row(payload["agent_id"], require_published=True)["id"]
+        username_key = f"{agent_id}:{username_key}"
     attempt_key = login_attempt_key(request, username_key)
     check_login_throttle(attempt_key)
     with database_connection() as connection:
         row = connection.execute(
-            "SELECT id, username, password_hash, role FROM users WHERE username_key = ?",
+            "SELECT id, username, password_hash, role, agent_id FROM users WHERE username_key = ?",
             (username_key,),
         ).fetchone()
     if row is None or not verify_password(password, row["password_hash"]):
@@ -3703,7 +3778,7 @@ def logout_account(request: Request) -> JSONResponse:
 
 
 @app.get("/api/health")
-def health() -> dict[str, str | bool]:
+def health() -> dict[str, str | bool | int]:
     """返回服务状态及已发布智能体的模型配置状态。
 
     @return 服务状态，不包含密钥内容
@@ -3721,13 +3796,14 @@ def health() -> dict[str, str | bool]:
 
 
 @app.get("/api/agents")
-def published_agents(_: dict[str, Any] = Depends(require_current_user)) -> list[dict[str, Any]]:
+def published_agents(user: dict[str, Any] = Depends(require_current_user)) -> list[dict[str, Any]]:
     """返回普通聊天端可选择的已发布智能体。"""
     with database_connection() as connection:
         rows = connection.execute(
             "SELECT id, name, slug, description, avatar, provider, model, vision_model, base_url, "
             "additional_prompt, status, created_at, updated_at, published_at, api_key_ciphertext "
-            "FROM agents WHERE status = 'published' ORDER BY lower(name), created_at"
+            "FROM agents WHERE status = 'published' AND (? OR id = ?) ORDER BY lower(name), created_at",
+            (user["role"] == SUPER_ADMIN_ROLE, user["agent_id"]),
         ).fetchall()
     return [public_agent(row) for row in rows if row["api_key_ciphertext"]]
 
@@ -3771,6 +3847,7 @@ def create_agent(
                  settings["provider"], settings["model"], settings["vision_model"], settings["base_url"],
                  encrypted_key, settings["additional_prompt"], timestamp, timestamp),
             )
+            create_default_agent_role(connection, agent_id, timestamp)
             connection.execute(
                 "INSERT INTO knowledge_folders(id, agent_id, name, is_default, created_at) VALUES (?, ?, ?, 1, ?)",
                 (str(uuid.uuid4()), agent_id, DEFAULT_KNOWLEDGE_FOLDER_NAME, timestamp),
@@ -4114,18 +4191,20 @@ def update_admin_retrieval_settings(
 
 
 @app.get("/api/admin/users")
-def admin_users(_: dict[str, Any] = Depends(require_super_admin)) -> list[dict[str, Any]]:
+def admin_users(agent_id: str, _: dict[str, Any] = Depends(require_super_admin)) -> list[dict[str, Any]]:
     """列出账号及其已分配的业务角色，不返回账号凭据。
 
     @return 按注册时间排列的账号及业务角色列表
     """
     with database_connection() as connection:
         users = connection.execute(
-            "SELECT id, username, role, created_at FROM users ORDER BY created_at DESC"
+            "SELECT id, username, role, created_at FROM users WHERE agent_id = ? ORDER BY created_at DESC",
+            (normalize_agent_id(agent_id),),
         ).fetchall()
         assignments = connection.execute(
             "SELECT ur.user_id, r.id, r.name FROM user_access_roles ur "
-            "JOIN access_roles r ON r.id = ur.role_id ORDER BY lower(r.name)"
+            "JOIN access_roles r ON r.id = ur.role_id WHERE r.agent_id = ? ORDER BY lower(r.name)",
+            (normalize_agent_id(agent_id),),
         ).fetchall()
     roles_by_user: dict[str, list[dict[str, str]]] = {}
     for assignment in assignments:
@@ -4146,6 +4225,7 @@ def admin_users(_: dict[str, Any] = Depends(require_super_admin)) -> list[dict[s
 
 @app.put("/api/admin/users/{user_id}/roles")
 def set_user_access_roles(
+    agent_id: str,
     user_id: str,
     payload: dict[str, Any],
     _: dict[str, Any] = Depends(require_super_admin),
@@ -4170,7 +4250,7 @@ def set_user_access_roles(
         raise HTTPException(status_code=400, detail="角色 ID 格式无效。") from exc
     with database_connection() as connection:
         user = connection.execute(
-            "SELECT id, role FROM users WHERE id = ?", (normalized_user_id,)
+            "SELECT id, role FROM users WHERE id = ? AND agent_id = ?", (normalized_user_id, normalize_agent_id(agent_id))
         ).fetchone()
         if user is None:
             raise HTTPException(status_code=404, detail="用户不存在。")
@@ -4179,8 +4259,8 @@ def set_user_access_roles(
         if normalized_role_ids:
             placeholders = ",".join("?" for _ in normalized_role_ids)
             existing_roles = connection.execute(
-                f"SELECT id FROM access_roles WHERE id IN ({placeholders})",
-                tuple(normalized_role_ids),
+                f"SELECT id FROM access_roles WHERE agent_id = ? AND id IN ({placeholders})",
+                (normalize_agent_id(agent_id), *normalized_role_ids),
             ).fetchall()
             if len(existing_roles) != len(normalized_role_ids):
                 raise HTTPException(status_code=404, detail="部分角色不存在，请刷新后重试。")
@@ -4198,7 +4278,7 @@ def set_user_access_roles(
 
 
 @app.get("/api/admin/roles")
-def admin_roles(_: dict[str, Any] = Depends(require_super_admin)) -> list[dict[str, Any]]:
+def admin_roles(agent_id: str, _: dict[str, Any] = Depends(require_super_admin)) -> list[dict[str, Any]]:
     """列出业务角色、角色人数和资源授权明细。
 
     @return 角色列表及对应知识库目录、HTTP 工具 ID
@@ -4208,11 +4288,13 @@ def admin_roles(_: dict[str, Any] = Depends(require_super_admin)) -> list[dict[s
             "SELECT r.id, r.name, r.description, r.is_system, r.created_at, r.updated_at, "
             "COUNT(DISTINCT ur.user_id) AS user_count "
             "FROM access_roles r LEFT JOIN user_access_roles ur ON ur.role_id = r.id "
-            "GROUP BY r.id ORDER BY r.is_system DESC, lower(r.name)"
+            "WHERE r.agent_id = ? GROUP BY r.id ORDER BY r.is_system DESC, lower(r.name)",
+            (normalize_agent_id(agent_id),),
         ).fetchall()
         grants = connection.execute(
             "SELECT role_id, resource_type, resource_id FROM role_resource_grants "
-            "ORDER BY resource_type, resource_id"
+            "WHERE role_id IN (SELECT id FROM access_roles WHERE agent_id = ?) ORDER BY resource_type, resource_id",
+            (normalize_agent_id(agent_id),),
         ).fetchall()
     grants_by_role: dict[str, dict[str, list[str]]] = {}
     for grant in grants:
@@ -4258,6 +4340,7 @@ def admin_permission_resources(
 
 @app.post("/api/admin/roles", status_code=201)
 def create_access_role(
+    agent_id: str,
     payload: dict[str, Any],
     _: dict[str, Any] = Depends(require_super_admin),
 ) -> dict[str, Any]:
@@ -4273,13 +4356,14 @@ def create_access_role(
         raise HTTPException(status_code=400, detail="角色名称必填，且不能超过 80 个字符。")
     if not isinstance(description, str) or len(description) > 500:
         raise HTTPException(status_code=400, detail="角色说明不能超过 500 个字符。")
+    agent_id = get_agent_row(agent_id)["id"]
     role_id = str(uuid.uuid4())
     timestamp = utc_timestamp()
     try:
         with database_connection() as connection:
             connection.execute(
-                "INSERT INTO access_roles(id, name, description, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
-                (role_id, name.strip(), description.strip(), timestamp, timestamp),
+                "INSERT INTO access_roles(id, agent_id, name, description, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+                (role_id, agent_id, name.strip(), description.strip(), timestamp, timestamp),
             )
     except sqlite3.IntegrityError as exc:
         raise HTTPException(status_code=409, detail="角色名称已存在。") from exc
@@ -4288,6 +4372,7 @@ def create_access_role(
 
 @app.put("/api/admin/roles/{role_id}")
 def update_access_role(
+    agent_id: str,
     role_id: str,
     payload: dict[str, Any],
     _: dict[str, Any] = Depends(require_super_admin),
@@ -4312,7 +4397,7 @@ def update_access_role(
     try:
         with database_connection() as connection:
             current = connection.execute(
-                "SELECT id, is_system FROM access_roles WHERE id = ?", (normalized_role_id,)
+                "SELECT id, is_system FROM access_roles WHERE id = ? AND agent_id = ?", (normalized_role_id, normalize_agent_id(agent_id))
             ).fetchone()
             if current is None:
                 raise HTTPException(status_code=404, detail="角色不存在。")
@@ -4329,6 +4414,7 @@ def update_access_role(
 
 @app.delete("/api/admin/roles/{role_id}")
 def delete_access_role(
+    agent_id: str,
     role_id: str,
     _: dict[str, Any] = Depends(require_super_admin),
 ) -> dict[str, bool]:
@@ -4344,7 +4430,7 @@ def delete_access_role(
         raise HTTPException(status_code=400, detail="角色 ID 格式无效。") from exc
     with database_connection() as connection:
         current = connection.execute(
-            "SELECT is_system FROM access_roles WHERE id = ?", (normalized_role_id,)
+            "SELECT is_system FROM access_roles WHERE id = ? AND agent_id = ?", (normalized_role_id, normalize_agent_id(agent_id))
         ).fetchone()
         if current is None:
             raise HTTPException(status_code=404, detail="角色不存在。")
@@ -4356,6 +4442,7 @@ def delete_access_role(
 
 @app.put("/api/admin/roles/{role_id}/grants")
 def set_access_role_grants(
+    agent_id: str,
     role_id: str,
     payload: dict[str, Any],
     _: dict[str, Any] = Depends(require_super_admin),
@@ -4382,7 +4469,7 @@ def set_access_role_grants(
         raise HTTPException(status_code=400, detail="资源 ID 格式无效。") from exc
     with database_connection() as connection:
         if connection.execute(
-            "SELECT 1 FROM access_roles WHERE id = ?", (normalized_role_id,)
+            "SELECT 1 FROM access_roles WHERE id = ? AND agent_id = ?", (normalized_role_id, normalize_agent_id(agent_id))
         ).fetchone() is None:
             raise HTTPException(status_code=404, detail="角色不存在。")
         for resource_type, resource_ids, table_name in (
@@ -4393,8 +4480,8 @@ def set_access_role_grants(
                 continue
             placeholders = ",".join("?" for _ in resource_ids)
             existing_count = connection.execute(
-                f"SELECT COUNT(*) FROM {table_name} WHERE id IN ({placeholders})",
-                tuple(resource_ids),
+                f"SELECT COUNT(*) FROM {table_name} WHERE agent_id = ? AND id IN ({placeholders})",
+                (normalize_agent_id(agent_id), *resource_ids),
             ).fetchone()[0]
             if existing_count != len(resource_ids):
                 raise HTTPException(status_code=404, detail=f"部分{resource_type}不存在，请刷新后重试。")
@@ -4442,7 +4529,7 @@ def published_workflows(
         rows = connection.execute(
             "SELECT id, agent_id, name, description, nodes_json, status, created_at, updated_at, published_at "
             "FROM workflows WHERE status = 'published' AND agent_id = ? ORDER BY lower(name)",
-            (normalize_agent_id(agent_id),),
+            (authorized_agent_id(user, agent_id),),
         ).fetchall()
     is_super_admin = user["role"] == SUPER_ADMIN_ROLE
     scope = None if is_super_admin else get_user_resource_scope(user["id"])
@@ -4657,7 +4744,7 @@ async def execute_workflow(
         ).fetchone()
     if workflow_row is None:
         raise HTTPException(status_code=404, detail="工作流不存在或尚未发布。")
-    workflow_agent_id = workflow_row["agent_id"]
+    workflow_agent_id = authorized_agent_id(user, workflow_row["agent_id"])
     persist_conversation = bool(payload.get("persist", True))
     conversation_id = payload.get("conversation_id") if persist_conversation else None
     if conversation_id:
@@ -5602,7 +5689,7 @@ def conversations(
     @param agent_id 当前智能体 UUID
     @return 当前智能体最近 50 条对话及其标题、预览和更新时间
     """
-    normalized_agent_id = normalize_agent_id(agent_id)
+    normalized_agent_id = authorized_agent_id(user, agent_id)
     with database_connection() as connection:
         rows = connection.execute(
             "SELECT c.id, c.title, c.updated_at, "
@@ -5638,7 +5725,7 @@ def conversation_detail(
     ensure_conversation_exists(
         conversation_id,
         user["id"],
-        normalize_agent_id(agent_id),
+        authorized_agent_id(user, agent_id),
         is_super_admin=user["role"] == SUPER_ADMIN_ROLE,
     )
     with database_connection() as connection:
@@ -5691,7 +5778,7 @@ def delete_conversation(
     @throws HTTPException 对话不存在时返回 404
     """
     is_super_admin = user["role"] == SUPER_ADMIN_ROLE
-    normalized_agent_id = normalize_agent_id(agent_id)
+    normalized_agent_id = authorized_agent_id(user, agent_id)
     ensure_conversation_exists(conversation_id, user["id"], normalized_agent_id, is_super_admin=is_super_admin)
     with database_connection() as connection:
         if is_super_admin:
@@ -5726,7 +5813,7 @@ async def chat(
     @throws HTTPException 消息无效、对话不存在、附件不支持或模型配置缺失时返回对应 HTTP 错误
     """
     incoming_files = files or []
-    normalized_agent_id = normalize_agent_id(agent_id)
+    normalized_agent_id = authorized_agent_id(user, agent_id)
     agent_row = get_agent_row(normalized_agent_id, require_published=True)
     if not message.strip() and not incoming_files:
         raise HTTPException(status_code=400, detail="请输入消息或添加附件后再发送。")

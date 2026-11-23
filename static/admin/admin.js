@@ -46,8 +46,10 @@ function showToast(message) {
 }
 
 function setRoute(route, title) {
-  if (route !== "agents") window.closeAgentEditorPage?.();
+  window.closeAgentEditorPage?.();
   window.currentAdminRoute = route;
+  document.body.classList.toggle("agent-picker-mode", route === "agent-picker");
+  window.updateAgentContext?.();
   if (route !== "monitoring") window.stopMonitoring?.();
   if (route !== "logs") window.stopCallLogs?.();
   document.body.classList.remove("workflow-editing");
@@ -91,12 +93,18 @@ function setRoute(route, title) {
     document.querySelector("#module-description").textContent = plannedModules.workflows[1];
     workflowLayout.hidden = false;
     window.loadWorkflowSettings?.();
-  } else if (route === "agents") {
+  } else if (route === "agent-picker") {
     moduleView.hidden = false;
     document.querySelector("#module-title").textContent = plannedModules.agents[0];
-    document.querySelector("#module-description").textContent = "新增、发布和维护独立运行的业务智能体。";
+    document.querySelector("#module-description").textContent = "选择一个智能体进入它的独立工作区。";
     document.querySelector("#agents-layout").hidden = false;
     window.loadAgents?.();
+  } else if (route === "agents") {
+    moduleView.hidden = false;
+    document.querySelector("#module-title").textContent = "智能体配置";
+    document.querySelector("#module-description").textContent = "当前配置只作用于已选中的智能体。";
+    document.querySelector("#agents-layout").hidden = false;
+    window.loadSelectedAgentSettings?.();
   } else if (route === "retrieval") {
     moduleView.hidden = false;
     document.querySelector("#module-title").textContent = plannedModules.retrieval[0];
@@ -172,12 +180,31 @@ function restoreNavigationGroups() {
 }
 
 window.showAdminOverview = () => setRoute("overview", "总览");
+window.showAdminToast = showToast;
+window.showAgentPicker = (updateHistory = true) => {
+  if (updateHistory && window.location.pathname !== "/admin") {
+    window.history.pushState({}, "", "/admin");
+  }
+  setRoute("agent-picker", "选择智能体");
+};
+window.showAgentWorkspace = (agentId, updateHistory = true) => {
+  const workspacePath = `/admin/${encodeURIComponent(agentId)}`;
+  if (updateHistory && window.location.pathname !== workspacePath) {
+    window.history.pushState({}, "", workspacePath);
+  }
+  setRoute("overview", "总览");
+};
+
+function agentIdFromPath() {
+  const match = window.location.pathname.match(/^\/admin\/([^/]+)\/?$/);
+  return match ? decodeURIComponent(match[1]) : "";
+}
 
 async function readJson(url) {
   const response = await fetch(url, { cache: "no-store" });
   const payload = await response.json().catch(() => ({}));
   if (response.status === 401) {
-    window.location.replace("/");
+    window.location.replace("/admin/login");
     throw new Error("登录状态已失效。");
   }
   if (!response.ok) throw new Error(payload.detail || "读取管理数据失败。");
@@ -271,17 +298,37 @@ async function refreshOverview() {
 }
 window.refreshAdminOverview = refreshOverview;
 
+function restoreAdminLocation() {
+  const agentId = agentIdFromPath();
+  if (!agentId) {
+    window.clearSelectedAgent?.();
+    window.showAgentPicker?.(false);
+    return;
+  }
+  if (window.openAgentWorkspaceFromPath?.(agentId)) return;
+  window.history.replaceState({}, "", "/admin");
+  window.clearSelectedAgent?.();
+  window.showAgentPicker?.(false);
+}
+
 async function initializeAdmin() {
   try {
     const payload = await readJson("/api/auth/me");
     if (!payload.authenticated || !payload.user?.is_super_admin) {
-      window.location.replace("/");
+      window.location.replace("/admin/login");
       return;
     }
     document.querySelector("#admin-username").textContent = payload.user.username;
     document.querySelector("#admin-role").textContent = payload.user.is_super_admin ? "超级管理员" : "管理角色";
-    await window.loadAgents?.();
-    await refreshOverview();
+    const availableAgents = await window.loadAgents?.() || [];
+    const agentId = agentIdFromPath();
+    if (agentId && availableAgents.some((agent) => agent.id === agentId)) {
+      window.openAgentWorkspaceFromPath?.(agentId);
+      return;
+    }
+    if (agentId) window.history.replaceState({}, "", "/admin");
+    window.clearSelectedAgent?.();
+    window.showAgentPicker?.(false);
   } catch (error) {
     if (error.message !== "登录状态已失效。") showToast(error.message);
   }
@@ -303,6 +350,8 @@ document.addEventListener("click", (event) => {
   const toastAction = event.target.closest("[data-toast]");
   if (toastAction) showToast(toastAction.dataset.toast);
 });
+
+window.addEventListener("popstate", restoreAdminLocation);
 
 document.querySelector("#collapse-btn").addEventListener("click", () => {
   const collapsed = document.body.classList.toggle("sidebar-collapsed");
@@ -356,7 +405,7 @@ document.querySelector("#admin-logout").addEventListener("click", async (event) 
   try {
     const response = await fetch("/api/auth/logout", { method: "POST", cache: "no-store" });
     if (!response.ok) throw new Error("退出登录失败，请重试。");
-    window.location.replace("/");
+    window.location.replace("/admin/login");
   } catch (error) {
     showToast(error.message);
     button.disabled = false;

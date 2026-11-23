@@ -47,6 +47,7 @@
   let grantDraft = null;
   let selectedGrantRoleId = null;
   let permissionDataLoaded = false;
+  let permissionAgentId = "";
   let permissionLoadSequence = 0;
   let toastTimer = null;
 
@@ -58,10 +59,12 @@
   }
 
   async function requestJson(url, options = {}) {
-    const response = await fetch(url, { cache: "no-store", ...options });
+    const endpoint = new URL(url, window.location.origin);
+    endpoint.searchParams.set("agent_id", window.getSelectedAgentId());
+    const response = await fetch(endpoint, { cache: "no-store", ...options });
     const payload = await response.json().catch(() => ({}));
     if (response.status === 401) {
-      window.location.replace("/");
+      window.location.replace("/admin/login");
       throw new Error("登录状态已失效。");
     }
     if (!response.ok) throw new Error(payload.detail || "权限配置请求失败。");
@@ -658,15 +661,12 @@
   async function loadPermissionData() {
     const sequence = ++permissionLoadSequence;
     const selectedAgentId = window.getSelectedAgentId?.() || "";
-    const resourceRequest = selectedAgentId
-      ? requestJson(`/api/admin/resources?agent_id=${encodeURIComponent(selectedAgentId)}`)
-      : Promise.resolve({ knowledge_folders: [], http_tools: [] });
     const [loadedUsers, loadedRoles, loadedResources] = await Promise.all([
       requestJson("/api/admin/users"),
       requestJson("/api/admin/roles"),
-      resourceRequest,
+      requestJson("/api/admin/resources"),
     ]);
-    if (sequence !== permissionLoadSequence) return;
+    if (sequence !== permissionLoadSequence || selectedAgentId !== window.getSelectedAgentId()) return;
     users = loadedUsers;
     roles = loadedRoles;
     resources = loadedResources;
@@ -680,9 +680,28 @@
   }
 
   window.loadPermissionView = async (view = "users") => {
+    const agentId = window.getSelectedAgentId();
+    if (agentId !== permissionAgentId) {
+      permissionAgentId = agentId;
+      permissionDataLoaded = false;
+      grantDraft = null;
+      grantChangesPending = false;
+      assignmentUser = null;
+      assignmentDialog.close();
+      users = [];
+      roles = [];
+      resources = { knowledge_folders: [], http_tools: [] };
+      renderUsers();
+      renderRoles();
+      renderGrantEditor();
+      renderMatrix();
+    }
+    const registrationLink = document.querySelector("#business-registration-link");
+    registrationLink.href = `/agno/${encodeURIComponent(agentId)}/register`;
+    registrationLink.hidden = window.getSelectedAgent()?.status !== "published";
     setPermissionView(view);
     try {
-      if (!permissionDataLoaded) await loadPermissionData();
+      if (view === "users" || !permissionDataLoaded) await loadPermissionData();
       else {
         renderRoles();
         renderUsers();

@@ -8,10 +8,10 @@
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v=agent-mark-v1">
   <link rel="stylesheet" href="/static/knowledge.css?v=admin-workbench-v5">
   <link rel="stylesheet" href="/static/tools.css?v=admin-workbench-v2">
-  <link rel="stylesheet" href="/static/admin/admin.css?v=27">
+  <link rel="stylesheet" href="/static/admin/admin.css?v=agent-workspace-entry-v1">
 
 </head>
-<body>
+<body class="agent-picker-mode">
   <svg aria-hidden="true" width="0" height="0" style="position:absolute;overflow:hidden">
     <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></symbol>
     <symbol id="i-bot" viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="13" rx="3"/><path d="M12 3v4M8.5 12h.01M15.5 12h.01M8 16h8"/><path d="M2.5 12h1.5M20 12h1.5"/></symbol>
@@ -52,7 +52,7 @@
         </div>
         <div class="nav-group" data-group="agents">
           <button class="nav-label" type="button" aria-expanded="true"><span>智能体管理</span><svg aria-hidden="true"><use href="#i-down"/></svg></button>
-          <button class="nav-item" data-view="agents" data-title="智能体列表" title="智能体列表"><svg><use href="#i-bot"/></svg><span>智能体列表</span></button>
+          <button class="nav-item" data-view="agents" data-title="智能体配置" title="智能体配置"><svg><use href="#i-bot"/></svg><span>智能体配置</span></button>
           <button class="nav-item" data-view="retrieval" data-title="检索策略" title="检索策略"><svg><use href="#i-search"/></svg><span>检索策略</span></button>
           <button class="nav-item" data-view="policy" data-title="对话与工具调用策略" title="对话与工具调用策略"><svg><use href="#i-shield"/></svg><span>对话与工具调用策略</span></button>
           <button class="nav-item" data-view="releases" data-title="版本与发布" title="版本与发布"><svg><use href="#i-clock"/></svg><span>版本与发布</span></button>
@@ -97,7 +97,7 @@
         </div>
         <div class="top-actions">
           <label class="searchbox"><svg><use href="#i-search"/></svg><input id="global-search" type="search" aria-label="搜索管理内容" placeholder="搜索资源、用户或智能体"><span class="shortcut">⌘ K</span></label>
-          <label class="admin-agent-context" id="admin-agent-context-wrap" hidden><span>当前智能体</span><select id="admin-agent-context" aria-label="选择当前维护的智能体"></select></label>
+          <div class="admin-agent-context" id="admin-agent-context-wrap" hidden><span id="admin-agent-context-name">当前智能体</span><button class="btn" id="agent-switch" type="button">切换智能体</button></div>
           <a class="top-chat-link" href="/">智能体对话</a>
           <div class="top-divider"></div>
           <button class="icon-btn notification-btn" id="notification-btn" type="button" aria-label="通知" data-toast="通知中心将在后续模块中接入"><svg><use href="#i-bell"/></svg><span class="notification-dot"></span></button>
@@ -185,7 +185,7 @@
             </section>
           </section>
           <section class="agents-layout" id="agents-layout" hidden aria-label="智能体管理">
-            <div class="agent-admin-toolbar" id="agent-list-toolbar"><div><strong>智能体</strong><span>每个智能体独立配置模型、密钥和提示词。</span></div><button class="btn btn-primary" id="agent-create" type="button">＋ 新增智能体</button></div>
+            <div class="agent-admin-toolbar" id="agent-list-toolbar"><div><strong>智能体</strong><span>选择一个智能体进入独立工作区。</span></div><div class="agent-list-actions"><button class="btn btn-primary" id="agent-create" type="button">＋ 新增智能体</button></div></div>
             <div class="agent-create-toolbar" id="agent-create-toolbar" hidden><button class="btn" id="agent-create-back" type="button">← 返回智能体列表</button><div><h2 id="agent-page-title">创建智能体</h2><p id="agent-page-description">配置业务身份、模型连接和专属指令。</p></div><span class="model-provider-badge" id="agent-page-badge">新建配置</span></div>
             <div class="agent-admin-grid"><div class="agent-admin-list" id="agent-list" aria-label="智能体列表"></div><form class="model-settings-form" id="agent-editor-form" hidden>
               <input type="hidden" name="id" />
@@ -194,7 +194,7 @@
                   <label>模型供应商<select name="provider"><option value="deepseek">DeepSeek</option><option value="openai">OpenAI 兼容接口</option></select></label><label>普通对话模型<input name="model" required maxlength="120" /></label><label>视觉模型<input name="vision_model" required maxlength="120" /></label><label class="model-settings-wide">API Base URL<input name="base_url" type="url" required maxlength="500" /></label><label class="model-settings-wide">API Key<input name="api_key" type="password" maxlength="1000" autocomplete="new-password" placeholder="留空保留当前密钥" /><span id="agent-api-key-state"></span></label><label class="model-clear-key"><input name="clear_api_key" type="checkbox" /><span>清除当前智能体的 API Key</span></label>
                 </div>
               </section><section class="model-settings-card"><div class="model-settings-card-heading"><div><h2>业务提示词</h2><p>核心安全和权限规则由服务端统一保留。</p></div></div><label class="model-prompt-label">补充指令<textarea name="additional_prompt" rows="10" maxlength="20000"></textarea></label></section>
-              <div class="model-settings-footer"><span id="agent-editor-status" role="status"></span><div><button class="btn" id="agent-model-test" type="button">测试连接</button><button class="btn" id="agent-disable" type="button">停用</button><button class="btn" id="agent-publish" type="button">发布</button><button class="btn" id="agent-delete" type="button">删除</button><button class="btn" id="agent-create-cancel" type="button" hidden>取消</button><button class="btn btn-primary" id="agent-save" type="submit">保存</button></div></div>
+              <div class="model-settings-footer"><span id="agent-editor-status" role="status"></span><div><button class="btn" id="agent-model-test" type="button">测试连接</button><button class="btn" id="agent-disable" type="button">停用</button><button class="btn" id="agent-publish" type="button">发布</button><button class="btn" id="agent-delete" type="button">删除</button><button class="btn btn-primary" id="agent-save" type="submit">保存</button></div></div>
             </form></div>
           </section>
           <section class="retrieval-settings-layout" id="retrieval-settings-layout" hidden aria-label="知识库检索策略">
@@ -237,7 +237,7 @@
           <section class="card module-placeholder" id="module-placeholder" hidden><span class="placeholder-icon"><svg><use href="#i-grid"/></svg></span><h2>此模块尚未接入</h2><p>当前阶段已将知识库和 HTTP 工具接入管理工作台。该模块可以在后续阶段按同一权限与资源模型扩展。</p><div class="button-row"><button class="btn" type="button" data-open-view="knowledge">打开知识库</button><button class="btn" type="button" data-open-view="tools">打开工具管理</button></div></section>
           <section class="permission-layout" id="permission-layout" hidden>
             <section class="permission-panel" id="permission-users-panel" hidden>
-              <div class="permission-user-toolbar"><label class="permission-user-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg><input id="permission-user-search" type="search" maxlength="100" placeholder="搜索账号或角色" aria-label="搜索账号或角色" /></label><span id="permission-user-count"></span></div>
+              <div class="permission-user-toolbar"><a class="btn" id="business-registration-link" target="_blank" rel="noopener" hidden>业务注册链接</a><label class="permission-user-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg><input id="permission-user-search" type="search" maxlength="100" placeholder="搜索账号或角色" aria-label="搜索账号或角色" /></label><span id="permission-user-count"></span></div>
               <div class="permission-user-list-heading" aria-hidden="true"><span>用户账号</span><span>已分配角色</span><span>操作</span></div>
               <div class="permission-user-list" id="permission-user-list"></div>
               <div class="permission-pagination" id="permission-user-pagination"></div>
@@ -402,14 +402,14 @@
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <dialog class="permission-dialog workflow-delete-dialog" id="workflow-delete-dialog" aria-labelledby="workflow-delete-title"><form method="dialog"><div class="permission-panel-heading"><div><h2 id="workflow-delete-title">删除工作流</h2><p id="workflow-delete-message">删除后无法恢复。</p></div></div><div class="permission-dialog-actions"><button class="btn" value="cancel">取消</button><button class="btn workflow-delete-confirm" value="confirm">删除工作流</button></div></form></dialog>
-  <script src="/static/admin/admin.js?v=10" defer></script>
+  <script src="/static/admin/admin.js?v=admin-login-1" defer></script>
   <script src="/static/knowledge.js?v=excel-import-v2" defer></script>
   <script src="/static/tools.js?v=admin-workbench-v1" defer></script>
-  <script src="/static/admin/permissions.js?v=7" defer></script>
-  <script src="/static/admin/workflows.js?v=5" defer></script>
-  <script src="/static/admin/agents.js?v=agent-pages-v3" defer></script>
-  <script src="/static/admin/retrieval.js?v=1" defer></script>
-  <script src="/static/admin/monitoring.js?v=1" defer></script>
-  <script src="/static/admin/call-logs.js?v=1" defer></script>
+  <script src="/static/admin/permissions.js?v=admin-login-1" defer></script>
+  <script src="/static/admin/workflows.js?v=admin-login-1" defer></script>
+  <script src="/static/admin/agents.js?v=admin-login-1" defer></script>
+  <script src="/static/admin/retrieval.js?v=admin-login-1" defer></script>
+  <script src="/static/admin/monitoring.js?v=admin-login-1" defer></script>
+  <script src="/static/admin/call-logs.js?v=admin-login-1" defer></script>
 </body>
 </html>

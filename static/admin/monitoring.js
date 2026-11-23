@@ -22,7 +22,7 @@ async function fetchMonitoringStatus() {
   const response = await fetch("/api/admin/monitoring", { cache: "no-store" });
   const payload = await response.json().catch(() => ({}));
   if (response.status === 401) {
-    window.location.replace("/");
+    window.location.replace("/admin/login");
     throw new Error("登录状态已失效。");
   }
   if (!response.ok) throw new Error(payload.detail || "读取运行状态失败。");

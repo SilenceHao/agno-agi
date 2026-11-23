@@ -2,13 +2,11 @@ const agentList = document.querySelector("#agent-list");
 const agentEditorForm = document.querySelector("#agent-editor-form");
 const agentEditorStatus = document.querySelector("#agent-editor-status");
 const adminAgentContextWrap = document.querySelector("#admin-agent-context-wrap");
-const adminAgentContext = document.querySelector("#admin-agent-context");
 const agentsLayout = document.querySelector("#agents-layout");
 const agentListToolbar = document.querySelector("#agent-list-toolbar");
 const agentCreateToolbar = document.querySelector("#agent-create-toolbar");
-const selectedAgentStorageKey = "agno-selected-agent-id";
 let managedAgents = [];
-let selectedManagedAgentId = localStorage.getItem(selectedAgentStorageKey) || "";
+let selectedManagedAgentId = "";
 
 window.getSelectedAgentId = () => selectedManagedAgentId;
 window.getSelectedAgent = () => managedAgents.find((agent) => agent.id === selectedManagedAgentId) || null;
@@ -17,7 +15,7 @@ async function agentRequest(url, options = {}) {
   const response = await fetch(url, { cache: "no-store", ...options });
   const payload = await response.json().catch(() => ({}));
   if (response.status === 401) {
-    window.location.replace("/");
+    window.location.replace("/admin/login");
     throw new Error("登录状态已失效。");
   }
   if (!response.ok) throw new Error(payload.detail || "智能体请求失败。");
@@ -39,9 +37,13 @@ function renderAgentList() {
     return;
   }
   managedAgents.forEach((agent) => {
+    const card = document.createElement("article");
+    card.className = `agent-list-card-wrap${agent.id === selectedManagedAgentId ? " is-active" : ""}`;
     const button = document.createElement("button");
     button.type = "button";
-    button.className = `agent-list-card${agent.id === selectedManagedAgentId ? " is-active" : ""}`;
+    button.className = "agent-list-card";
+    button.setAttribute("aria-pressed", String(agent.id === selectedManagedAgentId));
+    button.setAttribute("aria-label", `选择智能体 ${agent.name}`);
     const name = document.createElement("strong");
     name.textContent = agent.name;
     const description = document.createElement("span");
@@ -49,37 +51,85 @@ function renderAgentList() {
     const status = document.createElement("small");
     status.textContent = `${agent.provider === "deepseek" ? "DeepSeek" : "OpenAI 兼容"} · ${agent.status === "published" ? "已发布" : agent.status === "disabled" ? "已停用" : "草稿"}`;
     button.append(name, description, status);
-    button.addEventListener("click", () => selectManagedAgent(agent.id));
-    agentList.append(button);
+    button.addEventListener("click", () => enterAgentWorkspace(agent.id));
+    const actions = document.createElement("div");
+    actions.className = "agent-list-card-actions";
+    actions.append(createAgentAction(agent, "维护配置", () => openAgentEditor(agent.id)));
+    if (agent.status === "published") {
+      actions.append(createAgentAction(agent, "下架", () => changeAgentStatus(agent.id, "disable")));
+    } else {
+      actions.append(createAgentAction(agent, agent.status === "disabled" ? "重新发布" : "发布", () => changeAgentStatus(agent.id, "publish"), true));
+    }
+    actions.append(createAgentAction(agent, "删除", () => deleteAgent(agent)));
+    card.append(button, actions);
+    agentList.append(card);
   });
 }
 
-function renderAgentContext() {
-  adminAgentContext.replaceChildren();
-  managedAgents.forEach((agent) => adminAgentContext.add(new Option(agent.name, agent.id)));
-  adminAgentContextWrap.hidden = managedAgents.length === 0 || !selectedManagedAgentId;
-  if (selectedManagedAgentId) adminAgentContext.value = selectedManagedAgentId;
+function createAgentAction(agent, label, action, isPrimary = false) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = isPrimary ? "btn btn-primary" : "btn";
+  button.textContent = label;
+  button.setAttribute("aria-label", `${label}智能体 ${agent.name}`);
+  button.addEventListener("click", action);
+  return button;
 }
 
-function selectManagedAgent(agentId) {
+async function changeAgentStatus(agentId, action) {
+  try {
+    const actionLabel = action === "publish" ? "发布" : "下架";
+    await agentRequest(`/api/admin/agents/${encodeURIComponent(agentId)}/${action}`, { method: "POST" });
+    await loadAgents();
+    window.showAdminToast?.(`智能体已${actionLabel}。`);
+  } catch (error) {
+    window.showAdminToast?.(error.message);
+  }
+}
+
+async function deleteAgent(agent) {
+  if (!window.confirm(`确定删除“${agent.name}”及其业务用户、角色、会话、知识库、工具和工作流吗？`)) return;
+  try {
+    await agentRequest(`/api/admin/agents/${encodeURIComponent(agent.id)}`, { method: "DELETE" });
+    if (selectedManagedAgentId === agent.id) {
+      selectedManagedAgentId = "";
+    }
+    await loadAgents();
+    window.showAdminToast?.(`智能体“${agent.name}”已删除。`);
+  } catch (error) {
+    window.showAdminToast?.(error.message);
+  }
+}
+
+function renderAgentContext() {
+  const selectedAgent = window.getSelectedAgent();
+  adminAgentContextWrap.hidden = !selectedAgent || document.body.classList.contains("agent-picker-mode");
+  document.querySelector("#admin-agent-context-name").textContent = selectedAgent?.name || "未选择智能体";
+}
+
+function enterAgentWorkspace(agentId, updateHistory = true) {
+  selectedManagedAgentId = agentId;
+  window.showAgentWorkspace?.(agentId, updateHistory);
+}
+
+function openAgentEditor(agentId) {
   setEditorPage(true);
   selectedManagedAgentId = agentId;
-  localStorage.setItem(selectedAgentStorageKey, agentId);
   renderAgentList();
   renderAgentContext();
-  adminAgentContext.value = agentId;
   const agent = window.getSelectedAgent();
   if (agent) fillAgentForm(agent);
   window.onSelectedAgentChanged?.();
 }
 
 function setEditorPage(isEditing) {
+  const isExistingAgent = Boolean(agentEditorForm.elements.id.value);
   agentsLayout.classList.toggle("is-editing", isEditing);
   document.body.classList.toggle("agent-editor-open", isEditing);
   agentListToolbar.hidden = isEditing;
-  agentCreateToolbar.hidden = !isEditing;
+  agentCreateToolbar.hidden = !isEditing || isExistingAgent;
   agentList.hidden = isEditing;
-  document.querySelector("#agent-create-cancel").hidden = false;
+  document.querySelector("#agent-create-back").hidden = isExistingAgent;
   document.querySelector("#agent-model-test").hidden = !isEditing || !agentEditorForm.elements.id.value;
   document.querySelector("#agent-disable").hidden = !isEditing;
   document.querySelector("#agent-publish").hidden = !isEditing;
@@ -139,26 +189,46 @@ function cancelAgentCreation() {
   renderAgentList();
 }
 
+async function loadSelectedAgentSettings() {
+  await loadAgents();
+  const selectedAgent = window.getSelectedAgent();
+  if (selectedAgent) openAgentEditor(selectedAgent.id);
+  else window.showAgentPicker?.();
+}
+
 window.closeAgentEditorPage = () => {
   setEditorPage(false);
   agentEditorForm.hidden = true;
+  renderAgentList();
 };
 
 async function loadAgents() {
   try {
     managedAgents = await agentRequest("/api/admin/agents");
-    if (!managedAgents.some((agent) => agent.id === selectedManagedAgentId)) {
-      selectedManagedAgentId = managedAgents[0]?.id || "";
-    }
-    if (selectedManagedAgentId) localStorage.setItem(selectedAgentStorageKey, selectedManagedAgentId);
+    if (!managedAgents.some((agent) => agent.id === selectedManagedAgentId)) selectedManagedAgentId = "";
     renderAgentList();
     renderAgentContext();
     if (!agentsLayout.classList.contains("is-editing")) agentEditorForm.hidden = true;
     window.onSelectedAgentChanged?.();
+    return managedAgents;
   } catch (error) {
     setAgentEditorStatus(error.message, true);
+    window.showAdminToast?.(error.message);
+    return [];
   }
 }
+
+window.openAgentWorkspaceFromPath = (agentId) => {
+  if (!managedAgents.some((agent) => agent.id === agentId)) return false;
+  enterAgentWorkspace(agentId, false);
+  return true;
+};
+
+window.clearSelectedAgent = () => {
+  selectedManagedAgentId = "";
+  renderAgentContext();
+  renderAgentList();
+};
 
 function agentPayload() {
   return {
@@ -188,8 +258,13 @@ agentEditorForm.addEventListener("submit", async (event) => {
       body: JSON.stringify(agentPayload()),
     });
     await loadAgents();
-    selectManagedAgent(saved.id);
-    setAgentEditorStatus("智能体配置已保存。");
+    if (agentId) {
+      openAgentEditor(saved.id);
+      setAgentEditorStatus("智能体配置已保存。");
+    } else {
+      enterAgentWorkspace(saved.id);
+      window.showAdminToast?.(`智能体“${saved.name}”已创建。`);
+    }
   } catch (error) {
     setAgentEditorStatus(error.message, true);
   } finally {
@@ -199,8 +274,7 @@ agentEditorForm.addEventListener("submit", async (event) => {
 
 document.querySelector("#agent-create").addEventListener("click", startNewAgent);
 document.querySelector("#agent-create-back").addEventListener("click", cancelAgentCreation);
-document.querySelector("#agent-create-cancel").addEventListener("click", cancelAgentCreation);
-adminAgentContext.addEventListener("change", () => selectManagedAgent(adminAgentContext.value));
+document.querySelector("#agent-switch").addEventListener("click", () => window.showAgentPicker?.());
 document.querySelector("#agent-model-test").addEventListener("click", async () => {
   const agentId = agentEditorForm.elements.id.value;
   if (!agentId) {
@@ -221,7 +295,7 @@ document.querySelector("#agent-publish").addEventListener("click", async () => {
   try {
     await agentRequest(`/api/admin/agents/${encodeURIComponent(agentId)}/publish`, { method: "POST" });
     await loadAgents();
-    setAgentEditorStatus("智能体已发布。登录用户现在可以选择并使用它。");
+    setAgentEditorStatus("智能体已发布，登录用户现在可以选择并使用它。");
   } catch (error) {
     setAgentEditorStatus(error.message, true);
   }
@@ -243,11 +317,10 @@ document.querySelector("#agent-delete").addEventListener("click", async () => {
   const agentId = agentEditorForm.elements.id.value;
   const agent = window.getSelectedAgent();
   if (!agentId || !agent) return;
-  if (!window.confirm(`确定删除“${agent.name}”及其会话、知识库、工具和工作流吗？`)) return;
+  if (!window.confirm(`确定删除“${agent.name}”及其业务用户、角色、会话、知识库、工具和工作流吗？`)) return;
   try {
     await agentRequest(`/api/admin/agents/${encodeURIComponent(agentId)}`, { method: "DELETE" });
     selectedManagedAgentId = "";
-    localStorage.removeItem(selectedAgentStorageKey);
     await loadAgents();
     setAgentEditorStatus("智能体及其业务数据已删除。");
   } catch (error) {
@@ -256,6 +329,8 @@ document.querySelector("#agent-delete").addEventListener("click", async () => {
 });
 
 window.loadAgents = loadAgents;
+window.loadSelectedAgentSettings = loadSelectedAgentSettings;
+window.updateAgentContext = renderAgentContext;
 window.onSelectedAgentChanged = () => {
   if (window.currentAdminRoute === "knowledge") window.loadKnowledgeSettings?.();
   if (window.currentAdminRoute === "tools") window.loadToolsSettings?.();
