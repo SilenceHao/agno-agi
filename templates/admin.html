@@ -53,7 +53,6 @@
         <div class="nav-group" data-group="agents">
           <button class="nav-label" type="button" aria-expanded="true"><span>智能体管理</span><svg aria-hidden="true"><use href="#i-down"/></svg></button>
           <button class="nav-item" data-view="agents" data-title="智能体列表" title="智能体列表"><svg><use href="#i-bot"/></svg><span>智能体列表</span></button>
-          <button class="nav-item" data-view="models" data-title="模型与提示词" title="模型与提示词"><svg><use href="#i-list"/></svg><span>模型与提示词</span></button>
           <button class="nav-item" data-view="retrieval" data-title="检索策略" title="检索策略"><svg><use href="#i-search"/></svg><span>检索策略</span></button>
           <button class="nav-item" data-view="policy" data-title="对话与工具调用策略" title="对话与工具调用策略"><svg><use href="#i-shield"/></svg><span>对话与工具调用策略</span></button>
           <button class="nav-item" data-view="releases" data-title="版本与发布" title="版本与发布"><svg><use href="#i-clock"/></svg><span>版本与发布</span></button>
@@ -98,6 +97,7 @@
         </div>
         <div class="top-actions">
           <label class="searchbox"><svg><use href="#i-search"/></svg><input id="global-search" type="search" aria-label="搜索管理内容" placeholder="搜索资源、用户或智能体"><span class="shortcut">⌘ K</span></label>
+          <label class="admin-agent-context" id="admin-agent-context-wrap" hidden><span>当前智能体</span><select id="admin-agent-context" aria-label="选择当前维护的智能体"></select></label>
           <a class="top-chat-link" href="/">智能体对话</a>
           <div class="top-divider"></div>
           <button class="icon-btn notification-btn" id="notification-btn" type="button" aria-label="通知" data-toast="通知中心将在后续模块中接入"><svg><use href="#i-bell"/></svg><span class="notification-dot"></span></button>
@@ -128,7 +128,7 @@
             <section class="card">
               <div class="card-header"><div><div class="card-title">服务状态</div><div class="card-subtitle">当前运行服务的基础连通状态</div></div><span class="status-chip" id="health-summary"><span class="dot"></span>检查中</span></div>
               <div class="card-body health-list">
-                <div class="health-row"><span class="health-icon"><svg><use href="#i-bot"/></svg></span><div class="health-copy"><strong>DeepSeek 模型服务</strong><small>对话生成服务配置</small></div><span class="health-state" id="health-model">检查中</span></div>
+                <div class="health-row"><span class="health-icon"><svg><use href="#i-bot"/></svg></span><div class="health-copy"><strong>智能体模型服务</strong><small>按智能体配置的对话生成服务</small></div><span class="health-state" id="health-model">检查中</span></div>
                 <div class="health-row"><span class="health-icon"><svg><use href="#i-book"/></svg></span><div class="health-copy"><strong>Ollama 向量模型</strong><small id="health-vector-detail">本机知识库向量化服务</small></div><span class="health-state" id="health-vector">检查中</span></div>
                 <div class="health-row"><span class="health-icon"><svg><use href="#i-database"/></svg></span><div class="health-copy"><strong>智能体 API</strong><small>本机管理与对话服务</small></div><span class="health-state" id="health-api">已连接</span></div>
               </div>
@@ -184,24 +184,18 @@
               </form>
             </section>
           </section>
-          <section class="model-settings-layout" id="model-settings-layout" hidden aria-label="模型与提示词配置">
-            <form class="model-settings-form" id="model-settings-form">
-              <section class="model-settings-card">
-                <div class="model-settings-card-heading"><div><h2>模型服务</h2><p>当前提供商为 DeepSeek，配置会应用于后续对话和视觉文档处理。</p></div><span class="model-provider-badge">DeepSeek</span></div>
-                <div class="model-settings-grid">
-                  <label>普通对话模型<input name="model" required maxlength="120" placeholder="deepseek-chat" autocomplete="off" /><span>处理普通对话、知识库问答和工作流智能体节点。</span></label>
-                  <label>视觉模型<input name="vision_model" required maxlength="120" placeholder="deepseek-v4-flash-vision-exp" autocomplete="off" /><span>处理聊天图片及知识库中的图片描述。</span></label>
-                  <label class="model-settings-wide">兼容 API 地址<input name="base_url" type="url" required maxlength="500" placeholder="https://api.deepseek.com" autocomplete="url" /><span>填写 API 根地址，不要带 /chat/completions。</span></label>
-                  <label class="model-settings-wide">API Key<input name="api_key" type="password" maxlength="1000" placeholder="留空保留已保存的密钥" autocomplete="new-password" /><span id="model-api-key-state">密钥不会返回到网页；留空保存时保留当前密钥。</span></label>
-                  <label class="model-clear-key"><input name="clear_api_key" type="checkbox" /><span>清除已保存的密钥，并忽略环境变量中的 API Key</span></label>
+          <section class="agents-layout" id="agents-layout" hidden aria-label="智能体管理">
+            <div class="agent-admin-toolbar" id="agent-list-toolbar"><div><strong>智能体</strong><span>每个智能体独立配置模型、密钥和提示词。</span></div><button class="btn btn-primary" id="agent-create" type="button">＋ 新增智能体</button></div>
+            <div class="agent-create-toolbar" id="agent-create-toolbar" hidden><button class="btn" id="agent-create-back" type="button">← 返回智能体列表</button><div><h2 id="agent-page-title">创建智能体</h2><p id="agent-page-description">配置业务身份、模型连接和专属指令。</p></div><span class="model-provider-badge" id="agent-page-badge">新建配置</span></div>
+            <div class="agent-admin-grid"><div class="agent-admin-list" id="agent-list" aria-label="智能体列表"></div><form class="model-settings-form" id="agent-editor-form" hidden>
+              <input type="hidden" name="id" />
+              <section class="model-settings-card"><div class="model-settings-card-heading"><div><h2 id="agent-editor-title">新增智能体</h2><p>选择并维护当前智能体的业务和模型配置。</p></div><span class="model-provider-badge" id="agent-status-badge">草稿</span></div>
+                <div class="model-settings-grid"><label>智能体名称<input name="name" required maxlength="80" /></label><label>唯一标识<input name="slug" required maxlength="64" pattern="[a-z0-9][a-z0-9_-]{1,63}" /></label><label class="model-settings-wide">业务说明<input name="description" maxlength="500" /></label>
+                  <label>模型供应商<select name="provider"><option value="deepseek">DeepSeek</option><option value="openai">OpenAI 兼容接口</option></select></label><label>普通对话模型<input name="model" required maxlength="120" /></label><label>视觉模型<input name="vision_model" required maxlength="120" /></label><label class="model-settings-wide">API Base URL<input name="base_url" type="url" required maxlength="500" /></label><label class="model-settings-wide">API Key<input name="api_key" type="password" maxlength="1000" autocomplete="new-password" placeholder="留空保留当前密钥" /><span id="agent-api-key-state"></span></label><label class="model-clear-key"><input name="clear_api_key" type="checkbox" /><span>清除当前智能体的 API Key</span></label>
                 </div>
-              </section>
-              <section class="model-settings-card">
-                <div class="model-settings-card-heading"><div><h2>全局补充提示词</h2><p>用于设置回答风格、术语偏好和格式要求；核心安全与权限规则由服务端保留。</p></div><span class="model-prompt-count" id="model-prompt-count">0 / 20,000</span></div>
-                <label class="model-prompt-label">补充指令<textarea name="additional_prompt" rows="12" maxlength="20000" placeholder="例如：回答优先使用简体中文；先给结论，再列出关键步骤。"></textarea></label>
-              </section>
-              <div class="model-settings-footer"><span id="model-settings-status" role="status"></span><div><button class="btn" id="model-test-button" type="button">测试连接</button><button class="btn btn-primary" id="model-save-button" type="submit">保存配置</button></div></div>
-            </form>
+              </section><section class="model-settings-card"><div class="model-settings-card-heading"><div><h2>业务提示词</h2><p>核心安全和权限规则由服务端统一保留。</p></div></div><label class="model-prompt-label">补充指令<textarea name="additional_prompt" rows="10" maxlength="20000"></textarea></label></section>
+              <div class="model-settings-footer"><span id="agent-editor-status" role="status"></span><div><button class="btn" id="agent-model-test" type="button">测试连接</button><button class="btn" id="agent-disable" type="button">停用</button><button class="btn" id="agent-publish" type="button">发布</button><button class="btn" id="agent-delete" type="button">删除</button><button class="btn" id="agent-create-cancel" type="button" hidden>取消</button><button class="btn btn-primary" id="agent-save" type="submit">保存</button></div></div>
+            </form></div>
           </section>
           <section class="retrieval-settings-layout" id="retrieval-settings-layout" hidden aria-label="知识库检索策略">
             <form class="model-settings-form" id="retrieval-settings-form">
@@ -413,7 +407,7 @@
   <script src="/static/tools.js?v=admin-workbench-v1" defer></script>
   <script src="/static/admin/permissions.js?v=7" defer></script>
   <script src="/static/admin/workflows.js?v=5" defer></script>
-  <script src="/static/admin/models.js?v=2" defer></script>
+  <script src="/static/admin/agents.js?v=agent-pages-v3" defer></script>
   <script src="/static/admin/retrieval.js?v=1" defer></script>
   <script src="/static/admin/monitoring.js?v=1" defer></script>
   <script src="/static/admin/call-logs.js?v=1" defer></script>

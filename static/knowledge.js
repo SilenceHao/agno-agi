@@ -236,6 +236,7 @@ async function refreshKnowledgeView({ checkModelStatus = !knowledgeModelStatusCh
     page_size: String(isFolderView ? knowledgePageSize : knowledgeFolderPageSize),
     search: searchTerm,
     check_model_status: String(checkModelStatus),
+    agent_id: window.getSelectedAgentId?.() || "",
   });
   const url = isFolderView
     ? `/api/knowledge/folders/${encodeURIComponent(currentKnowledgeFolder.id)}/documents?${query}`
@@ -345,8 +346,8 @@ async function saveKnowledgeFolder(event) {
   }
   const isRename = folderDialogMode === "rename";
   const url = isRename
-    ? `/api/knowledge/folders/${encodeURIComponent(editedKnowledgeFolder.id)}`
-    : "/api/knowledge/folders";
+    ? `/api/knowledge/folders/${encodeURIComponent(editedKnowledgeFolder.id)}?agent_id=${encodeURIComponent(window.getSelectedAgentId?.() || "")}`
+    : `/api/knowledge/folders?agent_id=${encodeURIComponent(window.getSelectedAgentId?.() || "")}`;
   const response = await fetch(url, {
     method: isRename ? "PATCH" : "POST",
     headers: { "Content-Type": "application/json" },
@@ -365,7 +366,7 @@ async function saveKnowledgeFolder(event) {
 
 async function deleteKnowledgeFolder() {
   if (!deletedKnowledgeFolder) return;
-  const response = await fetch(`/api/knowledge/folders/${encodeURIComponent(deletedKnowledgeFolder.id)}`, { method: "DELETE" });
+  const response = await fetch(`/api/knowledge/folders/${encodeURIComponent(deletedKnowledgeFolder.id)}?agent_id=${encodeURIComponent(window.getSelectedAgentId?.() || "")}`, { method: "DELETE" });
   const payload = await response.json();
   if (!response.ok) throw new Error(payload.detail || "删除目录失败。");
   deletedKnowledgeFolder = null;
@@ -384,6 +385,7 @@ async function importKnowledgeFiles() {
     const results = await Promise.all(files.map(async (file) => {
       const body = new FormData();
       body.append("file", file, file.name);
+      body.append("agent_id", window.getSelectedAgentId?.() || "");
       body.append("folder_id", targetFolder.id);
       try {
         const response = await fetch("/api/knowledge/documents", { method: "POST", body });
@@ -424,7 +426,7 @@ async function importKnowledgeFiles() {
 async function removeKnowledgeDocument(documentInfo) {
   if (!window.confirm(`从“${currentKnowledgeFolder.name}”中删除“${documentInfo.file_name}”？这会删除本机文件和对应向量索引。`)) return;
   try {
-    const response = await fetch(`/api/knowledge/documents/${encodeURIComponent(documentInfo.id)}`, { method: "DELETE" });
+    const response = await fetch(`/api/knowledge/documents/${encodeURIComponent(documentInfo.id)}?agent_id=${encodeURIComponent(window.getSelectedAgentId?.() || "")}`, { method: "DELETE" });
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.detail || "删除知识库资料失败。");
     await refreshKnowledgeView();
@@ -436,7 +438,7 @@ async function removeKnowledgeDocument(documentInfo) {
 
 async function retryKnowledgeDocument(documentId) {
   try {
-    const response = await fetch(`/api/knowledge/documents/${encodeURIComponent(documentId)}/reindex`, { method: "POST" });
+    const response = await fetch(`/api/knowledge/documents/${encodeURIComponent(documentId)}/reindex?agent_id=${encodeURIComponent(window.getSelectedAgentId?.() || "")}`, { method: "POST" });
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.detail || "重新索引失败。");
     await refreshKnowledgeView();

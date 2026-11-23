@@ -789,8 +789,6 @@ body.workflow-editing .content { width:min(1840px,100%); padding-top:15px; }
 .permission-member-search input { width:100%; min-height:34px; padding:0 9px; border:1px solid #3b3f48; border-radius:7px; color:#f1f2f4; background:#111318; font:inherit; font-size:10px; }
 
 /* Model and global prompt settings */
-.model-settings-layout { width:100%; max-width:1180px; }
-.model-settings-layout[hidden] { display:none!important; }
 .model-settings-form { display:grid; gap:14px; }
 .model-settings-card { min-width:0; padding:18px; border:1px solid #343740; border-radius:11px; background:#191b20; }
 .model-settings-card-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:16px; }
@@ -1124,3 +1122,31 @@ td { color:#d4d7dd; font-size:12px; }
 .permission-assignment-count { color:#c0c4cc; font-size:12px; }
 .permission-assignment-list .permission-resource-copy strong { font-size:14px; }
 .permission-assignment-list .permission-resource-copy small { color:#b9bec7; font-size:12px; }
+.agent-admin-toolbar { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; }
+.admin-agent-context { display:flex; align-items:center; gap:7px; color:#afb4be; font-size:11px; }
+.admin-agent-context select { max-width:180px; min-height:34px; padding:0 9px; border:1px solid #343943; border-radius:8px; background:#17191f; color:#eff0f2; font:inherit; }
+.agent-admin-toolbar>div { display:grid; gap:5px; }
+.agent-admin-toolbar>div strong { color:#f3f4f6; font-size:15px; }
+.agent-admin-toolbar>div span { color:#adb2bc; font-size:12px; }
+.agent-admin-grid { display:grid; grid-template-columns:minmax(220px, .72fr) minmax(0, 1.6fr); align-items:start; gap:18px; }
+.agent-create-toolbar { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:18px; margin-bottom:20px; padding:20px 22px; border:1px solid #30343d; border-radius:14px; background:linear-gradient(115deg,#20242c,#191b21 72%); }
+.agent-create-toolbar h2 { margin:0; color:#f3f4f6; font-size:20px; font-weight:650; }
+.agent-create-toolbar p { margin:6px 0 0; color:#aeb4bf; font-size:13px; line-height:1.6; }
+.agents-layout.is-editing .agent-admin-grid { grid-template-columns:minmax(0,1fr); }
+.agents-layout.is-editing .model-settings-form { width:100%; max-width:none; margin:0; }
+.agents-layout.is-editing .model-settings-card { padding:24px; }
+.agents-layout.is-editing .model-settings-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+.agents-layout.is-editing .model-settings-card-heading { margin-bottom:22px; }
+.agents-layout.is-editing .model-settings-footer { position:sticky; bottom:12px; z-index:2; margin-top:18px; padding:12px 16px; border:1px solid #343943; border-radius:12px; background:rgba(23,25,31,.96); box-shadow:0 8px 28px rgba(0,0,0,.28); backdrop-filter:blur(12px); }
+.agent-create-toolbar[hidden] { display:none; }
+.agents-layout [hidden] { display:none!important; }
+body.agent-editor-open .content { width:100%; max-width:none; padding:16px 24px 28px; }
+body.agent-editor-open #module-page-heading { display:none; }
+.agent-admin-list { display:grid; gap:8px; }
+.agent-list-card { display:grid; gap:5px; width:100%; padding:13px; border:1px solid #30343d; border-radius:12px; background:#17191f; color:#e8e9ec; text-align:left; cursor:pointer; }
+.agent-list-card:hover,.agent-list-card.is-active { border-color:#888f9d; background:#20232a; }
+.agent-list-card strong { font-size:13px; }
+.agent-list-card span,.agent-list-card small,.agent-list-empty { color:#aeb3bd; font-size:11px; }
+.agent-list-empty { margin:0; padding:14px; border:1px dashed #363a43; border-radius:12px; line-height:1.6; }
+.agents-layout .model-settings-form { min-width:0; }
+@media (max-width: 760px) { .agent-admin-grid { grid-template-columns:1fr; } .agent-admin-toolbar { align-items:flex-start; flex-direction:column; } .agent-create-toolbar { grid-template-columns:1fr auto; gap:12px; padding:16px; } .agent-create-toolbar>div { grid-column:1 / -1; grid-row:1; } .agent-create-toolbar .btn { grid-row:2; } .agents-layout.is-editing .model-settings-card { padding:18px; } .agents-layout.is-editing .model-settings-grid { grid-template-columns:1fr; gap:15px; } .agents-layout.is-editing .model-settings-footer { align-items:flex-start; flex-direction:column; } }

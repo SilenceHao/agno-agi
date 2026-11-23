@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="/static/knowledge.css?v=chat-knowledge-toggle-v1" />
     <link rel="stylesheet" href="/static/sidebar.css?v=sidebar-toggle-v2" />
     <link rel="stylesheet" href="/static/settings.css?v=conversation-confirm-v1" />
-    <link rel="stylesheet" href="/static/layout.css?v=chat-composer-fixed-v1" />
+    <link rel="stylesheet" href="/static/layout.css?v=multi-agent-picker-v1" />
     <link rel="stylesheet" href="/static/ui-polish.css?v=workflow-picker-v1" />
     <link rel="stylesheet" href="/static/auth.css?v=auth-startup-v1" />
   </head>
@@ -53,6 +53,7 @@
       <main class="main-panel">
         <header class="topbar">
           <div class="breadcrumb"><span>工作区</span><span class="crumb-sep">/</span><strong id="active-title">新对话</strong></div>
+          <label class="agent-picker-label" id="agent-picker-wrap" hidden><span>智能体</span><select id="agent-select" aria-label="选择智能体"></select></label>
         </header>
 
         <section class="chat-layout" id="chat-layout" aria-label="智能体对话">

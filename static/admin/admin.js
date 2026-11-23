@@ -8,7 +8,6 @@ const knowledgeLayout = document.querySelector("#knowledge-layout");
 const toolsLayout = document.querySelector("#tools-layout");
 const resourceSummary = document.querySelector("#resource-summary");
 const modulePlaceholder = document.querySelector("#module-placeholder");
-const modelSettingsLayout = document.querySelector("#model-settings-layout");
 const retrievalSettingsLayout = document.querySelector("#retrieval-settings-layout");
 const monitoringLayout = document.querySelector("#monitoring-layout");
 const callLogsLayout = document.querySelector("#call-logs-layout");
@@ -23,7 +22,6 @@ const NAV_GROUP_STATE_KEY = "agno-admin-menu-groups";
 
 const plannedModules = {
   agents: ["智能体列表", "集中查看和配置多个智能体实例。"],
-  models: ["模型与提示词", "配置 DeepSeek 模型、连接地址和全局补充提示词。"],
   retrieval: ["检索策略", "配置知识检索范围、召回和来源展示策略。"],
   policy: ["对话与工具调用策略", "管理智能体的对话行为和工具调用约束。"],
   releases: ["版本与发布", "管理智能体配置版本、发布与回滚。"],
@@ -48,6 +46,8 @@ function showToast(message) {
 }
 
 function setRoute(route, title) {
+  if (route !== "agents") window.closeAgentEditorPage?.();
+  window.currentAdminRoute = route;
   if (route !== "monitoring") window.stopMonitoring?.();
   if (route !== "logs") window.stopCallLogs?.();
   document.body.classList.remove("workflow-editing");
@@ -63,7 +63,7 @@ function setRoute(route, title) {
   moduleView.hidden = true;
   resourceSummary.hidden = true;
   modulePlaceholder.hidden = true;
-  modelSettingsLayout.hidden = true;
+  document.querySelector("#agents-layout").hidden = true;
   retrievalSettingsLayout.hidden = true;
   monitoringLayout.hidden = true;
   callLogsLayout.hidden = true;
@@ -91,12 +91,12 @@ function setRoute(route, title) {
     document.querySelector("#module-description").textContent = plannedModules.workflows[1];
     workflowLayout.hidden = false;
     window.loadWorkflowSettings?.();
-  } else if (route === "models") {
+  } else if (route === "agents") {
     moduleView.hidden = false;
-    document.querySelector("#module-title").textContent = plannedModules.models[0];
-    document.querySelector("#module-description").textContent = plannedModules.models[1];
-    modelSettingsLayout.hidden = false;
-    window.loadModelSettings?.();
+    document.querySelector("#module-title").textContent = plannedModules.agents[0];
+    document.querySelector("#module-description").textContent = "新增、发布和维护独立运行的业务智能体。";
+    document.querySelector("#agents-layout").hidden = false;
+    window.loadAgents?.();
   } else if (route === "retrieval") {
     moduleView.hidden = false;
     document.querySelector("#module-title").textContent = plannedModules.retrieval[0];
@@ -190,9 +190,10 @@ function updateServiceState(element, isReady, readyText, unavailableText) {
 }
 
 async function refreshOverview() {
+  const agentId = window.getSelectedAgentId?.() || "";
   const results = await Promise.allSettled([
-    readJson("/api/knowledge"),
-    readJson("/api/tools"),
+    agentId ? readJson(`/api/knowledge?agent_id=${encodeURIComponent(agentId)}`) : Promise.resolve({ documents: [], total: 0, status_counts: {} }),
+    agentId ? readJson(`/api/tools?agent_id=${encodeURIComponent(agentId)}`) : Promise.resolve([]),
     readJson("/api/health"),
   ]);
   const [knowledgeResult, toolsResult, healthResult] = results;
@@ -251,11 +252,11 @@ async function refreshOverview() {
     const health = healthResult.value;
     updateServiceState(
       document.querySelector("#health-model"),
-      Boolean(health.deepseek_configured),
+      Boolean(health.agents_configured),
       "正常",
-      "未配置",
+      "没有已发布的模型配置",
     );
-    if (!health.deepseek_configured) hasWarning = true;
+    if (!health.agents_configured) hasWarning = true;
   } else {
     updateServiceState(document.querySelector("#health-model"), false, "正常", "读取失败");
     hasWarning = true;
@@ -268,6 +269,7 @@ async function refreshOverview() {
   statusChip.lastChild.textContent = hasWarning ? "部分服务需要检查" : "系统运行正常";
   healthSummary.lastChild.textContent = hasWarning ? "需要检查" : "运行正常";
 }
+window.refreshAdminOverview = refreshOverview;
 
 async function initializeAdmin() {
   try {
@@ -278,6 +280,7 @@ async function initializeAdmin() {
     }
     document.querySelector("#admin-username").textContent = payload.user.username;
     document.querySelector("#admin-role").textContent = payload.user.is_super_admin ? "超级管理员" : "管理角色";
+    await window.loadAgents?.();
     await refreshOverview();
   } catch (error) {
     if (error.message !== "登录状态已失效。") showToast(error.message);

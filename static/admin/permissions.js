@@ -657,10 +657,14 @@
 
   async function loadPermissionData() {
     const sequence = ++permissionLoadSequence;
+    const selectedAgentId = window.getSelectedAgentId?.() || "";
+    const resourceRequest = selectedAgentId
+      ? requestJson(`/api/admin/resources?agent_id=${encodeURIComponent(selectedAgentId)}`)
+      : Promise.resolve({ knowledge_folders: [], http_tools: [] });
     const [loadedUsers, loadedRoles, loadedResources] = await Promise.all([
       requestJson("/api/admin/users"),
       requestJson("/api/admin/roles"),
-      requestJson("/api/admin/resources"),
+      resourceRequest,
     ]);
     if (sequence !== permissionLoadSequence) return;
     users = loadedUsers;
@@ -688,6 +692,11 @@
     } catch (error) {
       showPermissionToast(error.message);
     }
+  };
+
+  window.reloadPermissionData = () => {
+    permissionDataLoaded = false;
+    return window.loadPermissionView?.(window.currentAdminRoute || "users");
   };
 
   userSearch.addEventListener("input", () => {

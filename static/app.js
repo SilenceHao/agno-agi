@@ -7,6 +7,8 @@ const welcome = document.querySelector("#welcome");
 const sendButton = document.querySelector("#send-button");
 const thinkingToggle = document.querySelector("#thinking-toggle");
 const workflowSelect = document.querySelector("#workflow-select");
+const agentSelect = document.querySelector("#agent-select");
+const agentPickerWrap = document.querySelector("#agent-picker-wrap");
 const streamStatus = document.querySelector("#stream-status");
 const conversationList = document.querySelector("#conversation-list");
 const conversationCount = document.querySelector("#conversation-count");
@@ -55,7 +57,13 @@ let conversationId = null;
 let busy = false;
 let currentUser = null;
 let authMode = "login";
+let publishedAgents = [];
+let activeAgentId = localStorage.getItem("agno-active-agent-id") || "";
 const ACTIVE_CONVERSATION_KEY = "agno-active-conversation-id";
+
+function activeConversationKey() {
+  return `${ACTIVE_CONVERSATION_KEY}:${activeAgentId}`;
+}
 
 const nativeFetch = window.fetch.bind(window);
 window.fetch = async (...args) => {
@@ -71,7 +79,7 @@ function showLoginRequired() {
   if (!currentUser) return;
   currentUser = null;
   conversationId = null;
-  localStorage.removeItem(ACTIVE_CONVERSATION_KEY);
+  localStorage.removeItem(activeConversationKey());
   messages.length = 0;
   selectedFiles = [];
   fileInput.value = "";
@@ -117,20 +125,54 @@ async function showAuthenticatedApp(user, restoreConversation = false) {
   adminWorkbenchTrigger.hidden = !user.is_super_admin;
   adminWorkbenchTrigger.disabled = !user.is_super_admin;
   document.querySelector("#account-menu-wrap").hidden = false;
+  await loadPublishedAgents();
   void loadPublishedWorkflows();
   if (restoreConversation) {
-    const savedConversationId = localStorage.getItem(ACTIVE_CONVERSATION_KEY);
+    const savedConversationId = localStorage.getItem(activeConversationKey());
     if (savedConversationId) {
       try {
         await openConversation(savedConversationId);
         return;
       } catch {
-        localStorage.removeItem(ACTIVE_CONVERSATION_KEY);
+        localStorage.removeItem(activeConversationKey());
       }
     }
   }
   resetConversation();
 }
+
+async function loadPublishedAgents() {
+  const response = await fetch("/api/agents", { cache: "no-store" });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(payload.detail || "无法读取可用智能体。");
+  publishedAgents = payload;
+  agentSelect.replaceChildren();
+  publishedAgents.forEach((agent) => agentSelect.add(new Option(agent.name, agent.id)));
+  agentPickerWrap.hidden = publishedAgents.length === 0;
+  const exists = publishedAgents.some((agent) => agent.id === activeAgentId);
+  if (!exists) activeAgentId = publishedAgents[0]?.id || "";
+  if (activeAgentId) {
+    agentSelect.value = activeAgentId;
+    localStorage.setItem("agno-active-agent-id", activeAgentId);
+  } else {
+    localStorage.removeItem("agno-active-agent-id");
+    input.disabled = true;
+    input.placeholder = "当前没有已发布的智能体，请联系管理员配置。";
+    sendButton.disabled = true;
+  }
+}
+
+agentSelect.addEventListener("change", async () => {
+  const nextAgentId = agentSelect.value;
+  if (!nextAgentId || nextAgentId === activeAgentId) return;
+  activeAgentId = nextAgentId;
+  localStorage.setItem("agno-active-agent-id", activeAgentId);
+  conversationId = null;
+  localStorage.removeItem(activeConversationKey());
+  messages.length = 0;
+  resetConversation();
+  await Promise.allSettled([loadPublishedWorkflows(), loadConversations()]);
+});
 
 async function initializeAuthentication() {
   const response = await fetch("/api/auth/me", { cache: "no-store" });
@@ -715,7 +757,8 @@ function showError(message) {
 }
 
 async function loadConversations() {
-  const response = await fetch("/api/conversations");
+  if (!activeAgentId) return [];
+  const response = await fetch(`/api/conversations?agent_id=${encodeURIComponent(activeAgentId)}`);
   if (response.status === 401) {
     await initializeAuthentication();
     throw new Error("登录已过期，请重新登录。");
@@ -762,8 +805,12 @@ async function loadConversations() {
 }
 
 async function loadPublishedWorkflows() {
+  if (!activeAgentId) {
+    workflowSelect.hidden = true;
+    return;
+  }
   try {
-    const response = await fetch("/api/workflows", { cache: "no-store" });
+    const response = await fetch(`/api/workflows?agent_id=${encodeURIComponent(activeAgentId)}`, { cache: "no-store" });
     if (!response.ok) return;
     const workflows = await response.json();
     workflowSelect.replaceChildren(new Option("普通对话", ""));
@@ -775,7 +822,7 @@ async function loadPublishedWorkflows() {
 }
 
 async function openConversation(id) {
-  const response = await fetch(`/api/conversations/${encodeURIComponent(id)}`);
+  const response = await fetch(`/api/conversations/${encodeURIComponent(id)}?agent_id=${encodeURIComponent(activeAgentId)}`);
   if (response.status === 401) {
     await initializeAuthentication();
     throw new Error("登录已过期，请重新登录。");
@@ -788,7 +835,7 @@ async function openConversation(id) {
   const conversation = await response.json();
   showChatPage();
   conversationId = conversation.id;
-  localStorage.setItem(ACTIVE_CONVERSATION_KEY, conversationId);
+  localStorage.setItem(activeConversationKey(), conversationId);
   selectedFiles = [];
   renderFiles();
   messages.splice(0, messages.length, ...conversation.messages.map((message) => ({
@@ -803,7 +850,7 @@ async function openConversation(id) {
 }
 
 async function deleteConversation(id) {
-  const response = await fetch(`/api/conversations/${encodeURIComponent(id)}`, { method: "DELETE" });
+  const response = await fetch(`/api/conversations/${encodeURIComponent(id)}?agent_id=${encodeURIComponent(activeAgentId)}`, { method: "DELETE" });
   if (!response.ok) throw new Error("删除对话失败，请重试。");
   if (conversationId === id) resetConversation();
   await loadConversations();
@@ -812,7 +859,7 @@ async function deleteConversation(id) {
 function resetConversation() {
   showChatPage();
   conversationId = null;
-  localStorage.removeItem(ACTIVE_CONVERSATION_KEY);
+  localStorage.removeItem(activeConversationKey());
   messages.length = 0;
   selectedFiles = [];
   input.value = "";
@@ -882,6 +929,10 @@ async function readStream(response, assistantMessage) {
 
 async function sendMessage(prefill = null) {
   if (busy) return;
+  if (!activeAgentId) {
+    showError("当前没有可用的智能体，请联系管理员配置并发布。 ");
+    return;
+  }
   if (prefill) input.value = prefill;
   const question = input.value.trim();
   const selectedWorkflowId = workflowSelect.value;
@@ -921,6 +972,7 @@ async function sendMessage(prefill = null) {
   });
   const body = new FormData();
   body.append("message", question);
+  body.append("agent_id", activeAgentId);
   if (conversationId) body.append("conversation_id", conversationId);
   body.append("use_knowledge", String(document.querySelector("#knowledge-enabled").checked));
   body.append("deep_thinking", String(deepThinkingEnabled));
@@ -939,7 +991,7 @@ async function sendMessage(prefill = null) {
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.detail || "工作流执行失败，请重试。");
       conversationId = payload.conversation_id;
-      localStorage.setItem(ACTIVE_CONVERSATION_KEY, conversationId);
+      localStorage.setItem(activeConversationKey(), conversationId);
       assistantMessage.content = payload.output || "工作流没有返回文本。";
     } else {
       const response = await fetch("/api/chat", { method: "POST", body });
@@ -948,7 +1000,7 @@ async function sendMessage(prefill = null) {
         throw new Error(payload.detail || "请求失败，请重试。");
       }
       conversationId = response.headers.get("x-conversation-id") || conversationId;
-      if (conversationId) localStorage.setItem(ACTIVE_CONVERSATION_KEY, conversationId);
+      if (conversationId) localStorage.setItem(activeConversationKey(), conversationId);
       const savedConversation = (await loadConversations()).find((item) => item.id === conversationId);
       activeTitle.textContent = savedConversation?.title || "新对话";
       await readStream(response, assistantMessage);
@@ -1037,7 +1089,7 @@ logoutTrigger.addEventListener("click", async () => {
     if (!response.ok) throw new Error("退出登录失败，请重试。");
     currentUser = null;
     conversationId = null;
-    localStorage.removeItem(ACTIVE_CONVERSATION_KEY);
+    localStorage.removeItem(activeConversationKey());
     messages.length = 0;
     selectedFiles = [];
     fileInput.value = "";

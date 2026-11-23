@@ -81,3 +81,6 @@ body {
     min-height: 0;
   }
 }
+.agent-picker-label { display:flex; align-items:center; gap:9px; margin-left:auto; color:#aeb4bf; font-size:12px; }
+.agent-picker-label select { max-width:min(260px, 48vw); min-height:36px; padding:0 32px 0 11px; border:1px solid #343943; border-radius:9px; background:#171a20; color:#eff0f2; font:inherit; }
+@media (max-width: 600px) { .agent-picker-label>span { display:none; } .agent-picker-label select { max-width:46vw; } }

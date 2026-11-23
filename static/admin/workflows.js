@@ -213,12 +213,13 @@ function renderWorkflowEditor(workflow) {
 }
 
 async function fetchWorkflowSettings() {
-  const listRequest = workflowLoaded
-    ? Promise.resolve(workflows)
-    : workflowRequest("/api/admin/workflows");
+  const agentId = window.getSelectedAgentId?.() || "";
+  if (!agentId) throw new Error("请先新增一个智能体。");
+  const agentQuery = `agent_id=${encodeURIComponent(agentId)}`;
+  const listRequest = workflowRequest(`/api/admin/workflows?${agentQuery}`);
   const [listResult, resourceResult] = await Promise.allSettled([
     listRequest,
-    workflowRequest("/api/admin/resources"),
+    workflowRequest(`/api/admin/resources?${agentQuery}`),
   ]);
   if (listResult.status === "rejected") throw listResult.reason;
   workflows = listResult.value;
@@ -254,7 +255,7 @@ workflowForm.addEventListener("submit", async (event) => {
   const workflow = currentWorkflow();
   if (!workflow) return;
   try {
-    const payload = { name: workflowForm.elements.name.value.trim(), description: workflowForm.elements.description.value.trim(), nodes: workflow.nodes };
+    const payload = { agent_id: window.getSelectedAgentId?.() || "", name: workflowForm.elements.name.value.trim(), description: workflowForm.elements.description.value.trim(), nodes: workflow.nodes };
     const isNew = workflow.id.startsWith("new-");
     const saved = await workflowRequest(isNew ? "/api/admin/workflows" : `/api/admin/workflows/${encodeURIComponent(workflow.id)}`, { method: isNew ? "POST" : "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
     workflows = workflows.filter((item) => item.id !== workflow.id);
@@ -268,13 +269,13 @@ workflowForm.addEventListener("submit", async (event) => {
 document.querySelector("#workflow-publish").addEventListener("click", async () => {
   const workflow = currentWorkflow();
   if (!workflow || workflow.id.startsWith("new-")) { workflowToast("请先保存工作流草稿。"); return; }
-  try { const saved = await workflowRequest(`/api/admin/workflows/${encodeURIComponent(workflow.id)}/publish`, { method: "POST" }); workflows = workflows.map((item) => item.id === saved.id ? saved : item); renderWorkflowList(); renderWorkflowEditor(saved); workflowToast("工作流已发布。"); }
+  try { const saved = await workflowRequest(`/api/admin/workflows/${encodeURIComponent(workflow.id)}/publish?agent_id=${encodeURIComponent(window.getSelectedAgentId?.() || "")}`, { method: "POST" }); workflows = workflows.map((item) => item.id === saved.id ? saved : item); renderWorkflowList(); renderWorkflowEditor(saved); workflowToast("工作流已发布。"); }
   catch (error) { workflowToast(error.message); }
 });
 document.querySelector("#workflow-disable").addEventListener("click", async () => {
   const workflow = currentWorkflow();
   if (!workflow) return;
-  try { const saved = await workflowRequest(`/api/admin/workflows/${encodeURIComponent(workflow.id)}/disable`, { method: "POST" }); workflows = workflows.map((item) => item.id === saved.id ? saved : item); renderWorkflowList(); renderWorkflowEditor(saved); workflowToast("工作流已停用。"); }
+  try { const saved = await workflowRequest(`/api/admin/workflows/${encodeURIComponent(workflow.id)}/disable?agent_id=${encodeURIComponent(window.getSelectedAgentId?.() || "")}`, { method: "POST" }); workflows = workflows.map((item) => item.id === saved.id ? saved : item); renderWorkflowList(); renderWorkflowEditor(saved); workflowToast("工作流已停用。"); }
   catch (error) { workflowToast(error.message); }
 });
 document.querySelector("#workflow-run").addEventListener("click", async (event) => {
@@ -310,6 +311,6 @@ document.querySelector("#workflow-delete").addEventListener("click", async () =>
   });
   deleteDialog.showModal();
   if (!(await confirmed)) return;
-  try { await workflowRequest(`/api/admin/workflows/${encodeURIComponent(workflow.id)}`, { method: "DELETE" }); workflows = workflows.filter((item) => item.id !== workflow.id); selectedWorkflowId = null; returnToWorkflowList(); workflowToast("工作流已删除。"); }
+  try { await workflowRequest(`/api/admin/workflows/${encodeURIComponent(workflow.id)}?agent_id=${encodeURIComponent(window.getSelectedAgentId?.() || "")}`, { method: "DELETE" }); workflows = workflows.filter((item) => item.id !== workflow.id); selectedWorkflowId = null; returnToWorkflowList(); workflowToast("工作流已删除。"); }
   catch (error) { workflowToast(error.message); }
 });

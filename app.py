@@ -44,6 +44,7 @@ from pydantic import BaseModel, Field
 from PIL import Image as PillowImage
 from PIL import UnidentifiedImageError
 from pypdf import PdfReader
+from cryptography.fernet import Fernet, InvalidToken
 from starlette.concurrency import run_in_threadpool
 
 
@@ -109,6 +110,8 @@ ACCOUNT_NAME_PATTERN = re.compile(r"^[A-Za-z0-9_.@-]{3,64}$")
 SUPER_ADMIN_ACCOUNT = "16602024093"
 USER_ROLE = "user"
 SUPER_ADMIN_ROLE = "super_admin"
+DEFAULT_ACCESS_ROLE_NAME = "默认用户"
+DEFAULT_ACCESS_ROLE_DESCRIPTION = "普通用户的默认访问角色"
 ALLOWED_IMAGE_MIME_TYPES = {
     ".jpg": "image/jpeg",
     ".jpeg": "image/jpeg",
@@ -116,9 +119,14 @@ ALLOWED_IMAGE_MIME_TYPES = {
     ".webp": "image/webp",
 }
 DATABASE_PATH = BASE_DIR / "data" / "agent.db"
-DEFAULT_KNOWLEDGE_FOLDER_ID = "00000000-0000-0000-0000-000000000001"
 DEFAULT_KNOWLEDGE_FOLDER_NAME = "未分类"
 KNOWLEDGE_FOLDER_NAME_MAX_LENGTH = 80
+AGENT_NAME_MAX_LENGTH = 80
+AGENT_SLUG_MAX_LENGTH = 64
+AGENT_DESCRIPTION_MAX_LENGTH = 500
+AGENT_CONFIG_KEY_PATH = BASE_DIR / "data" / ".agent-config.key"
+AGENT_PROVIDERS = {"deepseek", "openai"}
+AGENT_STATUS_VALUES = {"draft", "published", "disabled"}
 load_dotenv(BASE_DIR / ".env")
 DEFAULT_KNOWLEDGE_DIR = Path(r"D:\AI-Agent\knowledge") if os.name == "nt" else BASE_DIR / "data" / "knowledge"
 KNOWLEDGE_DIR = Path(os.getenv("KNOWLEDGE_DATA_DIR", str(DEFAULT_KNOWLEDGE_DIR))).expanduser()
@@ -222,8 +230,39 @@ def database_connection() -> Iterator[sqlite3.Connection]:
 
 
 def initialize_database() -> None:
-    """创建本地业务表，初始化知识库目录并清理一次性迁移前的测试资料。"""
+    """创建或修复本地数据库中的账号、智能体和业务资源结构。"""
     with database_connection() as connection:
+        existing_tables = {
+            row["name"] for row in connection.execute(
+                "SELECT name FROM sqlite_master WHERE type = 'table'"
+            ).fetchall()
+        }
+        if "conversations" in existing_tables:
+            conversation_columns = {
+                row["name"] for row in connection.execute("PRAGMA table_info(conversations)").fetchall()
+            }
+            if "agent_id" not in conversation_columns:
+                LOGGER.warning("Resetting legacy test data for the multi-agent schema")
+                connection.execute("PRAGMA foreign_keys = OFF")
+                for table_name in (
+                    "messages", "conversations", "knowledge_documents", "knowledge_folders",
+                    "agent_call_logs", "workflows", "http_tools", "role_resource_grants",
+                    "user_access_roles", "sessions", "login_attempts", "app_migrations",
+                    "app_settings", "access_roles", "agents", "users",
+                ):
+                    if table_name in existing_tables:
+                        connection.execute(f'DROP TABLE "{table_name}"')
+                connection.execute("PRAGMA foreign_keys = ON")
+                for directory in (KNOWLEDGE_FILES_DIR, KNOWLEDGE_VECTOR_DIR):
+                    if directory.exists():
+                        try:
+                            shutil.rmtree(directory)
+                        except OSError as exc:
+                            LOGGER.warning(
+                                "Unable to remove legacy test data directory %s: %s",
+                                directory,
+                                type(exc).__name__,
+                            )
         connection.executescript(
             """
             CREATE TABLE IF NOT EXISTS users (
@@ -274,13 +313,35 @@ def initialize_database() -> None:
                 window_started_at TEXT NOT NULL,
                 locked_until TEXT
             );
+            CREATE TABLE IF NOT EXISTS agents (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                slug TEXT NOT NULL UNIQUE,
+                description TEXT NOT NULL DEFAULT '',
+                avatar TEXT NOT NULL DEFAULT '',
+                provider TEXT NOT NULL CHECK(provider IN ('deepseek', 'openai')),
+                model TEXT NOT NULL,
+                vision_model TEXT NOT NULL,
+                base_url TEXT NOT NULL,
+                api_key_ciphertext TEXT NOT NULL DEFAULT '',
+                additional_prompt TEXT NOT NULL DEFAULT '',
+                status TEXT NOT NULL CHECK(status IN ('draft', 'published', 'disabled')),
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                published_at TEXT
+            );
+            CREATE INDEX IF NOT EXISTS idx_agents_status_updated_at
+                ON agents(status, updated_at DESC);
             CREATE TABLE IF NOT EXISTS conversations (
                 id TEXT PRIMARY KEY,
-                user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+                user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                agent_id TEXT NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
                 title TEXT NOT NULL,
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             );
+            CREATE INDEX IF NOT EXISTS idx_conversations_user_agent_updated_at
+                ON conversations(user_id, agent_id, updated_at DESC);
             CREATE TABLE IF NOT EXISTS messages (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 conversation_id TEXT NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
@@ -295,16 +356,16 @@ def initialize_database() -> None:
                 ON messages(conversation_id, id);
             CREATE TABLE IF NOT EXISTS knowledge_folders (
                 id TEXT PRIMARY KEY,
+                agent_id TEXT NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
                 name TEXT NOT NULL,
                 is_default INTEGER NOT NULL DEFAULT 0 CHECK(is_default IN (0, 1)),
                 created_at TEXT NOT NULL
             );
-            CREATE UNIQUE INDEX IF NOT EXISTS idx_knowledge_folders_name_unique
-                ON knowledge_folders(lower(name));
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_knowledge_folders_agent_name_unique
+                ON knowledge_folders(agent_id, lower(name));
             CREATE TABLE IF NOT EXISTS knowledge_documents (
                 id TEXT PRIMARY KEY,
-                folder_id TEXT NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001'
-                    REFERENCES knowledge_folders(id) ON DELETE RESTRICT,
+                folder_id TEXT NOT NULL REFERENCES knowledge_folders(id) ON DELETE RESTRICT,
                 file_name TEXT NOT NULL,
                 file_path TEXT NOT NULL,
                 file_size INTEGER NOT NULL,
@@ -316,6 +377,8 @@ def initialize_database() -> None:
             );
             CREATE INDEX IF NOT EXISTS idx_knowledge_documents_created_at
                 ON knowledge_documents(created_at DESC);
+            CREATE INDEX IF NOT EXISTS idx_knowledge_documents_folder_created_at
+                ON knowledge_documents(folder_id, created_at DESC);
             CREATE TABLE IF NOT EXISTS app_migrations (
                 migration_key TEXT PRIMARY KEY,
                 applied_at TEXT NOT NULL
@@ -327,7 +390,8 @@ def initialize_database() -> None:
             );
             CREATE TABLE IF NOT EXISTS http_tools (
                 id TEXT PRIMARY KEY,
-                name TEXT NOT NULL UNIQUE,
+                agent_id TEXT NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
+                name TEXT NOT NULL,
                 description TEXT NOT NULL,
                 method TEXT NOT NULL CHECK(method IN ('GET', 'POST', 'PUT', 'PATCH', 'DELETE')),
                 url TEXT NOT NULL,
@@ -339,11 +403,14 @@ def initialize_database() -> None:
                 last_test_at TEXT,
                 last_test_status INTEGER
             );
-            CREATE INDEX IF NOT EXISTS idx_http_tools_enabled
-                ON http_tools(enabled, updated_at DESC);
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_http_tools_agent_name_unique
+                ON http_tools(agent_id, lower(name));
+            CREATE INDEX IF NOT EXISTS idx_http_tools_agent_enabled
+                ON http_tools(agent_id, enabled, updated_at DESC);
             CREATE TABLE IF NOT EXISTS workflows (
                 id TEXT PRIMARY KEY,
-                name TEXT NOT NULL COLLATE NOCASE UNIQUE,
+                agent_id TEXT NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
+                name TEXT NOT NULL,
                 description TEXT NOT NULL DEFAULT '',
                 nodes_json TEXT NOT NULL DEFAULT '[]',
                 status TEXT NOT NULL CHECK(status IN ('draft', 'published', 'disabled')),
@@ -351,12 +418,15 @@ def initialize_database() -> None:
                 updated_at TEXT NOT NULL,
                 published_at TEXT
             );
-            CREATE INDEX IF NOT EXISTS idx_workflows_status_updated_at
-                ON workflows(status, updated_at DESC);
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_workflows_agent_name_unique
+                ON workflows(agent_id, lower(name));
+            CREATE INDEX IF NOT EXISTS idx_workflows_agent_status_updated_at
+                ON workflows(agent_id, status, updated_at DESC);
             CREATE TABLE IF NOT EXISTS agent_call_logs (
                 id TEXT PRIMARY KEY,
                 user_id TEXT NOT NULL,
                 username TEXT NOT NULL,
+                agent_id TEXT NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
                 conversation_id TEXT,
                 call_type TEXT NOT NULL CHECK(call_type IN ('chat', 'workflow', 'knowledge_search', 'http_tool')),
                 resource_name TEXT NOT NULL DEFAULT '',
@@ -366,144 +436,41 @@ def initialize_database() -> None:
                 details_json TEXT NOT NULL DEFAULT '{}',
                 created_at TEXT NOT NULL
             );
-            CREATE INDEX IF NOT EXISTS idx_agent_call_logs_created_at
-                ON agent_call_logs(created_at DESC);
+            CREATE INDEX IF NOT EXISTS idx_agent_call_logs_agent_created_at
+                ON agent_call_logs(agent_id, created_at DESC);
             CREATE INDEX IF NOT EXISTS idx_agent_call_logs_user_created
                 ON agent_call_logs(user_id, created_at DESC);
             """
         )
-        folder_column = next(
-            (
-                row for row in connection.execute("PRAGMA table_info(knowledge_documents)").fetchall()
-                if row["name"] == "folder_id"
-            ),
-            None,
-        )
-        message_columns = {
-            row["name"] for row in connection.execute("PRAGMA table_info(messages)").fetchall()
-        }
-        if "knowledge_sources_json" not in message_columns:
-            connection.execute("ALTER TABLE messages ADD COLUMN knowledge_sources_json TEXT")
-        knowledge_schema_reset = folder_column is None or folder_column["notnull"] != 1
-        legacy_documents: list[sqlite3.Row] = []
-        if knowledge_schema_reset:
-            legacy_documents = connection.execute(
-                "SELECT id, file_path FROM knowledge_documents"
-            ).fetchall()
-            connection.execute("DROP TABLE knowledge_documents")
-            connection.execute(
-                """CREATE TABLE knowledge_documents (
-                    id TEXT PRIMARY KEY,
-                    folder_id TEXT NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001'
-                        REFERENCES knowledge_folders(id) ON DELETE RESTRICT,
-                    file_name TEXT NOT NULL,
-                    file_path TEXT NOT NULL,
-                    file_size INTEGER NOT NULL,
-                    chunk_count INTEGER NOT NULL DEFAULT 0,
-                    status TEXT NOT NULL CHECK(status IN ('indexing', 'ready', 'failed')),
-                    status_message TEXT NOT NULL DEFAULT '',
-                    created_at TEXT NOT NULL,
-                    indexed_at TEXT
-                )"""
-            )
-        connection.execute(
-            "INSERT OR IGNORE INTO knowledge_folders(id, name, is_default, created_at) "
-            "VALUES (?, ?, 1, ?)",
-            (DEFAULT_KNOWLEDGE_FOLDER_ID, DEFAULT_KNOWLEDGE_FOLDER_NAME, utc_timestamp()),
-        )
-        reset_migration_key = "knowledge_folders_initial_reset_v1"
-        reset_migration = connection.execute(
-            "SELECT 1 FROM app_migrations WHERE migration_key = ?", (reset_migration_key,)
-        ).fetchone()
-        if reset_migration is None or knowledge_schema_reset:
-            if not legacy_documents:
-                legacy_documents = connection.execute(
-                    "SELECT id, file_path FROM knowledge_documents"
-                ).fetchall()
-            for document in legacy_documents:
-                try:
-                    normalized_id = str(uuid.UUID(document["id"]))
-                    file_path = Path(document["file_path"]).resolve()
-                    expected_directory = (KNOWLEDGE_FILES_DIR / normalized_id).resolve()
-                    if (
-                        file_path.parent == expected_directory
-                        and expected_directory.parent == KNOWLEDGE_FILES_DIR.resolve()
-                        and expected_directory.exists()
-                    ):
-                        shutil.rmtree(expected_directory)
-                except (OSError, RuntimeError, ValueError) as exc:
-                    LOGGER.warning(
-                        "Unable to remove a legacy knowledge file during folder migration: %s",
-                        type(exc).__name__,
-                    )
-            connection.execute("DELETE FROM knowledge_documents")
-            connection.execute(
-                "INSERT OR REPLACE INTO app_migrations(migration_key, applied_at) VALUES (?, ?)",
-                (reset_migration_key, utc_timestamp()),
-            )
-            try:
-                legacy_vector_table = KNOWLEDGE_VECTOR_DIR / "agent_knowledge.lance"
-                if legacy_vector_table.exists():
-                    shutil.rmtree(legacy_vector_table)
-            except OSError as exc:
-                LOGGER.exception("Unable to remove the legacy knowledge vector table")
-                raise RuntimeError("无法清理旧知识库向量索引，请关闭其他服务进程后重启。") from exc
-        connection.execute("CREATE INDEX IF NOT EXISTS idx_knowledge_documents_created_at "
-                           "ON knowledge_documents(created_at DESC)")
-        connection.execute(
-            "CREATE INDEX IF NOT EXISTS idx_knowledge_documents_folder_created_at "
-            "ON knowledge_documents(folder_id, created_at DESC)"
-        )
-        conversation_columns = {
-            row["name"] for row in connection.execute("PRAGMA table_info(conversations)").fetchall()
-        }
-        if "user_id" not in conversation_columns:
-            connection.execute(
-                "ALTER TABLE conversations ADD COLUMN user_id TEXT REFERENCES users(id) ON DELETE CASCADE"
-            )
-        connection.execute(
-            "CREATE INDEX IF NOT EXISTS idx_conversations_user_id_updated_at "
-            "ON conversations(user_id, updated_at DESC)"
-        )
         default_role_id = str(uuid.uuid5(uuid.NAMESPACE_URL, "agno:role:default-user"))
+        timestamp = utc_timestamp()
         connection.execute(
-            "INSERT OR IGNORE INTO access_roles(id, name, description, is_system, created_at, updated_at) "
-            "VALUES (?, ?, ?, 1, ?, ?)",
-            (default_role_id, "默认用户", "普通用户初始角色；默认不授予知识库或工具访问权。", utc_timestamp(), utc_timestamp()),
+            "INSERT INTO access_roles(id, name, description, is_system, created_at, updated_at) "
+            "VALUES (?, ?, ?, 1, ?, ?) "
+            "ON CONFLICT(id) DO UPDATE SET name=excluded.name, description=excluded.description, "
+            "is_system=1, updated_at=excluded.updated_at",
+            (
+                default_role_id,
+                DEFAULT_ACCESS_ROLE_NAME,
+                DEFAULT_ACCESS_ROLE_DESCRIPTION,
+                timestamp,
+                timestamp,
+            ),
         )
-        role_migration_key = "rbac_default_role_seed_v1"
-        role_migration = connection.execute(
-            "SELECT 1 FROM app_migrations WHERE migration_key = ?", (role_migration_key,)
-        ).fetchone()
-        if role_migration is None:
-            connection.execute(
-                "INSERT OR IGNORE INTO user_access_roles(user_id, role_id, created_at) "
-                "SELECT id, ?, ? FROM users WHERE role = ?",
-                (default_role_id, utc_timestamp(), USER_ROLE),
-            )
-            connection.execute(
-                "INSERT INTO app_migrations(migration_key, applied_at) VALUES (?, ?)",
-                (role_migration_key, utc_timestamp()),
-            )
-        super_admin = connection.execute(
-            "SELECT id FROM users WHERE username_key = ?",
-            (SUPER_ADMIN_ACCOUNT.casefold(),),
-        ).fetchone()
-        if super_admin:
-            connection.execute(
-                "UPDATE users SET role = ? WHERE id = ?",
-                (SUPER_ADMIN_ROLE, super_admin["id"]),
-            )
-            connection.execute(
-                "UPDATE conversations SET user_id = ? WHERE user_id IS NULL",
-                (super_admin["id"],),
-            )
-        connection.execute("DELETE FROM sessions WHERE expires_at <= ?", (utc_timestamp(),))
+        connection.execute(
+            "INSERT OR IGNORE INTO user_access_roles(user_id, role_id, created_at) "
+            "SELECT id, ?, ? FROM users WHERE role = ?",
+            (default_role_id, timestamp, USER_ROLE),
+        )
+        connection.execute(
+            "UPDATE users SET role = ? WHERE username_key = ?",
+            (SUPER_ADMIN_ROLE, SUPER_ADMIN_ACCOUNT.casefold()),
+        )
+        connection.execute("DELETE FROM sessions WHERE expires_at <= ?", (timestamp,))
         connection.execute(
             "UPDATE knowledge_documents SET status = 'failed', "
             "status_message = '服务重启时索引任务中断，请重新索引。' WHERE status = 'indexing'"
         )
-
 
 def utc_timestamp() -> str:
     """生成对话记录使用的 UTC 时间戳。
@@ -513,10 +480,11 @@ def utc_timestamp() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="microseconds")
 
 
-def create_conversation(user_id: str, conversation_id: str | None = None) -> str:
-    """创建一条新的本地对话。
+def create_conversation(user_id: str, agent_id: str, conversation_id: str | None = None) -> str:
+    """创建一条绑定指定智能体的本地对话。
 
     @param user_id 对话所属用户 UUID
+    @param agent_id 对话使用的智能体 UUID
     @param conversation_id 可选预先分配的对话 UUID
     @return 新对话 UUID
     """
@@ -524,29 +492,36 @@ def create_conversation(user_id: str, conversation_id: str | None = None) -> str
     timestamp = utc_timestamp()
     with database_connection() as connection:
         connection.execute(
-            "INSERT INTO conversations(id, user_id, title, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
-            (conversation_id, user_id, "新对话", timestamp, timestamp),
+            "INSERT INTO conversations(id, user_id, agent_id, title, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+            (conversation_id, user_id, agent_id, "新对话", timestamp, timestamp),
         )
     return conversation_id
 
 
-def ensure_conversation_exists(conversation_id: str, user_id: str, is_super_admin: bool = False) -> None:
+def ensure_conversation_exists(
+    conversation_id: str,
+    user_id: str,
+    agent_id: str,
+    is_super_admin: bool = False,
+) -> None:
     """确认指定对话存在。
 
     @param conversation_id 对话 UUID
     @param user_id 当前用户 UUID
+    @param agent_id 当前请求使用的智能体 UUID
     @param is_super_admin 当前用户是否拥有跨账号会话管理权限
     @throws HTTPException 对话不存在时返回 404
     """
     with database_connection() as connection:
         if is_super_admin:
             conversation = connection.execute(
-                "SELECT 1 FROM conversations WHERE id = ?", (conversation_id,)
+                "SELECT 1 FROM conversations WHERE id = ? AND agent_id = ?",
+                (conversation_id, agent_id),
             ).fetchone()
         else:
             conversation = connection.execute(
-                "SELECT 1 FROM conversations WHERE id = ? AND user_id = ?",
-                (conversation_id, user_id),
+                "SELECT 1 FROM conversations WHERE id = ? AND user_id = ? AND agent_id = ?",
+                (conversation_id, user_id, agent_id),
             ).fetchone()
     if conversation is None:
         raise HTTPException(status_code=404, detail="对话不存在，可能已被删除。")
@@ -657,6 +632,7 @@ def record_agent_call(
     error_code: str = "",
     conversation_id: str | None = None,
     details: dict[str, Any] | None = None,
+    agent_id: str | None = None,
 ) -> None:
     """保存一次智能体或资源调用的摘要，不存储问题、提示词、响应或凭据。
 
@@ -668,11 +644,21 @@ def record_agent_call(
     @param error_code 不含业务输入的异常类型标识
     @param conversation_id 关联会话 UUID；预览调用时为空
     @param details 不含用户内容或密钥的数值型摘要
+    @param agent_id 关联智能体 UUID；为空时尝试从会话读取
     """
     if call_type not in {"chat", "workflow", "knowledge_search", "http_tool"}:
         return
     if not isinstance(user.get("id"), str) or not user["id"]:
         LOGGER.warning("Skipping call log without a valid user ID: call_type=%s", call_type)
+        return
+    if not agent_id and conversation_id:
+        with database_connection() as connection:
+            conversation = connection.execute(
+                "SELECT agent_id FROM conversations WHERE id = ?", (conversation_id,)
+            ).fetchone()
+        agent_id = conversation["agent_id"] if conversation else None
+    if not agent_id:
+        LOGGER.warning("Skipping call log without a valid agent ID: call_type=%s", call_type)
         return
     safe_details = details or {}
     try:
@@ -684,13 +670,14 @@ def record_agent_call(
     try:
         with database_connection() as connection:
             connection.execute(
-                "INSERT INTO agent_call_logs(id, user_id, username, conversation_id, call_type, "
+                "INSERT INTO agent_call_logs(id, user_id, username, agent_id, conversation_id, call_type, "
                 "resource_name, status, duration_ms, error_code, details_json, created_at) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     str(uuid.uuid4()),
                     str(user.get("id", ""))[:80],
                     str(user.get("username", ""))[:64],
+                    agent_id,
                     conversation_id,
                     call_type,
                     resource_name[:160],
@@ -925,6 +912,26 @@ def get_user_resource_scope(user_id: str) -> dict[str, set[str]]:
     return scope
 
 
+def get_agent_resource_scope(agent_id: str) -> dict[str, set[str]]:
+    """读取指定智能体实际拥有的知识库目录和 HTTP 工具。
+
+    @param agent_id 智能体 UUID
+    @return 智能体资源 ID 集合
+    """
+    normalized_id = normalize_agent_id(agent_id)
+    with database_connection() as connection:
+        folders = connection.execute(
+            "SELECT id FROM knowledge_folders WHERE agent_id = ?", (normalized_id,)
+        ).fetchall()
+        tools = connection.execute(
+            "SELECT id FROM http_tools WHERE agent_id = ?", (normalized_id,)
+        ).fetchall()
+    return {
+        "knowledge_folder": {row["id"] for row in folders},
+        "http_tool": {row["id"] for row in tools},
+    }
+
+
 def get_default_access_role_id(connection: sqlite3.Connection) -> str:
     """读取系统创建的普通用户默认角色 ID。
 
@@ -932,7 +939,8 @@ def get_default_access_role_id(connection: sqlite3.Connection) -> str:
     @return 默认业务角色 UUID
     """
     row = connection.execute(
-        "SELECT id FROM access_roles WHERE is_system = 1 AND name = ?", ("默认用户",)
+        "SELECT id FROM access_roles WHERE is_system = 1 AND name = ?",
+        (DEFAULT_ACCESS_ROLE_NAME,),
     ).fetchone()
     if row is None:
         raise RuntimeError("Default access role was not initialized")
@@ -1310,45 +1318,157 @@ def validate_retrieval_settings(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def load_runtime_model_settings() -> dict[str, str]:
-    """合并环境默认值和管理端保存的模型配置。"""
+def normalize_agent_id(agent_id: str) -> str:
+    """校验并规范化智能体 UUID。
+
+    @param agent_id 待校验的智能体 UUID
+    @return 标准格式的智能体 UUID
+    @throws HTTPException UUID 格式无效时返回 400
+    """
+    try:
+        return str(uuid.UUID(agent_id))
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(status_code=400, detail="智能体 ID 格式无效。") from exc
+
+
+def get_agent_row(agent_id: str, require_published: bool = False) -> sqlite3.Row:
+    """读取智能体配置，并按需限制为已发布状态。
+
+    @param agent_id 智能体 UUID
+    @param require_published 是否要求智能体已经发布
+    @return 智能体数据库记录
+    @throws HTTPException 智能体不存在或尚未发布时返回 404
+    """
+    normalized_id = normalize_agent_id(agent_id)
     with database_connection() as connection:
-        rows = connection.execute(
-            "SELECT setting_key, setting_value FROM app_settings "
-            "WHERE setting_key IN ('model', 'vision_model', 'base_url', 'api_key', 'additional_prompt')"
-        ).fetchall()
-    stored = {row["setting_key"]: row["setting_value"] for row in rows}
-    return {
-        "model": stored.get("model", os.getenv("DEEPSEEK_MODEL", "deepseek-chat").strip()),
-        "vision_model": stored.get(
-            "vision_model", os.getenv("DEEPSEEK_VISION_MODEL", "deepseek-v4-flash-vision-exp").strip()
-        ),
-        "base_url": stored.get("base_url", os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com").strip()),
-        "api_key": stored["api_key"] if "api_key" in stored else os.getenv("DEEPSEEK_API_KEY", "").strip(),
-        "additional_prompt": stored.get("additional_prompt", "").strip(),
+        row = connection.execute("SELECT * FROM agents WHERE id = ?", (normalized_id,)).fetchone()
+    if row is None:
+        raise HTTPException(status_code=404, detail="智能体不存在。")
+    if require_published and row["status"] != "published":
+        raise HTTPException(status_code=404, detail="智能体不存在或尚未发布。")
+    return row
+
+
+def load_agent_cipher() -> Fernet:
+    """加载配置的 Fernet 密钥，或在本机生成并保存新密钥。
+
+    @return 用于加密和解密智能体 API Key 的 Fernet 实例
+    @throws RuntimeError 密钥无效或无法读取、写入时抛出
+    """
+    configured_key = os.getenv("AGENT_CONFIG_ENCRYPTION_KEY", "").strip()
+    try:
+        if configured_key:
+            return Fernet(configured_key.encode("ascii"))
+        AGENT_CONFIG_KEY_PATH.parent.mkdir(parents=True, exist_ok=True)
+        if not AGENT_CONFIG_KEY_PATH.exists():
+            AGENT_CONFIG_KEY_PATH.write_bytes(Fernet.generate_key())
+        return Fernet(AGENT_CONFIG_KEY_PATH.read_bytes().strip())
+    except (OSError, ValueError, TypeError) as exc:
+        raise RuntimeError("无法加载 API Key 加密密钥，请检查 AGENT_CONFIG_ENCRYPTION_KEY 或本机密钥文件。") from exc
+
+
+def encrypt_agent_api_key(api_key: str) -> str:
+    """加密智能体 API Key 以便安全写入本地数据库。
+
+    @param api_key 明文 API Key
+    @return Fernet 加密后的 API Key
+    """
+    if not api_key:
+        return ""
+    return load_agent_cipher().encrypt(api_key.encode("utf-8")).decode("ascii")
+
+
+def decrypt_agent_api_key(ciphertext: str) -> str:
+    """解密数据库中保存的智能体 API Key。
+
+    @param ciphertext Fernet 加密后的 API Key
+    @return 解密后的 API Key；密文无效或密钥不匹配时返回空字符串
+    """
+    if not ciphertext:
+        return ""
+    try:
+        return load_agent_cipher().decrypt(ciphertext.encode("ascii")).decode("utf-8")
+    except (InvalidToken, UnicodeDecodeError, ValueError, TypeError, RuntimeError):
+        LOGGER.error("Unable to decrypt agent API key")
+        return ""
+
+
+def public_agent(row: sqlite3.Row, include_credentials: bool = False) -> dict[str, Any]:
+    """构造智能体公开信息，并仅向管理接口返回密钥配置状态。
+
+    @param row 智能体数据库记录
+    @param include_credentials 是否附带管理端可见的模型配置字段
+    @return 不包含 API Key 明文的智能体信息
+    """
+    result = {
+        "id": row["id"],
+        "name": row["name"],
+        "slug": row["slug"],
+        "description": row["description"],
+        "avatar": row["avatar"],
+        "status": row["status"],
     }
+    if include_credentials:
+        result.update({
+        "provider": row["provider"],
+        "model": row["model"],
+        "vision_model": row["vision_model"],
+        "base_url": row["base_url"],
+        "additional_prompt": row["additional_prompt"],
+        "created_at": row["created_at"],
+        "updated_at": row["updated_at"],
+        "published_at": row["published_at"],
+        })
+        result["api_key_configured"] = bool(row["api_key_ciphertext"])
+    return result
 
 
-def validate_model_settings(payload: dict[str, Any]) -> dict[str, str]:
-    """校验 DeepSeek 模型标识、兼容 API 地址和全局补充提示词。"""
+def validate_agent_payload(payload: dict[str, Any], current: sqlite3.Row | None = None) -> dict[str, str]:
+    """校验并规范化智能体基本信息和模型配置。
+
+    @param payload 管理端提交的智能体配置
+    @param current 更新时的当前智能体记录
+    @return 可写入数据库的规范化配置
+    @throws ValueError 配置字段格式无效时抛出
+    """
+    name = payload.get("name")
+    slug = payload.get("slug")
+    description = payload.get("description", "")
+    avatar = payload.get("avatar", "")
+    provider = payload.get("provider", "deepseek")
     model = payload.get("model")
     vision_model = payload.get("vision_model")
     base_url = payload.get("base_url")
     additional_prompt = payload.get("additional_prompt", "")
+    if not isinstance(name, str) or not name.strip() or len(name.strip()) > AGENT_NAME_MAX_LENGTH:
+        raise ValueError(f"智能体名称不能为空且不能超过 {AGENT_NAME_MAX_LENGTH} 个字符。")
+    if not isinstance(slug, str) or not re.fullmatch(r"[a-z0-9][-a-z0-9_]{1,63}", slug.strip().lower()):
+        raise ValueError("智能体标识只能包含小写字母、数字、连字符和下划线，长度为 2 到 64 个字符。")
+    if not isinstance(description, str) or len(description) > AGENT_DESCRIPTION_MAX_LENGTH:
+        raise ValueError(f"业务说明不能超过 {AGENT_DESCRIPTION_MAX_LENGTH} 个字符。")
+    if not isinstance(avatar, str) or len(avatar) > 10:
+        raise ValueError("头像标识不能超过 10 个字符。")
+    if not isinstance(provider, str) or provider not in AGENT_PROVIDERS:
+        raise ValueError("模型供应商不受支持。")
     if not isinstance(model, str) or not model.strip() or len(model.strip()) > 120:
-        raise ValueError("普通对话模型名称必填，且不能超过 120 个字符。")
+        raise ValueError("普通对话模型名称不能为空且不能超过 120 个字符。")
     if not isinstance(vision_model, str) or not vision_model.strip() or len(vision_model.strip()) > 120:
-        raise ValueError("视觉模型名称必填，且不能超过 120 个字符。")
+        raise ValueError("视觉模型名称不能为空且不能超过 120 个字符。")
     if not isinstance(base_url, str) or not base_url.strip() or len(base_url.strip()) > 500:
-        raise ValueError("API 地址必填，且不能超过 500 个字符。")
+        raise ValueError("API Base URL 不能为空且不能超过 500 个字符。")
     parsed_url = urlparse(base_url.strip())
     if parsed_url.scheme not in {"http", "https"} or not parsed_url.hostname or parsed_url.username or parsed_url.password:
-        raise ValueError("API 地址必须是有效的 HTTP 或 HTTPS 地址，且不能包含账号信息。")
+        raise ValueError("API Base URL 必须是有效的 HTTP 或 HTTPS 地址，且不能包含用户凭据。")
     if parsed_url.query or parsed_url.fragment:
-        raise ValueError("API 地址不能包含查询参数或片段。")
+        raise ValueError("API Base URL 不能包含查询参数或片段。")
     if not isinstance(additional_prompt, str) or len(additional_prompt) > MODEL_PROMPT_MAX_CHARS:
-        raise ValueError(f"全局补充提示词最多 {MODEL_PROMPT_MAX_CHARS} 个字符。")
+        raise ValueError(f"补充指令不能超过 {MODEL_PROMPT_MAX_CHARS} 个字符。")
     return {
+        "name": name.strip(),
+        "slug": slug.strip().lower(),
+        "description": description.strip(),
+        "avatar": avatar.strip(),
+        "provider": provider,
         "model": model.strip(),
         "vision_model": vision_model.strip(),
         "base_url": base_url.strip().rstrip("/"),
@@ -1356,22 +1476,42 @@ def validate_model_settings(payload: dict[str, Any]) -> dict[str, str]:
     }
 
 
-def describe_knowledge_media(images: list[tuple[str, bytes]], instruction: str) -> str:
-    """使用已配置的 DeepSeek 视觉模型描述图片或视频关键帧。
+def load_agent_model_settings(agent_id: str) -> dict[str, str]:
+    """读取指定智能体的模型配置并解密 API Key。
 
+    @param agent_id 智能体 UUID
+    @return 包含模型、服务地址、提示词和 API Key 的运行时配置
+    @throws HTTPException 智能体不存在时返回 404
+    """
+    row = get_agent_row(agent_id)
+    settings = dict(row)
+    settings["api_key"] = decrypt_agent_api_key(row["api_key_ciphertext"])
+    return {
+        "provider": settings["provider"],
+        "model": settings["model"],
+        "vision_model": settings["vision_model"],
+        "base_url": settings["base_url"],
+        "api_key": settings["api_key"],
+        "additional_prompt": settings["additional_prompt"],
+    }
+
+def describe_knowledge_media(agent_id: str, images: list[tuple[str, bytes]], instruction: str) -> str:
+    """使用指定智能体的视觉模型描述图片或视频关键帧。
+
+    @param agent_id 当前知识库所属智能体 UUID
     @param images 有序的图片标签与压缩 JPEG 字节列表
     @param instruction 要求视觉模型完成的描述任务
     @return 可用于本机向量检索的中文描述文本
     @throws RuntimeError 视觉模型配置、网络请求或模型响应不可用时抛出
     """
-    model_settings = load_runtime_model_settings()
+    model_settings = load_agent_model_settings(agent_id)
     api_key = model_settings["api_key"]
     model = model_settings["vision_model"]
     if not api_key or not model:
-        raise RuntimeError("未配置 DeepSeek 视觉模型或 API Key，无法索引图片与视频。")
+        raise RuntimeError("当前智能体未配置视觉模型或 API Key，无法索引图片与视频。")
 
     if not images:
-        raise RuntimeError("没有可发送给 DeepSeek 视觉模型的图片。")
+        raise RuntimeError("没有可发送给当前智能体视觉模型的图片。")
 
     try:
         import httpx
@@ -1427,7 +1567,7 @@ def describe_knowledge_media(images: list[tuple[str, bytes]], instruction: str) 
             if not description:
                 finish_reason = choice.get("finish_reason", "unknown") if isinstance(choice, dict) else "unknown"
                 LOGGER.warning(
-                    "DeepSeek vision response contained no text: model=%s, finish_reason=%s, content_type=%s, image=%s",
+                    "Vision response contained no text: model=%s, finish_reason=%s, content_type=%s, image=%s",
                     model,
                     finish_reason,
                     type(response_content).__name__,
@@ -1435,21 +1575,21 @@ def describe_knowledge_media(images: list[tuple[str, bytes]], instruction: str) 
                 )
                 if finish_reason == "length":
                     raise RuntimeError(
-                        f"DeepSeek 视觉模型为图片“{label}”耗尽了输出长度，仍未返回描述文本。"
+                        f"视觉模型为图片“{label}”耗尽了输出长度，仍未返回描述文本。"
                         "已关闭思考模式并提高输出上限；请检查模型是否支持 thinking 参数，或更换视觉模型。"
                     )
-                raise RuntimeError(f"DeepSeek 视觉模型没有为图片“{label}”返回描述文本。")
+                raise RuntimeError(f"视觉模型没有为图片“{label}”返回描述文本。")
             descriptions.append(f"{label}\n{description}")
     except Exception as exc:
-        if isinstance(exc, RuntimeError) and str(exc).startswith("DeepSeek 视觉模型"):
+        if isinstance(exc, RuntimeError) and str(exc).startswith("视觉模型"):
             raise
         if "httpx" in locals() and isinstance(exc, httpx.HTTPStatusError):
             response_body = exc.response.text[:500].strip()
             detail = f"：{response_body}" if response_body else ""
             raise RuntimeError(
-                f"DeepSeek 视觉 API 返回 HTTP {exc.response.status_code}{detail}"
+                f"视觉模型 API 返回 HTTP {exc.response.status_code}{detail}"
             ) from exc
-        raise RuntimeError("调用 DeepSeek 视觉模型失败，请检查模型名称、网络和 API 配置。") from exc
+        raise RuntimeError("调用视觉模型失败，请检查模型名称、网络和 API 配置。") from exc
     return "\n\n".join(descriptions)[:MAX_KNOWLEDGE_TEXT_CHARS]
 
 
@@ -1829,9 +1969,10 @@ def embedded_knowledge_image_links(
     ]
 
 
-def extract_knowledge_media_text(file_path: Path, file_name: str) -> str:
+def extract_knowledge_media_text(agent_id: str, file_path: Path, file_name: str) -> str:
     """从图片或视频关键帧生成可被本机知识库检索的视觉描述。
 
+    @param agent_id 当前知识库所属智能体 UUID
     @param file_path 已保存的图片或视频路径
     @param file_name 用户上传时的原始文件名
     @return 包含画面内容和视频时间戳的中文描述
@@ -1842,6 +1983,7 @@ def extract_knowledge_media_text(file_path: Path, file_name: str) -> str:
     if extension in ALLOWED_IMAGE_MIME_TYPES:
         image_bytes = compress_knowledge_image(file_path.read_bytes(), file_name)
         return describe_knowledge_media(
+            agent_id,
             [("图片文件：" + file_name, image_bytes)],
             "请用中文描述图片中与检索有关的主体、场景、物体、可辨认文字和关系。"
             "不确定的内容明确写不确定，不要补充画面以外的信息。输出简洁、具体、便于之后用自然语言搜索。",
@@ -1872,6 +2014,7 @@ def extract_knowledge_media_text(file_path: Path, file_name: str) -> str:
     return (
         f"视频文件：{file_name}\n视频时长：{duration_seconds:.1f} 秒\n"
         + describe_knowledge_media(
+            agent_id,
             frames,
             "以下是视频中的单张关键帧，请描述当前画面中的人物、动作、物体、场景和可辨认文字。"
             "按标签保留时间戳；不要推断其他时间点发生的内容。"
@@ -2050,8 +2193,17 @@ def index_knowledge_document(document_id: str, file_path: Path, file_name: str) 
     @throws RuntimeError Ollama、DeepSeek 视觉模型、FFmpeg 或向量索引不可用时抛出
     """
     extension = Path(file_name).suffix.lower()
+    with database_connection() as connection:
+        document_row = connection.execute(
+            "SELECT d.status, f.agent_id FROM knowledge_documents d "
+            "JOIN knowledge_folders f ON f.id = d.folder_id WHERE d.id = ?",
+            (document_id,),
+        ).fetchone()
+    if document_row is None or document_row["status"] != "indexing":
+        return 0
+    agent_id = document_row["agent_id"]
     extracted_text = (
-        extract_knowledge_media_text(file_path, file_name)
+        extract_knowledge_media_text(agent_id, file_path, file_name)
         if extension in KNOWLEDGE_MEDIA_EXTENSIONS
         else extract_knowledge_spreadsheet_text(file_name, file_path.read_bytes())
         if extension in KNOWLEDGE_SPREADSHEET_EXTENSIONS
@@ -2069,6 +2221,7 @@ def index_knowledge_document(document_id: str, file_path: Path, file_name: str) 
         if compressed_images:
             for label, image_bytes in compressed_images:
                 visual_description = describe_knowledge_media(
+                    agent_id,
                     [(label, image_bytes)],
                     "这是一张文档内嵌图片。请用中文描述图片类型、主题、可辨认标题/标签、主要节点和关系，"
                     "保留有助于后续按业务主题搜索的关键词。无法辨认的内容说明不确定，不要补充图片外的信息；"
@@ -2104,13 +2257,14 @@ def index_knowledge_document(document_id: str, file_path: Path, file_name: str) 
             ).fetchone()
         if row is None or row["status"] != "indexing":
             return 0
-        folder_id = row["folder_id"] or DEFAULT_KNOWLEDGE_FOLDER_ID
+        folder_id = row["folder_id"]
         for chunk in chunks_to_index:
             chunk.meta_data = {
                 **(chunk.meta_data or {}),
                 "source_id": document_id,
                 "source_name": file_name,
                 "folder_id": folder_id,
+                "agent_id": agent_id,
             }
         delete_knowledge_vectors(document_id)
         try:
@@ -2184,6 +2338,7 @@ def process_knowledge_index(document_id: str, file_path: Path, file_name: str) -
 
 def search_knowledge(
     query: str,
+    agent_id: str | None = None,
     max_results: int | None = None,
     allowed_folder_ids: set[str] | None = None,
     diagnostics: dict[str, Any] | None = None,
@@ -2191,6 +2346,7 @@ def search_knowledge(
     """从已建立的本地索引中查找相关资料片段。
 
     @param query 当前对话中的用户问题
+    @param agent_id 当前智能体 UUID；为空时仅供管理端全库检索
     @param max_results 返回片段上限；None 时使用管理端全局值，显式值仍受全局值限制
     @param allowed_folder_ids 允许返回的知识库目录 UUID；None 仅用于超级管理员的全库检索，普通用户必须在检索前传入授权目录
     @param diagnostics 可选的检索命中计数输出，不包含查询文本
@@ -2209,9 +2365,14 @@ def search_knowledge(
     if allowed_folder_ids is not None and not allowed_folder_ids:
         return []
     reconcile_knowledge_index_state()
+    normalized_agent_id = normalize_agent_id(agent_id) if agent_id else None
     with database_connection() as connection:
         ready_rows = connection.execute(
-            "SELECT id, folder_id, file_name, file_path FROM knowledge_documents WHERE status = 'ready'"
+            "SELECT d.id, d.folder_id, d.file_name, d.file_path FROM knowledge_documents d "
+            "JOIN knowledge_folders f ON f.id = d.folder_id "
+            "WHERE d.status = 'ready' "
+            + ("AND f.agent_id = ?" if normalized_agent_id else ""),
+            (normalized_agent_id,) if normalized_agent_id else (),
         ).fetchall()
     ready_sources = {row["id"]: row["file_name"] for row in ready_rows}
     ready_paths = {row["id"]: row["file_path"] for row in ready_rows}
@@ -2253,6 +2414,10 @@ def search_knowledge(
 
         documents_by_key: dict[tuple[str, str], dict[str, Any]] = {}
         searched_queries: set[str] = set()
+        scope_predicates = [
+            f'payload LIKE \'%"agent_id":"{normalized_agent_id}"%\'',
+            f'payload LIKE \'%"agent_id": "{normalized_agent_id}"%\'',
+        ] if normalized_agent_id else []
         folder_predicates = [
             f"payload LIKE '%\"folder_id\"%:%\"{folder_id}\"%'"
             for folder_id in sorted(allowed_folder_ids or ())
@@ -2260,6 +2425,12 @@ def search_knowledge(
         ]
         if allowed_folder_ids is not None and not folder_predicates:
             return []
+        filter_predicates: list[str] = []
+        if scope_predicates:
+            filter_predicates.append("(" + " OR ".join(scope_predicates) + ")")
+        if folder_predicates:
+            filter_predicates.append("(" + " OR ".join(folder_predicates) + ")")
+        vector_filter = " AND ".join(filter_predicates)
 
         def collect_candidates(queries: list[str]) -> None:
             for search_query in queries:
@@ -2270,10 +2441,8 @@ def search_knowledge(
                 query_embedding = embedder.get_embedding(search_query)
                 if query_embedding is not None:
                     vector_query = table.search(query=query_embedding, vector_column_name="vector")
-                    if folder_predicates:
-                        vector_query = vector_query.where(
-                            "(" + " OR ".join(folder_predicates) + ")", prefilter=True
-                        )
+                    if vector_filter:
+                        vector_query = vector_query.where(vector_filter, prefilter=True)
                     for rank, candidate in enumerate(vector_query.limit(search_limit).to_list(), start=1):
                         try:
                             payload = json.loads(candidate["payload"])
@@ -2290,6 +2459,7 @@ def search_knowledge(
                             not text
                             or not math.isfinite(distance)
                             or (allowed_folder_ids is not None and metadata_folder_id not in allowed_folder_ids)
+                            or (normalized_agent_id and str(metadata.get("agent_id", "")) != normalized_agent_id)
                         ):
                             continue
                         key = (source_id, text)
@@ -2312,10 +2482,8 @@ def search_knowledge(
                             query_type="fts",
                             fts_columns="payload",
                         )
-                        if folder_predicates:
-                            keyword_query = keyword_query.where(
-                                "(" + " OR ".join(folder_predicates) + ")", prefilter=True
-                            )
+                        if vector_filter:
+                            keyword_query = keyword_query.where(vector_filter, prefilter=True)
                         keyword_candidates = keyword_query.limit(search_limit).to_list()
                     except Exception:
                         LOGGER.exception("Knowledge full-text query failed")
@@ -2336,6 +2504,7 @@ def search_knowledge(
                         if (
                             not text
                             or (allowed_folder_ids is not None and metadata_folder_id not in allowed_folder_ids)
+                            or (normalized_agent_id and str(metadata.get("agent_id", "")) != normalized_agent_id)
                         ):
                             continue
                         key = (source_id, text)
@@ -2381,7 +2550,10 @@ def search_knowledge(
         )
     with database_connection() as connection:
         current_ready_rows = connection.execute(
-            "SELECT id, folder_id, file_name FROM knowledge_documents WHERE status = 'ready'"
+            "SELECT d.id, d.folder_id, d.file_name FROM knowledge_documents d "
+            "JOIN knowledge_folders f ON f.id = d.folder_id WHERE d.status = 'ready' "
+            + ("AND f.agent_id = ?" if normalized_agent_id else ""),
+            (normalized_agent_id,) if normalized_agent_id else (),
         ).fetchall()
     current_ready_documents = {row["id"]: row for row in current_ready_rows}
 
@@ -2400,6 +2572,8 @@ def search_knowledge(
                     "Knowledge result metadata mismatch: source_id=%s",
                     source_id,
                 )
+                continue
+            if normalized_agent_id and str(metadata.get("agent_id", "")) != normalized_agent_id:
                 continue
             source_name = current_source["file_name"]
             source_extension = Path(source_name).suffix.lower()
@@ -2491,6 +2665,7 @@ def search_knowledge(
 
 def search_knowledge_with_log(
     query: str,
+    agent_id: str,
     max_results: int | None,
     allowed_folder_ids: set[str] | None,
     user: dict[str, Any],
@@ -2499,6 +2674,7 @@ def search_knowledge_with_log(
     """执行受当前知识库授权限制的检索并记录耗时与命中数量。
 
     @param query 当前请求中的检索文本；不会写入日志
+    @param agent_id 当前智能体 UUID
     @param max_results 本次请求的片段数上限
     @param allowed_folder_ids 当前账号可访问的目录集合
     @param user 已认证调用者
@@ -2508,11 +2684,12 @@ def search_knowledge_with_log(
     started_at = time.perf_counter()
     diagnostics: dict[str, Any] = {}
     try:
-        results = search_knowledge(query, max_results, allowed_folder_ids, diagnostics)
+        results = search_knowledge(query, agent_id, max_results, allowed_folder_ids, diagnostics)
     except Exception as exc:
         record_agent_call(
-            user, "knowledge_search", "知识库检索", "failed",
+        user, "knowledge_search", "知识库检索", "failed",
             int((time.perf_counter() - started_at) * 1000), type(exc).__name__, conversation_id,
+            agent_id=agent_id,
         )
         raise
     record_agent_call(
@@ -2523,6 +2700,7 @@ def search_knowledge_with_log(
         int((time.perf_counter() - started_at) * 1000),
         conversation_id=conversation_id,
         details={"result_count": len(results), **diagnostics},
+        agent_id=agent_id,
     )
     return results
 
@@ -2950,6 +3128,7 @@ def build_http_tool_function(
                     int((time.perf_counter() - started_at) * 1000),
                     conversation_id=conversation_id,
                     details={"status_code": result["status_code"]},
+                    agent_id=tool_row["agent_id"],
                 )
             return json.dumps(result, ensure_ascii=False)
         except Exception as exc:
@@ -2962,6 +3141,7 @@ def build_http_tool_function(
                     int((time.perf_counter() - started_at) * 1000),
                     type(exc).__name__,
                     conversation_id,
+                    agent_id=tool_row["agent_id"],
                 )
             raise
 
@@ -2979,12 +3159,14 @@ def build_http_tool_function(
 
 
 def load_enabled_http_tools(
+    agent_id: str,
     allowed_tool_ids: set[str] | None = None,
     invoking_user: dict[str, Any] | None = None,
     conversation_id: str | None = None,
 ) -> list[Function]:
     """加载启用且获当前用户角色授权的 HTTP 接口并转换为 Agno 工具。
 
+    @param agent_id 当前智能体 UUID
     @param allowed_tool_ids 获准工具 UUID 集合；为空集合时不加载任何工具，None 表示管理员全量访问
     @param invoking_user 当前工具调用所属用户
     @param conversation_id 关联会话 UUID
@@ -2992,42 +3174,46 @@ def load_enabled_http_tools(
     """
     if allowed_tool_ids is not None and not allowed_tool_ids:
         return []
+    normalized_agent_id = normalize_agent_id(agent_id)
     with database_connection() as connection:
         if allowed_tool_ids is None:
             rows = connection.execute(
-                "SELECT name, description, method, url, parameters_json, headers_json "
-                "FROM http_tools WHERE enabled = 1 ORDER BY name"
+                "SELECT agent_id, name, description, method, url, parameters_json, headers_json "
+                "FROM http_tools WHERE enabled = 1 AND agent_id = ? ORDER BY name",
+                (normalized_agent_id,),
             ).fetchall()
         else:
             placeholders = ",".join("?" for _ in allowed_tool_ids)
             rows = connection.execute(
-                "SELECT name, description, method, url, parameters_json, headers_json "
-                f"FROM http_tools WHERE enabled = 1 AND id IN ({placeholders}) ORDER BY name",
-                tuple(sorted(allowed_tool_ids)),
+                "SELECT agent_id, name, description, method, url, parameters_json, headers_json "
+                f"FROM http_tools WHERE enabled = 1 AND agent_id = ? AND id IN ({placeholders}) ORDER BY name",
+                (normalized_agent_id, *tuple(sorted(allowed_tool_ids))),
             ).fetchall()
     return [build_http_tool_function(row, invoking_user, conversation_id) for row in rows]
 
 
 def build_agent(
+    agent_id: str,
     use_vision: bool = False,
     deep_thinking: bool = False,
     allowed_tool_ids: set[str] | None = None,
     invoking_user: dict[str, Any] | None = None,
     conversation_id: str | None = None,
 ) -> Agent:
-    """创建普通问答或视觉问答使用的 DeepSeek 智能体。
+    """创建普通问答或视觉问答使用的智能体。
 
+    @param agent_id 当前智能体 UUID
     @param use_vision 当前请求包含图片时启用配置的视觉模型
-    @param deep_thinking 是否为普通文字对话开启 DeepSeek 深度思考
+    @param deep_thinking 是否为当前供应商支持的深度思考模式
     @param allowed_tool_ids 当前用户角色获准访问的工具 UUID 集合；None 表示超级管理员
     @param invoking_user 当前智能体请求的调用者，用于审计工具调用
     @param conversation_id 关联会话 UUID
-    @return 已配置 DeepSeek 模型的 Agno Agent
+    @return 使用指定智能体模型配置的 Agno Agent
     """
-    runtime_settings = load_runtime_model_settings()
+    runtime_settings = load_agent_model_settings(agent_id)
     api_key = runtime_settings["api_key"]
     if not api_key:
-        raise HTTPException(status_code=503, detail="尚未配置 DeepSeek API Key，请在管理工作台或项目 .env 文件中配置。")
+        raise HTTPException(status_code=503, detail="当前智能体尚未配置 API Key，请在管理工作台中完善模型配置。")
 
     model_settings = {
         "id": runtime_settings["vision_model"]
@@ -3043,7 +3229,16 @@ def build_agent(
             "model": "assistant",
         },
     }
-    model = DeepSeek(**model_settings, use_thinking=deep_thinking)
+    if runtime_settings["provider"] == "deepseek":
+        model = DeepSeek(**model_settings, use_thinking=deep_thinking)
+    else:
+        from agno.models.openai import OpenAIChat
+
+        model = OpenAIChat(
+            id=model_settings["id"],
+            api_key=api_key,
+            base_url=model_settings["base_url"],
+        )
 
     return Agent(
         model=model,
@@ -3052,7 +3247,7 @@ def build_agent(
             if runtime_settings["additional_prompt"]
             else SYSTEM_INSTRUCTIONS
         ),
-        tools=load_enabled_http_tools(allowed_tool_ids, invoking_user, conversation_id),
+        tools=load_enabled_http_tools(agent_id, allowed_tool_ids, invoking_user, conversation_id),
         markdown=True,
     )
 
@@ -3133,7 +3328,7 @@ def normalize_workflow_nodes(nodes: Any) -> list[dict[str, Any]]:
     return normalized
 
 
-def validate_workflow_resources(nodes: list[dict[str, Any]]) -> None:
+def validate_workflow_resources(nodes: list[dict[str, Any]], agent_id: str) -> None:
     """确认工作流引用的目录和工具当前存在。"""
     folder_ids = {
         folder_id
@@ -3150,8 +3345,8 @@ def validate_workflow_resources(nodes: list[dict[str, Any]]) -> None:
                 continue
             placeholders = ",".join("?" for _ in resource_ids)
             count = connection.execute(
-                f"SELECT COUNT(*) FROM {table_name} WHERE id IN ({placeholders})",
-                tuple(sorted(resource_ids)),
+                f"SELECT COUNT(*) FROM {table_name} WHERE agent_id = ? AND id IN ({placeholders})",
+                (agent_id, *tuple(sorted(resource_ids))),
             ).fetchone()[0]
             if count != len(resource_ids):
                 raise ValueError(f"工作流引用了不存在的{resource_type}，请重新选择后保存。")
@@ -3162,6 +3357,7 @@ def public_workflow(row: sqlite3.Row) -> dict[str, Any]:
     nodes = json.loads(row["nodes_json"])
     return {
         "id": row["id"],
+        "agent_id": row["agent_id"],
         "name": row["name"],
         "description": row["description"],
         "nodes": nodes,
@@ -3192,11 +3388,12 @@ def run_workflow_execution(
     """
     with database_connection() as connection:
         row = connection.execute(
-            "SELECT id, name, description, nodes_json, status FROM workflows WHERE id = ?",
+            "SELECT id, agent_id, name, description, nodes_json, status FROM workflows WHERE id = ?",
             (workflow_id,),
         ).fetchone()
     if row is None or (row["status"] != "published" and not allow_unpublished):
         raise HTTPException(status_code=404, detail="工作流不存在或尚未发布。")
+    workflow_agent_id = row["agent_id"]
     nodes = normalize_workflow_nodes(json.loads(row["nodes_json"]))
     is_super_admin = user["role"] == SUPER_ADMIN_ROLE
     knowledge_sources: set[str] = set()
@@ -3216,6 +3413,7 @@ def run_workflow_execution(
             if configured_node["type"] == "agent":
                 prompt = workflow_template(config["prompt"], current_input, previous_output)
                 agent = build_agent(
+                    workflow_agent_id,
                     deep_thinking=config["deep_thinking"],
                     allowed_tool_ids=None if is_super_admin else current_scope["http_tool"],
                     invoking_user=user,
@@ -3236,6 +3434,7 @@ def run_workflow_execution(
                 query = workflow_template(config["query"], current_input, previous_output)
                 documents = search_knowledge_with_log(
                     query,
+                    workflow_agent_id,
                     config["max_results"],
                     allowed_folders,
                     user,
@@ -3251,7 +3450,7 @@ def run_workflow_execution(
                 tool_id = config["tool_id"]
                 if not is_super_admin and tool_id not in current_scope["http_tool"]:
                     raise HTTPException(status_code=403, detail=f"工作流节点“{configured_node['name']}”使用了未授权 HTTP 工具。")
-                tool_row = get_http_tool_row(tool_id)
+                tool_row = get_http_tool_row(tool_id, workflow_agent_id)
                 if not tool_row["enabled"]:
                     raise HTTPException(status_code=409, detail=f"工作流节点“{configured_node['name']}”使用的工具已停用。")
                 tool_config = validate_http_tool_configuration({
@@ -3275,6 +3474,7 @@ def run_workflow_execution(
                         int((time.perf_counter() - tool_started_at) * 1000),
                         conversation_id=conversation_id,
                         details={"status_code": tool_result["status_code"], "workflow_node": configured_node["name"]},
+                        agent_id=workflow_agent_id,
                     )
                     output = json.dumps(tool_result, ensure_ascii=False)
                 except Exception as exc:
@@ -3287,6 +3487,7 @@ def run_workflow_execution(
                         type(exc).__name__,
                         conversation_id,
                         {"workflow_node": configured_node["name"]},
+                        workflow_agent_id,
                     )
                     raise
             if len(output) > WORKFLOW_MAX_OUTPUT_CHARS:
@@ -3315,6 +3516,7 @@ def run_workflow_execution(
     ]
     return {
         "workflow_id": row["id"],
+        "agent_id": workflow_agent_id,
         "workflow_name": row["name"],
         "input": initial_input,
         "output": str(result.content or ""),
@@ -3422,12 +3624,7 @@ async def register_account(request: Request) -> JSONResponse:
                 "VALUES (?, ?, ?, ?, ?, ?)",
                 (user_id, username, username_key, password_hash, role, created_at),
             )
-            if role == SUPER_ADMIN_ROLE:
-                connection.execute(
-                    "UPDATE conversations SET user_id = ? WHERE user_id IS NULL",
-                    (user_id,),
-                )
-            else:
+            if role != SUPER_ADMIN_ROLE:
                 connection.execute(
                     "INSERT INTO user_access_roles(user_id, role_id, created_at) VALUES (?, ?, ?)",
                     (user_id, get_default_access_role_id(connection), created_at),
@@ -3507,30 +3704,231 @@ def logout_account(request: Request) -> JSONResponse:
 
 @app.get("/api/health")
 def health() -> dict[str, str | bool]:
-    """返回服务状态及 DeepSeek 配置状态。
+    """返回服务状态及已发布智能体的模型配置状态。
 
     @return 服务状态，不包含密钥内容
     """
-    model_settings = load_runtime_model_settings()
+    with database_connection() as connection:
+        configured_agents = connection.execute(
+            "SELECT COUNT(*) FROM agents WHERE status = 'published' AND api_key_ciphertext != ''"
+        ).fetchone()[0]
     return {
         "status": "ok",
-        "deepseek_configured": bool(model_settings["api_key"]),
+        "agents_configured": configured_agents > 0,
+        "published_agent_count": configured_agents,
         "knowledge_model_available": is_ollama_embedding_model_available(),
     }
 
 
-@app.get("/api/admin/model-settings")
-def admin_model_settings(_: dict[str, Any] = Depends(require_super_admin)) -> dict[str, Any]:
-    """返回管理端可见的模型设置，绝不返回 API Key 原文。"""
-    settings = load_runtime_model_settings()
-    return {
-        "provider": "DeepSeek",
-        "model": settings["model"],
-        "vision_model": settings["vision_model"],
-        "base_url": settings["base_url"],
-        "additional_prompt": settings["additional_prompt"],
-        "api_key_configured": bool(settings["api_key"]),
-    }
+@app.get("/api/agents")
+def published_agents(_: dict[str, Any] = Depends(require_current_user)) -> list[dict[str, Any]]:
+    """返回普通聊天端可选择的已发布智能体。"""
+    with database_connection() as connection:
+        rows = connection.execute(
+            "SELECT id, name, slug, description, avatar, provider, model, vision_model, base_url, "
+            "additional_prompt, status, created_at, updated_at, published_at, api_key_ciphertext "
+            "FROM agents WHERE status = 'published' ORDER BY lower(name), created_at"
+        ).fetchall()
+    return [public_agent(row) for row in rows if row["api_key_ciphertext"]]
+
+
+@app.get("/api/admin/agents")
+def admin_agents(_: dict[str, Any] = Depends(require_super_admin)) -> list[dict[str, Any]]:
+    """列出所有智能体及其模型配置状态。"""
+    with database_connection() as connection:
+        rows = connection.execute(
+            "SELECT * FROM agents ORDER BY updated_at DESC, lower(name)"
+        ).fetchall()
+    return [public_agent(row, include_credentials=True) for row in rows]
+
+
+@app.post("/api/admin/agents", status_code=201)
+def create_agent(
+    payload: dict[str, Any],
+    _: dict[str, Any] = Depends(require_super_admin),
+) -> dict[str, Any]:
+    """创建一个独立配置模型、提示词和知识库的智能体。"""
+    try:
+        settings = validate_agent_payload(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    api_key = payload.get("api_key", "")
+    if not isinstance(api_key, str) or len(api_key) > 1000:
+        raise HTTPException(status_code=400, detail="API Key 配置格式无效。")
+    try:
+        encrypted_key = encrypt_agent_api_key(api_key.strip())
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    agent_id = str(uuid.uuid4())
+    timestamp = utc_timestamp()
+    try:
+        with database_connection() as connection:
+            connection.execute(
+                "INSERT INTO agents(id, name, slug, description, avatar, provider, model, vision_model, "
+                "base_url, api_key_ciphertext, additional_prompt, status, created_at, updated_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, ?)",
+                (agent_id, settings["name"], settings["slug"], settings["description"], settings["avatar"],
+                 settings["provider"], settings["model"], settings["vision_model"], settings["base_url"],
+                 encrypted_key, settings["additional_prompt"], timestamp, timestamp),
+            )
+            connection.execute(
+                "INSERT INTO knowledge_folders(id, agent_id, name, is_default, created_at) VALUES (?, ?, ?, 1, ?)",
+                (str(uuid.uuid4()), agent_id, DEFAULT_KNOWLEDGE_FOLDER_NAME, timestamp),
+            )
+    except sqlite3.IntegrityError as exc:
+        raise HTTPException(status_code=409, detail="智能体标识已存在，请换一个标识。") from exc
+    return public_agent(get_agent_row(agent_id), include_credentials=True)
+
+
+@app.put("/api/admin/agents/{agent_id}")
+def update_agent(
+    agent_id: str,
+    payload: dict[str, Any],
+    _: dict[str, Any] = Depends(require_super_admin),
+) -> dict[str, Any]:
+    """更新指定智能体的业务信息和模型连接配置。"""
+    normalized_id = normalize_agent_id(agent_id)
+    current = get_agent_row(normalized_id)
+    try:
+        settings = validate_agent_payload(payload, current)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    api_key = payload.get("api_key", "")
+    clear_api_key = payload.get("clear_api_key", False)
+    if not isinstance(api_key, str) or len(api_key) > 1000 or not isinstance(clear_api_key, bool):
+        raise HTTPException(status_code=400, detail="API Key 配置格式无效。")
+    if api_key.strip() and clear_api_key:
+        raise HTTPException(status_code=400, detail="不能同时设置新 API Key 并清除现有 Key。")
+    encrypted_key = current["api_key_ciphertext"]
+    if api_key.strip():
+        try:
+            encrypted_key = encrypt_agent_api_key(api_key.strip())
+        except RuntimeError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+    elif clear_api_key:
+        encrypted_key = ""
+    timestamp = utc_timestamp()
+    try:
+        with database_connection() as connection:
+            result = connection.execute(
+                "UPDATE agents SET name=?, slug=?, description=?, avatar=?, provider=?, model=?, vision_model=?, "
+                "base_url=?, api_key_ciphertext=?, additional_prompt=?, updated_at=? WHERE id=?",
+                (settings["name"], settings["slug"], settings["description"], settings["avatar"],
+                 settings["provider"], settings["model"], settings["vision_model"], settings["base_url"],
+                 encrypted_key, settings["additional_prompt"], timestamp, normalized_id),
+            )
+            if result.rowcount == 0:
+                raise HTTPException(status_code=404, detail="智能体不存在。")
+    except sqlite3.IntegrityError as exc:
+        raise HTTPException(status_code=409, detail="智能体标识已存在，请换一个标识。") from exc
+    return public_agent(get_agent_row(normalized_id), include_credentials=True)
+
+
+@app.post("/api/admin/agents/{agent_id}/publish")
+def publish_agent(agent_id: str, _: dict[str, Any] = Depends(require_super_admin)) -> dict[str, Any]:
+    """发布已配置 API Key 的智能体。"""
+    normalized_id = normalize_agent_id(agent_id)
+    row = get_agent_row(normalized_id)
+    if not row["api_key_ciphertext"]:
+        raise HTTPException(status_code=409, detail="请先配置 API Key 后再发布智能体。")
+    with database_connection() as connection:
+        connection.execute(
+            "UPDATE agents SET status='published', published_at=?, updated_at=? WHERE id=?",
+            (utc_timestamp(), utc_timestamp(), normalized_id),
+        )
+    return public_agent(get_agent_row(normalized_id), include_credentials=True)
+
+
+@app.post("/api/admin/agents/{agent_id}/disable")
+def disable_agent(agent_id: str, _: dict[str, Any] = Depends(require_super_admin)) -> dict[str, Any]:
+    """停用指定智能体并阻止新的聊天请求。"""
+    normalized_id = normalize_agent_id(agent_id)
+    get_agent_row(normalized_id)
+    with database_connection() as connection:
+        connection.execute(
+            "UPDATE agents SET status='disabled', updated_at=? WHERE id=?",
+            (utc_timestamp(), normalized_id),
+        )
+    return public_agent(get_agent_row(normalized_id), include_credentials=True)
+
+
+@app.delete("/api/admin/agents/{agent_id}")
+def delete_agent(agent_id: str, _: dict[str, Any] = Depends(require_super_admin)) -> dict[str, bool]:
+    """删除智能体及其独立会话、知识库、工具和工作流。"""
+    normalized_id = normalize_agent_id(agent_id)
+    get_agent_row(normalized_id)
+    with database_connection() as connection:
+        documents = connection.execute(
+            "SELECT d.id, d.file_path FROM knowledge_documents d "
+            "JOIN knowledge_folders f ON f.id = d.folder_id WHERE f.agent_id = ?",
+            (normalized_id,),
+        ).fetchall()
+    for document in documents:
+        try:
+            delete_knowledge_vectors(document["id"])
+            file_path = resolve_knowledge_document_path(document["id"], document["file_path"])
+            if file_path.parent.exists():
+                shutil.rmtree(file_path.parent)
+        except (OSError, RuntimeError, ValueError) as exc:
+            raise HTTPException(
+                status_code=500,
+                detail="无法完整清理当前智能体的知识库文件和向量，请重试后再删除智能体。",
+            ) from exc
+    with database_connection() as connection:
+        folder_ids = [row["id"] for row in connection.execute(
+            "SELECT id FROM knowledge_folders WHERE agent_id = ?", (normalized_id,)
+        ).fetchall()]
+        if folder_ids:
+            placeholders = ",".join("?" for _ in folder_ids)
+            connection.execute(
+                f"DELETE FROM role_resource_grants WHERE resource_type='knowledge_folder' AND resource_id IN ({placeholders})",
+                folder_ids,
+            )
+        tool_ids = [row["id"] for row in connection.execute(
+            "SELECT id FROM http_tools WHERE agent_id = ?", (normalized_id,)
+        ).fetchall()]
+        if tool_ids:
+            placeholders = ",".join("?" for _ in tool_ids)
+            connection.execute(
+                f"DELETE FROM role_resource_grants WHERE resource_type='http_tool' AND resource_id IN ({placeholders})",
+                tool_ids,
+            )
+        connection.execute("DELETE FROM agents WHERE id = ?", (normalized_id,))
+    return {"deleted": True}
+
+
+@app.get("/api/admin/agents/{agent_id}/model-settings")
+def admin_agent_model_settings(agent_id: str, _: dict[str, Any] = Depends(require_super_admin)) -> dict[str, Any]:
+    """返回当前智能体的模型设置和 API Key 配置状态。"""
+    return public_agent(get_agent_row(agent_id), include_credentials=True)
+
+
+@app.post("/api/admin/agents/{agent_id}/test-model")
+def test_agent_model_connection(agent_id: str, _: dict[str, Any] = Depends(require_super_admin)) -> dict[str, Any]:
+    """使用当前智能体的 API Key 测试其模型服务连接。"""
+    settings = load_agent_model_settings(agent_id)
+    if not settings["api_key"]:
+        raise HTTPException(status_code=409, detail="请先配置当前智能体的 API Key。")
+    try:
+        import httpx
+
+        response = httpx.get(
+            f"{settings['base_url'].rstrip('/')}/models",
+            headers={"Authorization": f"Bearer {settings['api_key']}"},
+            timeout=httpx.Timeout(12.0, connect=5.0),
+            follow_redirects=False,
+            trust_env=False,
+        )
+        if response.is_success:
+            return {"connected": True, "message": "模型服务连接正常。"}
+        if response.status_code in {401, 403}:
+            raise HTTPException(status_code=502, detail="模型服务拒绝了 API Key，请检查当前智能体的密钥。")
+        raise HTTPException(status_code=502, detail=f"模型服务返回 HTTP {response.status_code}，请检查 API 地址。")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        LOGGER.warning("Agent model connection test failed: agent_id=%s error_type=%s", agent_id, type(exc).__name__)
+        raise HTTPException(status_code=502, detail="无法连接模型服务，请检查网络和 API 地址。") from exc
 
 
 @app.get("/api/admin/retrieval-settings")
@@ -3575,29 +3973,13 @@ def admin_monitoring(_: dict[str, Any] = Depends(require_super_admin)) -> dict[s
         database_status = "unavailable"
         resource_counts = {}
 
-    model_settings = load_runtime_model_settings()
     ollama_available = is_ollama_embedding_model_available()
-    deepseek_status = "not_configured"
-    if model_settings["api_key"]:
-        try:
-            import httpx
-
-            response = httpx.get(
-                f"{model_settings['base_url'].rstrip('/')}/models",
-                headers={"Authorization": f"Bearer {model_settings['api_key']}"},
-                timeout=httpx.Timeout(5.0, connect=2.0),
-                follow_redirects=False,
-                trust_env=False,
-            )
-            if response.is_success:
-                deepseek_status = "healthy"
-            elif response.status_code in {401, 403}:
-                deepseek_status = "authentication_error"
-            else:
-                deepseek_status = "unavailable"
-        except Exception as exc:
-            LOGGER.warning("Monitoring DeepSeek check failed: error_type=%s", type(exc).__name__)
-            deepseek_status = "unavailable"
+    with database_connection() as connection:
+        agent_counts = connection.execute(
+            "SELECT COUNT(*) AS total, SUM(CASE WHEN status = 'published' THEN 1 ELSE 0 END) AS published, "
+            "SUM(CASE WHEN api_key_ciphertext != '' THEN 1 ELSE 0 END) AS configured FROM agents"
+        ).fetchone()
+    model_status = "healthy" if agent_counts["configured"] else "not_configured"
 
     return {
         "checked_at": checked_at.isoformat(),
@@ -3606,11 +3988,12 @@ def admin_monitoring(_: dict[str, Any] = Depends(require_super_admin)) -> dict[s
             "service": "healthy",
             "database": database_status,
             "ollama": "healthy" if ollama_available else "unavailable",
-            "deepseek": deepseek_status,
+            "models": model_status,
         },
         "models": {
             "embedding": OLLAMA_EMBEDDING_MODEL,
-            "chat": model_settings["model"],
+            "chat_agents": agent_counts["published"] or 0,
+            "configured_agents": agent_counts["configured"] or 0,
         },
         "resources": resource_counts,
     }
@@ -3728,74 +4111,6 @@ def update_admin_retrieval_settings(
             [(key, value, timestamp) for key, value in setting_values.items()],
         )
     return settings
-
-
-@app.put("/api/admin/model-settings")
-def update_admin_model_settings(
-    payload: dict[str, Any],
-    _: dict[str, Any] = Depends(require_super_admin),
-) -> dict[str, Any]:
-    """保存 DeepSeek 模型和全局补充提示词配置。"""
-    try:
-        clean_settings = validate_model_settings(payload)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    api_key = payload.get("api_key", "")
-    clear_api_key = payload.get("clear_api_key", False)
-    if not isinstance(api_key, str) or len(api_key) > 1000 or not isinstance(clear_api_key, bool):
-        raise HTTPException(status_code=400, detail="API Key 配置格式无效。")
-    if api_key.strip() and clear_api_key:
-        raise HTTPException(status_code=400, detail="不能同时设置新 API Key 并清除现有 Key。")
-    timestamp = utc_timestamp()
-    with database_connection() as connection:
-        for key, value in clean_settings.items():
-            connection.execute(
-                "INSERT INTO app_settings(setting_key, setting_value, updated_at) VALUES (?, ?, ?) "
-                "ON CONFLICT(setting_key) DO UPDATE SET setting_value=excluded.setting_value, updated_at=excluded.updated_at",
-                (key, value, timestamp),
-            )
-        if api_key.strip():
-            connection.execute(
-                "INSERT INTO app_settings(setting_key, setting_value, updated_at) VALUES ('api_key', ?, ?) "
-                "ON CONFLICT(setting_key) DO UPDATE SET setting_value=excluded.setting_value, updated_at=excluded.updated_at",
-                (api_key.strip(), timestamp),
-            )
-        elif clear_api_key:
-            # Empty stored value intentionally overrides the environment fallback.
-            connection.execute(
-                "INSERT INTO app_settings(setting_key, setting_value, updated_at) VALUES ('api_key', '', ?) "
-                "ON CONFLICT(setting_key) DO UPDATE SET setting_value='', updated_at=excluded.updated_at",
-                (timestamp,),
-            )
-    return admin_model_settings(_)
-
-
-@app.post("/api/admin/model-settings/test")
-def test_admin_model_connection(_: dict[str, Any] = Depends(require_super_admin)) -> dict[str, Any]:
-    """通过无计费的模型列表请求检查 DeepSeek API 地址和鉴权。"""
-    settings = load_runtime_model_settings()
-    if not settings["api_key"]:
-        raise HTTPException(status_code=409, detail="请先配置 DeepSeek API Key。")
-    try:
-        import httpx
-
-        response = httpx.get(
-            f"{settings['base_url'].rstrip('/')}/models",
-            headers={"Authorization": f"Bearer {settings['api_key']}"},
-            timeout=httpx.Timeout(12.0, connect=5.0),
-            follow_redirects=False,
-            trust_env=False,
-        )
-        if response.is_success:
-            return {"connected": True, "message": "模型服务连接正常。"}
-        if response.status_code in {401, 403}:
-            raise HTTPException(status_code=502, detail="模型服务拒绝了 API Key，请检查密钥。")
-        raise HTTPException(status_code=502, detail=f"模型服务返回 HTTP {response.status_code}，请检查 API 地址。")
-    except HTTPException:
-        raise
-    except Exception as exc:
-        LOGGER.warning("DeepSeek connection test failed: error_type=%s", type(exc).__name__)
-        raise HTTPException(status_code=502, detail="无法连接模型服务，请检查网络和 API 地址。") from exc
 
 
 @app.get("/api/admin/users")
@@ -3917,6 +4232,7 @@ def admin_roles(_: dict[str, Any] = Depends(require_super_admin)) -> list[dict[s
 
 @app.get("/api/admin/resources")
 def admin_permission_resources(
+    agent_id: str = Query(...),
     _: dict[str, Any] = Depends(require_super_admin),
 ) -> dict[str, list[dict[str, Any]]]:
     """列出可分配给角色的知识库目录与 HTTP 工具，不返回工具鉴权值。
@@ -3927,10 +4243,12 @@ def admin_permission_resources(
         folders = connection.execute(
             "SELECT f.id, f.name, COUNT(d.id) AS document_count "
             "FROM knowledge_folders f LEFT JOIN knowledge_documents d ON d.folder_id = f.id "
-            "GROUP BY f.id ORDER BY f.is_default DESC, lower(f.name)"
+            "WHERE f.agent_id = ? GROUP BY f.id ORDER BY f.is_default DESC, lower(f.name)",
+            (normalize_agent_id(agent_id),),
         ).fetchall()
         tools = connection.execute(
-            "SELECT id, name, description, enabled FROM http_tools ORDER BY lower(name)"
+            "SELECT id, name, description, enabled FROM http_tools WHERE agent_id = ? ORDER BY lower(name)",
+            (normalize_agent_id(agent_id),),
         ).fetchall()
     return {
         "knowledge_folders": [dict(row) for row in folders],
@@ -4100,23 +4418,31 @@ def set_access_role_grants(
 
 
 @app.get("/api/admin/workflows")
-def admin_workflows(_: dict[str, Any] = Depends(require_super_admin)) -> list[dict[str, Any]]:
+def admin_workflows(
+    agent_id: str = Query(...),
+    _: dict[str, Any] = Depends(require_super_admin),
+) -> list[dict[str, Any]]:
     """列出工作流及其顺序节点配置。"""
     with database_connection() as connection:
         rows = connection.execute(
-            "SELECT id, name, description, nodes_json, status, created_at, updated_at, published_at "
-            "FROM workflows ORDER BY updated_at DESC"
+            "SELECT id, agent_id, name, description, nodes_json, status, created_at, updated_at, published_at "
+            "FROM workflows WHERE agent_id = ? ORDER BY updated_at DESC",
+            (normalize_agent_id(agent_id),),
         ).fetchall()
     return [public_workflow(row) for row in rows]
 
 
 @app.get("/api/workflows")
-def published_workflows(user: dict[str, Any] = Depends(require_current_user)) -> list[dict[str, Any]]:
+def published_workflows(
+    agent_id: str = Query(...),
+    user: dict[str, Any] = Depends(require_current_user),
+) -> list[dict[str, Any]]:
     """返回当前账号可运行的已发布工作流列表。"""
     with database_connection() as connection:
         rows = connection.execute(
-            "SELECT id, name, description, nodes_json, status, created_at, updated_at, published_at "
-            "FROM workflows WHERE status = 'published' ORDER BY lower(name)"
+            "SELECT id, agent_id, name, description, nodes_json, status, created_at, updated_at, published_at "
+            "FROM workflows WHERE status = 'published' AND agent_id = ? ORDER BY lower(name)",
+            (normalize_agent_id(agent_id),),
         ).fetchall()
     is_super_admin = user["role"] == SUPER_ADMIN_ROLE
     scope = None if is_super_admin else get_user_resource_scope(user["id"])
@@ -4152,11 +4478,13 @@ def create_workflow(
     _: dict[str, Any] = Depends(require_super_admin),
 ) -> dict[str, Any]:
     """创建草稿工作流。"""
+    agent_id = normalize_agent_id(payload.get("agent_id", ""))
+    get_agent_row(agent_id)
     name = payload.get("name")
     description = payload.get("description", "")
     try:
         nodes = normalize_workflow_nodes(payload.get("nodes"))
-        validate_workflow_resources(nodes)
+        validate_workflow_resources(nodes, agent_id)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     if not isinstance(name, str) or not 1 <= len(name.strip()) <= 100:
@@ -4168,12 +4496,12 @@ def create_workflow(
     try:
         with database_connection() as connection:
             connection.execute(
-                "INSERT INTO workflows(id, name, description, nodes_json, status, created_at, updated_at) "
-                "VALUES (?, ?, ?, ?, 'draft', ?, ?)",
-                (workflow_id, name.strip(), description.strip(), json.dumps(nodes, ensure_ascii=False), now, now),
+                "INSERT INTO workflows(id, agent_id, name, description, nodes_json, status, created_at, updated_at) "
+                "VALUES (?, ?, ?, ?, ?, 'draft', ?, ?)",
+                (workflow_id, agent_id, name.strip(), description.strip(), json.dumps(nodes, ensure_ascii=False), now, now),
             )
     except sqlite3.IntegrityError as exc:
-        raise HTTPException(status_code=409, detail="工作流名称已存在。") from exc
+        raise HTTPException(status_code=409, detail="当前智能体下已存在同名工作流。") from exc
     with database_connection() as connection:
         row = connection.execute("SELECT * FROM workflows WHERE id = ?", (workflow_id,)).fetchone()
     return public_workflow(row)
@@ -4190,11 +4518,12 @@ def update_workflow(
         normalized_id = str(uuid.UUID(workflow_id))
     except ValueError as exc:
         raise HTTPException(status_code=400, detail="工作流 ID 格式无效。") from exc
+    agent_id = normalize_agent_id(payload.get("agent_id", ""))
     name = payload.get("name")
     description = payload.get("description", "")
     try:
         nodes = normalize_workflow_nodes(payload.get("nodes"))
-        validate_workflow_resources(nodes)
+        validate_workflow_resources(nodes, agent_id)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     if not isinstance(name, str) or not 1 <= len(name.strip()) <= 100:
@@ -4202,12 +4531,14 @@ def update_workflow(
     if not isinstance(description, str) or len(description) > 500:
         raise HTTPException(status_code=400, detail="工作流说明不能超过 500 个字符。")
     with database_connection() as connection:
-        if connection.execute("SELECT 1 FROM workflows WHERE id = ?", (normalized_id,)).fetchone() is None:
+        if connection.execute(
+            "SELECT 1 FROM workflows WHERE id = ? AND agent_id = ?", (normalized_id, agent_id)
+        ).fetchone() is None:
             raise HTTPException(status_code=404, detail="工作流不存在。")
         try:
             connection.execute(
-                "UPDATE workflows SET name=?, description=?, nodes_json=?, status='draft', updated_at=?, published_at=NULL WHERE id=?",
-                (name.strip(), description.strip(), json.dumps(nodes, ensure_ascii=False), utc_timestamp(), normalized_id),
+                "UPDATE workflows SET name=?, description=?, nodes_json=?, status='draft', updated_at=?, published_at=NULL WHERE id=? AND agent_id=?",
+                (name.strip(), description.strip(), json.dumps(nodes, ensure_ascii=False), utc_timestamp(), normalized_id, agent_id),
             )
         except sqlite3.IntegrityError as exc:
             raise HTTPException(status_code=409, detail="工作流名称已存在。") from exc
@@ -4218,6 +4549,7 @@ def update_workflow(
 @app.post("/api/admin/workflows/{workflow_id}/publish")
 def publish_workflow(
     workflow_id: str,
+    agent_id: str = Query(...),
     _: dict[str, Any] = Depends(require_super_admin),
 ) -> dict[str, Any]:
     """发布工作流，使其可被登录用户运行。"""
@@ -4225,30 +4557,32 @@ def publish_workflow(
         normalized_id = str(uuid.UUID(workflow_id))
     except ValueError as exc:
         raise HTTPException(status_code=400, detail="工作流 ID 格式无效。") from exc
+    normalized_agent_id = normalize_agent_id(agent_id)
     now = utc_timestamp()
     with database_connection() as connection:
         workflow_row = connection.execute(
-            "SELECT nodes_json FROM workflows WHERE id = ?", (normalized_id,)
+            "SELECT nodes_json FROM workflows WHERE id = ? AND agent_id = ?",
+            (normalized_id, normalized_agent_id),
         ).fetchone()
         if workflow_row is None:
             raise HTTPException(status_code=404, detail="工作流不存在。")
         try:
             nodes = normalize_workflow_nodes(json.loads(workflow_row["nodes_json"]))
-            validate_workflow_resources(nodes)
+            validate_workflow_resources(nodes, normalized_agent_id)
         except ValueError as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
         tool_ids = {node["config"]["tool_id"] for node in nodes if node["type"] == "http"}
         if tool_ids:
             placeholders = ",".join("?" for _ in tool_ids)
             enabled_count = connection.execute(
-                f"SELECT COUNT(*) FROM http_tools WHERE enabled = 1 AND id IN ({placeholders})",
-                tuple(sorted(tool_ids)),
+                f"SELECT COUNT(*) FROM http_tools WHERE enabled = 1 AND agent_id = ? AND id IN ({placeholders})",
+                (normalized_agent_id, *tuple(sorted(tool_ids))),
             ).fetchone()[0]
             if enabled_count != len(tool_ids):
                 raise HTTPException(status_code=409, detail="工作流引用了已停用的 HTTP 工具，请调整节点后再发布。")
         result = connection.execute(
-            "UPDATE workflows SET status='published', updated_at=?, published_at=? WHERE id=?",
-            (now, now, normalized_id),
+            "UPDATE workflows SET status='published', updated_at=?, published_at=? WHERE id=? AND agent_id=?",
+            (now, now, normalized_id, normalized_agent_id),
         )
         if result.rowcount == 0:
             raise HTTPException(status_code=404, detail="工作流不存在。")
@@ -4259,6 +4593,7 @@ def publish_workflow(
 @app.post("/api/admin/workflows/{workflow_id}/disable")
 def disable_workflow(
     workflow_id: str,
+    agent_id: str = Query(...),
     _: dict[str, Any] = Depends(require_super_admin),
 ) -> dict[str, Any]:
     """停用已发布工作流。"""
@@ -4266,10 +4601,11 @@ def disable_workflow(
         normalized_id = str(uuid.UUID(workflow_id))
     except ValueError as exc:
         raise HTTPException(status_code=400, detail="工作流 ID 格式无效。") from exc
+    normalized_agent_id = normalize_agent_id(agent_id)
     with database_connection() as connection:
         result = connection.execute(
-            "UPDATE workflows SET status='disabled', updated_at=? WHERE id=?",
-            (utc_timestamp(), normalized_id),
+            "UPDATE workflows SET status='disabled', updated_at=? WHERE id=? AND agent_id=?",
+            (utc_timestamp(), normalized_id, normalized_agent_id),
         )
         if result.rowcount == 0:
             raise HTTPException(status_code=404, detail="工作流不存在。")
@@ -4280,6 +4616,7 @@ def disable_workflow(
 @app.delete("/api/admin/workflows/{workflow_id}")
 def delete_workflow(
     workflow_id: str,
+    agent_id: str = Query(...),
     _: dict[str, Any] = Depends(require_super_admin),
 ) -> dict[str, bool]:
     """删除工作流。"""
@@ -4287,8 +4624,11 @@ def delete_workflow(
         normalized_id = str(uuid.UUID(workflow_id))
     except ValueError as exc:
         raise HTTPException(status_code=400, detail="工作流 ID 格式无效。") from exc
+    normalized_agent_id = normalize_agent_id(agent_id)
     with database_connection() as connection:
-        result = connection.execute("DELETE FROM workflows WHERE id = ?", (normalized_id,))
+        result = connection.execute(
+            "DELETE FROM workflows WHERE id = ? AND agent_id = ?", (normalized_id, normalized_agent_id)
+        )
     if result.rowcount == 0:
         raise HTTPException(status_code=404, detail="工作流不存在。")
     return {"deleted": True}
@@ -4310,6 +4650,14 @@ async def execute_workflow(
         normalized_workflow_id = str(uuid.UUID(workflow_id))
     except ValueError as exc:
         raise HTTPException(status_code=400, detail="工作流 ID 格式无效。") from exc
+    with database_connection() as connection:
+        workflow_row = connection.execute(
+            "SELECT agent_id FROM workflows WHERE id = ? AND status = 'published'",
+            (normalized_workflow_id,),
+        ).fetchone()
+    if workflow_row is None:
+        raise HTTPException(status_code=404, detail="工作流不存在或尚未发布。")
+    workflow_agent_id = workflow_row["agent_id"]
     persist_conversation = bool(payload.get("persist", True))
     conversation_id = payload.get("conversation_id") if persist_conversation else None
     if conversation_id:
@@ -4320,10 +4668,11 @@ async def execute_workflow(
         ensure_conversation_exists(
             conversation_id,
             user["id"],
+            workflow_agent_id,
             is_super_admin=user["role"] == SUPER_ADMIN_ROLE,
         )
     elif persist_conversation:
-        conversation_id = create_conversation(user["id"])
+        conversation_id = create_conversation(user["id"], workflow_agent_id)
     if persist_conversation:
         save_message(conversation_id, "user", initial_input.strip())
     started_at = time.perf_counter()
@@ -4339,6 +4688,7 @@ async def execute_workflow(
         record_agent_call(
             user, "workflow", normalized_workflow_id, "failed",
             int((time.perf_counter() - started_at) * 1000), "HTTPException", conversation_id,
+            agent_id=workflow_agent_id,
         )
         raise
     except RuntimeError as exc:
@@ -4346,6 +4696,7 @@ async def execute_workflow(
         record_agent_call(
             user, "workflow", normalized_workflow_id, "failed",
             int((time.perf_counter() - started_at) * 1000), type(exc).__name__, conversation_id,
+            agent_id=workflow_agent_id,
         )
         raise HTTPException(status_code=502, detail="工作流执行失败，请检查节点配置或关联服务。") from exc
     except Exception as exc:
@@ -4353,6 +4704,7 @@ async def execute_workflow(
         record_agent_call(
             user, "workflow", normalized_workflow_id, "failed",
             int((time.perf_counter() - started_at) * 1000), type(exc).__name__, conversation_id,
+            agent_id=workflow_agent_id,
         )
         raise HTTPException(status_code=502, detail="工作流执行失败，请检查节点配置或关联服务。") from exc
     record_agent_call(
@@ -4363,6 +4715,7 @@ async def execute_workflow(
         int((time.perf_counter() - started_at) * 1000),
         conversation_id=conversation_id,
         details={"step_count": len(result["steps"])},
+        agent_id=workflow_agent_id,
     )
     if persist_conversation:
         save_message(
@@ -4390,6 +4743,11 @@ async def preview_workflow(
         normalized_workflow_id = str(uuid.UUID(workflow_id))
     except ValueError as exc:
         raise HTTPException(status_code=400, detail="工作流 ID 格式无效。") from exc
+    with database_connection() as connection:
+        preview_workflow_row = connection.execute(
+            "SELECT agent_id FROM workflows WHERE id = ?", (normalized_workflow_id,)
+        ).fetchone()
+    preview_agent_id = preview_workflow_row["agent_id"] if preview_workflow_row else None
     started_at = time.perf_counter()
     try:
         result = await run_in_threadpool(
@@ -4406,6 +4764,7 @@ async def preview_workflow(
             "success",
             int((time.perf_counter() - started_at) * 1000),
             details={"step_count": len(result["steps"])},
+            agent_id=result["agent_id"],
         )
         return result
     except HTTPException:
@@ -4416,6 +4775,7 @@ async def preview_workflow(
             user, "workflow", normalized_workflow_id + "（预览）", "failed",
             int((time.perf_counter() - started_at) * 1000),
             type(exc).__name__,
+            agent_id=preview_agent_id,
         )
         raise HTTPException(status_code=502, detail="工作流预览失败，请检查节点配置或关联服务。") from exc
 
@@ -4426,6 +4786,7 @@ def knowledge_folders(
     page_size: int = Query(default=20, ge=1, le=100),
     search: str = Query(default="", max_length=200),
     check_model_status: bool = Query(default=True),
+    agent_id: str = Query(...),
     _: dict[str, Any] = Depends(require_super_admin),
 ) -> dict[str, Any]:
     """按目录名称筛选并分页列出知识库目录，同时返回全局文件统计。
@@ -4438,17 +4799,21 @@ def knowledge_folders(
     """
     reconcile_knowledge_index_state()
     search_term = search.strip()
-    where_clause = "WHERE instr(lower(f.name), lower(?)) > 0" if search_term else ""
-    query_params: tuple[Any, ...] = (search_term,) if search_term else ()
+    normalized_agent_id = normalize_agent_id(agent_id)
+    where_clause = "WHERE f.agent_id = ?" + (" AND instr(lower(f.name), lower(?)) > 0" if search_term else "")
+    query_params: tuple[Any, ...] = (normalized_agent_id, search_term) if search_term else (normalized_agent_id,)
     with database_connection() as connection:
         folder_total = connection.execute(
             f"SELECT COUNT(*) FROM knowledge_folders f {where_clause}", query_params
         ).fetchone()[0]
         total_documents = connection.execute(
-            "SELECT COUNT(*) FROM knowledge_documents"
+            "SELECT COUNT(*) FROM knowledge_documents d JOIN knowledge_folders f ON f.id = d.folder_id WHERE f.agent_id = ?",
+            (normalized_agent_id,),
         ).fetchone()[0]
         status_rows = connection.execute(
-            "SELECT status, COUNT(*) AS count FROM knowledge_documents GROUP BY status"
+            "SELECT d.status, COUNT(*) AS count FROM knowledge_documents d JOIN knowledge_folders f ON f.id = d.folder_id "
+            "WHERE f.agent_id = ? GROUP BY d.status",
+            (normalized_agent_id,),
         ).fetchall()
         total_pages = (folder_total + page_size - 1) // page_size
         current_page = min(page, max(total_pages, 1))
@@ -4486,6 +4851,7 @@ def knowledge_documents(
     search: str = Query(default="", max_length=200),
     folder_id: str | None = Query(default=None),
     check_model_status: bool = Query(default=True),
+    agent_id: str = Query(...),
     _: dict[str, Any] = Depends(require_super_admin),
 ) -> dict[str, Any]:
     """按文件名筛选并分页列出知识库文件，兼容管理工作台已有统计调用。
@@ -4502,6 +4868,9 @@ def knowledge_documents(
     search_term = search.strip()
     conditions: list[str] = []
     query_params: list[Any] = []
+    normalized_agent_id = normalize_agent_id(agent_id)
+    conditions.append("folder_id IN (SELECT id FROM knowledge_folders WHERE agent_id = ?)")
+    query_params.append(normalized_agent_id)
     normalized_folder_id = None
     if folder_id:
         try:
@@ -4517,7 +4886,8 @@ def knowledge_documents(
     with database_connection() as connection:
         if normalized_folder_id:
             folder_exists = connection.execute(
-                "SELECT 1 FROM knowledge_folders WHERE id = ?", (normalized_folder_id,)
+                "SELECT 1 FROM knowledge_folders WHERE id = ? AND agent_id = ?",
+                (normalized_folder_id, normalized_agent_id),
             ).fetchone()
             if folder_exists is None:
                 raise HTTPException(status_code=404, detail="知识库目录不存在。")
@@ -4525,7 +4895,9 @@ def knowledge_documents(
             f"SELECT COUNT(*) FROM knowledge_documents {where_clause}", query_params
         ).fetchone()[0]
         status_rows = connection.execute(
-            "SELECT status, COUNT(*) AS count FROM knowledge_documents GROUP BY status"
+            "SELECT status, COUNT(*) AS count FROM knowledge_documents WHERE folder_id IN "
+            "(SELECT id FROM knowledge_folders WHERE agent_id = ?) GROUP BY status",
+            (normalized_agent_id,),
         ).fetchall()
         total_pages = (total + page_size - 1) // page_size
         current_page = min(page, max(total_pages, 1))
@@ -4536,7 +4908,9 @@ def knowledge_documents(
             (*query_params, page_size, offset),
         ).fetchall()
         total_documents = connection.execute(
-            "SELECT COUNT(*) FROM knowledge_documents"
+            "SELECT COUNT(*) FROM knowledge_documents WHERE folder_id IN "
+            "(SELECT id FROM knowledge_folders WHERE agent_id = ?)",
+            (normalized_agent_id,),
         ).fetchone()[0]
     status_counts = {"ready": 0, "indexing": 0, "failed": 0}
     status_counts.update({row["status"]: row["count"] for row in status_rows})
@@ -4558,6 +4932,7 @@ def knowledge_documents(
 @app.post("/api/knowledge/folders", status_code=201)
 def create_knowledge_folder(
     request: KnowledgeFolderRequest,
+    agent_id: str = Query(...),
     _: dict[str, Any] = Depends(require_super_admin),
 ) -> dict[str, Any]:
     """创建一个用于归档知识库文件的新目录。
@@ -4566,6 +4941,8 @@ def create_knowledge_folder(
     @return 已创建目录信息
     @throws HTTPException 名称无效或与现有目录重复时返回错误
     """
+    normalized_agent_id = normalize_agent_id(agent_id)
+    get_agent_row(normalized_agent_id)
     name = request.name.strip()
     if not name:
         raise HTTPException(status_code=400, detail="目录名称不能为空。")
@@ -4573,8 +4950,8 @@ def create_knowledge_folder(
     try:
         with database_connection() as connection:
             connection.execute(
-                "INSERT INTO knowledge_folders(id, name, is_default, created_at) VALUES (?, ?, 0, ?)",
-                (folder_id, name, utc_timestamp()),
+                "INSERT INTO knowledge_folders(id, agent_id, name, is_default, created_at) VALUES (?, ?, ?, 0, ?)",
+                (folder_id, normalized_agent_id, name, utc_timestamp()),
             )
     except sqlite3.IntegrityError as exc:
         raise HTTPException(status_code=409, detail="已存在同名目录。") from exc
@@ -4585,6 +4962,7 @@ def create_knowledge_folder(
 def rename_knowledge_folder(
     folder_id: str,
     request: KnowledgeFolderRequest,
+    agent_id: str = Query(...),
     _: dict[str, Any] = Depends(require_super_admin),
 ) -> dict[str, Any]:
     """修改知识库目录名称，但保留目录 ID 和已有文件关系。
@@ -4598,16 +4976,22 @@ def rename_knowledge_folder(
         normalized_id = str(uuid.UUID(folder_id))
     except ValueError as exc:
         raise HTTPException(status_code=400, detail="知识库目录 ID 格式无效。") from exc
-    if normalized_id == DEFAULT_KNOWLEDGE_FOLDER_ID:
-        raise HTTPException(status_code=409, detail="默认目录不能重命名。")
     name = request.name.strip()
     if not name:
         raise HTTPException(status_code=400, detail="目录名称不能为空。")
     try:
         with database_connection() as connection:
+            folder = connection.execute(
+                "SELECT is_default FROM knowledge_folders WHERE id = ? AND agent_id = ?",
+                (normalized_id, normalize_agent_id(agent_id)),
+            ).fetchone()
+            if folder is None:
+                raise HTTPException(status_code=404, detail="知识库目录不存在。")
+            if folder["is_default"]:
+                raise HTTPException(status_code=409, detail="默认目录不能重命名。")
             result = connection.execute(
-                "UPDATE knowledge_folders SET name = ? WHERE id = ?",
-                (name, normalized_id),
+                "UPDATE knowledge_folders SET name = ? WHERE id = ? AND agent_id = ?",
+                (name, normalized_id, normalize_agent_id(agent_id)),
             )
             if result.rowcount == 0:
                 raise HTTPException(status_code=404, detail="知识库目录不存在。")
@@ -4619,6 +5003,7 @@ def rename_knowledge_folder(
 @app.delete("/api/knowledge/folders/{folder_id}")
 def delete_knowledge_folder(
     folder_id: str,
+    agent_id: str = Query(...),
     _: dict[str, Any] = Depends(require_super_admin),
 ) -> dict[str, bool]:
     """删除一个空的非默认知识库目录。
@@ -4631,15 +5016,16 @@ def delete_knowledge_folder(
         normalized_id = str(uuid.UUID(folder_id))
     except ValueError as exc:
         raise HTTPException(status_code=400, detail="知识库目录 ID 格式无效。") from exc
-    if normalized_id == DEFAULT_KNOWLEDGE_FOLDER_ID:
-        raise HTTPException(status_code=409, detail="默认目录不能删除。")
     try:
         with database_connection() as connection:
             folder = connection.execute(
-                "SELECT id FROM knowledge_folders WHERE id = ?", (normalized_id,)
+                "SELECT id, is_default FROM knowledge_folders WHERE id = ? AND agent_id = ?",
+                (normalized_id, normalize_agent_id(agent_id)),
             ).fetchone()
             if folder is None:
                 raise HTTPException(status_code=404, detail="知识库目录不存在。")
+            if folder["is_default"]:
+                raise HTTPException(status_code=409, detail="默认目录不能删除。")
             document_count = connection.execute(
                 "SELECT COUNT(*) FROM knowledge_documents WHERE folder_id = ?", (normalized_id,)
             ).fetchone()[0]
@@ -4662,6 +5048,7 @@ def knowledge_folder_documents(
     page_size: int = Query(default=20, ge=1, le=100),
     search: str = Query(default="", max_length=200),
     check_model_status: bool = Query(default=False),
+    agent_id: str = Query(...),
     _: dict[str, Any] = Depends(require_super_admin),
 ) -> dict[str, Any]:
     """按目录列出文件，并支持文件名包含搜索和服务端分页。
@@ -4682,8 +5069,8 @@ def knowledge_folder_documents(
     where_clause = "AND instr(lower(file_name), lower(?)) > 0" if search_term else ""
     with database_connection() as connection:
         folder = connection.execute(
-            "SELECT id, name, is_default, created_at FROM knowledge_folders WHERE id = ?",
-            (normalized_id,),
+            "SELECT id, agent_id, name, is_default, created_at FROM knowledge_folders WHERE id = ? AND agent_id = ?",
+            (normalized_id, normalize_agent_id(agent_id)),
         ).fetchone()
         if folder is None:
             raise HTTPException(status_code=404, detail="知识库目录不存在。")
@@ -4832,19 +5219,23 @@ def knowledge_document_embedded_image(
 async def upload_knowledge_document(
     background_tasks: BackgroundTasks,
     file: Annotated[UploadFile, File()],
+    agent_id: Annotated[str, Form()],
     folder_id: Annotated[str | None, Form()] = None,
     _: dict[str, Any] = Depends(require_super_admin),
 ) -> Any:
     """保存用户明确选定的知识库资料，并将向量索引交给后台处理。
 
     @param file 用户从知识库管理页明确提交的单个资料文件
-    @param folder_id 当前知识库目录 UUID；为空时保存到默认目录
+    @param agent_id 当前知识库所属智能体 UUID
+    @param folder_id 当前知识库目录 UUID；为空时保存到当前智能体默认目录
     @param background_tasks FastAPI 响应后的后台任务队列
     @return 已保存文件和当前索引状态
     @throws HTTPException 文件无效或无法保存时返回错误
     """
     if not file.filename:
         raise HTTPException(status_code=400, detail="请选择要导入知识库的文件。")
+    normalized_agent_id = normalize_agent_id(agent_id)
+    get_agent_row(normalized_agent_id)
     try:
         safe_name = sanitize_knowledge_filename(file.filename)
     except ValueError as exc:
@@ -4864,10 +5255,18 @@ async def upload_knowledge_document(
         except ValueError as exc:
             raise HTTPException(status_code=400, detail="知识库目录 ID 格式无效。") from exc
     else:
-        normalized_folder_id = DEFAULT_KNOWLEDGE_FOLDER_ID
+        with database_connection() as connection:
+            default_folder = connection.execute(
+                "SELECT id FROM knowledge_folders WHERE agent_id = ? AND is_default = 1",
+                (normalized_agent_id,),
+            ).fetchone()
+        if default_folder is None:
+            raise HTTPException(status_code=404, detail="当前智能体默认知识库目录不存在。")
+        normalized_folder_id = default_folder["id"]
     with database_connection() as connection:
         folder = connection.execute(
-            "SELECT id FROM knowledge_folders WHERE id = ?", (normalized_folder_id,)
+            "SELECT id FROM knowledge_folders WHERE id = ? AND agent_id = ?",
+            (normalized_folder_id, normalized_agent_id),
         ).fetchone()
     if folder is None:
         raise HTTPException(status_code=404, detail="知识库目录不存在，请刷新后重试。")
@@ -4909,6 +5308,7 @@ async def upload_knowledge_document(
 @app.delete("/api/knowledge/documents/{document_id}")
 def delete_knowledge_document(
     document_id: str,
+    agent_id: str = Query(...),
     _: dict[str, Any] = Depends(require_super_admin),
 ) -> dict[str, bool]:
     """删除知识库中明确导入的文件、向量分块和本地原始资料。
@@ -4924,7 +5324,10 @@ def delete_knowledge_document(
     with KNOWLEDGE_LOCK:
         with database_connection() as connection:
             row = connection.execute(
-                "SELECT id, file_path, status FROM knowledge_documents WHERE id = ?", (normalized_id,)
+                "SELECT d.id, d.file_path, d.status FROM knowledge_documents d "
+                "JOIN knowledge_folders f ON f.id = d.folder_id "
+                "WHERE d.id = ? AND f.agent_id = ?",
+                (normalized_id, normalize_agent_id(agent_id)),
             ).fetchone()
         if row is None:
             raise HTTPException(status_code=404, detail="知识库文件不存在。")
@@ -4952,6 +5355,7 @@ def delete_knowledge_document(
 def reindex_knowledge_document(
     document_id: str,
     background_tasks: BackgroundTasks,
+    agent_id: str = Query(...),
     _: dict[str, Any] = Depends(require_super_admin),
 ) -> dict[str, Any]:
     """重试一份先前索引失败的知识库文件。
@@ -4966,8 +5370,10 @@ def reindex_knowledge_document(
         raise HTTPException(status_code=400, detail="知识库文件 ID 格式无效。") from exc
     with database_connection() as connection:
         row = connection.execute(
-            "SELECT file_name, file_path, status FROM knowledge_documents WHERE id = ?",
-            (normalized_id,),
+            "SELECT d.file_name, d.file_path, d.status FROM knowledge_documents d "
+            "JOIN knowledge_folders f ON f.id = d.folder_id "
+            "WHERE d.id = ? AND f.agent_id = ?",
+            (normalized_id, normalize_agent_id(agent_id)),
         ).fetchone()
     if row is None:
         raise HTTPException(status_code=404, detail="知识库文件不存在。")
@@ -4988,10 +5394,11 @@ def reindex_knowledge_document(
     return {"id": normalized_id, "status": "indexing"}
 
 
-def get_http_tool_row(tool_id: str) -> sqlite3.Row:
+def get_http_tool_row(tool_id: str, agent_id: str) -> sqlite3.Row:
     """按 UUID 读取 HTTP 工具配置。
 
     @param tool_id 工具 UUID
+    @param agent_id 当前工具所属智能体 UUID
     @return HTTP 工具数据库记录
     @throws HTTPException 工具不存在或 ID 无效时返回对应错误
     """
@@ -4999,11 +5406,13 @@ def get_http_tool_row(tool_id: str) -> sqlite3.Row:
         normalized_id = str(uuid.UUID(tool_id))
     except ValueError as exc:
         raise HTTPException(status_code=400, detail="工具 ID 格式无效。") from exc
+    normalized_agent_id = normalize_agent_id(agent_id)
     with database_connection() as connection:
         row = connection.execute(
             "SELECT id, name, description, method, url, parameters_json, headers_json, enabled, "
-            "created_at, updated_at, last_test_at, last_test_status FROM http_tools WHERE id = ?",
-            (normalized_id,),
+            "created_at, updated_at, last_test_at, last_test_status FROM http_tools "
+            "WHERE id = ? AND agent_id = ?",
+            (normalized_id, normalized_agent_id),
         ).fetchone()
     if row is None:
         raise HTTPException(status_code=404, detail="工具不存在。")
@@ -5011,7 +5420,10 @@ def get_http_tool_row(tool_id: str) -> sqlite3.Row:
 
 
 @app.get("/api/tools")
-def http_tools(_: dict[str, Any] = Depends(require_super_admin)) -> list[dict[str, Any]]:
+def http_tools(
+    agent_id: str = Query(...),
+    _: dict[str, Any] = Depends(require_super_admin),
+) -> list[dict[str, Any]]:
     """列出工具管理页面配置的 HTTP 接口。
 
     @return HTTP 工具配置列表；鉴权值只在服务端保存，浏览器只看到是否已设置
@@ -5019,7 +5431,9 @@ def http_tools(_: dict[str, Any] = Depends(require_super_admin)) -> list[dict[st
     with database_connection() as connection:
         rows = connection.execute(
             "SELECT id, name, description, method, url, parameters_json, headers_json, enabled, "
-            "created_at, updated_at, last_test_at, last_test_status FROM http_tools ORDER BY updated_at DESC"
+            "created_at, updated_at, last_test_at, last_test_status FROM http_tools "
+            "WHERE agent_id = ? ORDER BY updated_at DESC",
+            (normalize_agent_id(agent_id),),
         ).fetchall()
     return [public_http_tool(row) for row in rows]
 
@@ -5035,6 +5449,8 @@ def create_http_tool(
     @return 创建后的工具配置
     @throws HTTPException 配置无效或工具名称重复时返回错误
     """
+    agent_id = normalize_agent_id(payload.get("agent_id", ""))
+    get_agent_row(agent_id)
     try:
         normalized = validate_http_tool_configuration(payload)
     except ValueError as exc:
@@ -5044,10 +5460,11 @@ def create_http_tool(
     try:
         with database_connection() as connection:
             connection.execute(
-                "INSERT INTO http_tools(id, name, description, method, url, parameters_json, headers_json, enabled, created_at, updated_at) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)",
+                "INSERT INTO http_tools(id, agent_id, name, description, method, url, parameters_json, headers_json, enabled, created_at, updated_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)",
                 (
                     tool_id,
+                    agent_id,
                     normalized["name"],
                     normalized["description"],
                     normalized["method"],
@@ -5059,14 +5476,15 @@ def create_http_tool(
                 ),
             )
     except sqlite3.IntegrityError as exc:
-        raise HTTPException(status_code=409, detail="工具标识已存在，请换一个名称。") from exc
-    return public_http_tool(get_http_tool_row(tool_id))
+        raise HTTPException(status_code=409, detail="当前智能体下已存在同名工具。") from exc
+    return public_http_tool(get_http_tool_row(tool_id, agent_id))
 
 
 @app.put("/api/tools/{tool_id}")
 def update_http_tool(
     tool_id: str,
     payload: dict[str, Any],
+    agent_id: str = Query(...),
     _: dict[str, Any] = Depends(require_super_admin),
 ) -> dict[str, Any]:
     """更新一个 HTTP 工具的请求配置。
@@ -5076,7 +5494,8 @@ def update_http_tool(
     @return 更新后的工具配置
     @throws HTTPException 工具不存在或配置无效时返回错误
     """
-    row = get_http_tool_row(tool_id)
+    normalized_agent_id = normalize_agent_id(agent_id)
+    row = get_http_tool_row(tool_id, normalized_agent_id)
     payload = dict(payload)
     existing_headers = json.loads(row["headers_json"])
     payload["headers"] = merge_http_tool_headers(existing_headers, payload.get("headers", []))
@@ -5089,7 +5508,7 @@ def update_http_tool(
     try:
         with database_connection() as connection:
             connection.execute(
-                "UPDATE http_tools SET name=?, description=?, method=?, url=?, parameters_json=?, headers_json=?, enabled=?, updated_at=? WHERE id=?",
+                "UPDATE http_tools SET name=?, description=?, method=?, url=?, parameters_json=?, headers_json=?, enabled=?, updated_at=? WHERE id=? AND agent_id=?",
                 (
                     normalized["name"],
                     normalized["description"],
@@ -5100,16 +5519,18 @@ def update_http_tool(
                     enabled,
                     timestamp,
                     row["id"],
+                    normalized_agent_id,
                 ),
             )
     except sqlite3.IntegrityError as exc:
-        raise HTTPException(status_code=409, detail="工具标识已存在，请换一个名称。") from exc
-    return public_http_tool(get_http_tool_row(row["id"]))
+        raise HTTPException(status_code=409, detail="当前智能体下已存在同名工具。") from exc
+    return public_http_tool(get_http_tool_row(row["id"], normalized_agent_id))
 
 
 @app.delete("/api/tools/{tool_id}")
 def delete_http_tool(
     tool_id: str,
+    agent_id: str = Query(...),
     _: dict[str, Any] = Depends(require_super_admin),
 ) -> dict[str, bool]:
     """删除一个 HTTP 工具配置。
@@ -5118,7 +5539,7 @@ def delete_http_tool(
     @return 删除成功状态
     @throws HTTPException 工具不存在时返回 404
     """
-    row = get_http_tool_row(tool_id)
+    row = get_http_tool_row(tool_id, agent_id)
     with database_connection() as connection:
         connection.execute(
             "DELETE FROM role_resource_grants WHERE resource_type = 'http_tool' AND resource_id = ?",
@@ -5132,6 +5553,7 @@ def delete_http_tool(
 async def test_http_tool(
     tool_id: str,
     payload: dict[str, Any],
+    agent_id: str = Query(...),
     _: dict[str, Any] = Depends(require_super_admin),
 ) -> dict[str, Any]:
     """使用管理页面提供的样例参数测试一个 HTTP 工具。
@@ -5141,7 +5563,7 @@ async def test_http_tool(
     @return 接口状态码和截断后的响应内容
     @throws HTTPException 参数无效或请求失败时返回错误
     """
-    row = get_http_tool_row(tool_id)
+    row = get_http_tool_row(tool_id, agent_id)
     sample_params = payload.get("sample_params", {})
     if not isinstance(sample_params, dict):
         raise HTTPException(status_code=400, detail="测试参数必须是 JSON 对象。")
@@ -5171,25 +5593,24 @@ async def test_http_tool(
 
 
 @app.get("/api/conversations")
-def conversations(user: dict[str, Any] = Depends(require_current_user)) -> list[dict[str, str]]:
+def conversations(
+    agent_id: str = Query(...),
+    user: dict[str, Any] = Depends(require_current_user),
+) -> list[dict[str, str]]:
     """按最近更新时间返回本地保存的对话列表。
 
-    @return 最近 50 条对话及其标题、预览和更新时间
+    @param agent_id 当前智能体 UUID
+    @return 当前智能体最近 50 条对话及其标题、预览和更新时间
     """
+    normalized_agent_id = normalize_agent_id(agent_id)
     with database_connection() as connection:
-        if user["role"] == SUPER_ADMIN_ROLE:
-            rows = connection.execute(
-                "SELECT c.id, c.title, c.updated_at, "
-                "(SELECT m.content FROM messages m WHERE m.conversation_id = c.id ORDER BY m.id DESC LIMIT 1) AS preview "
-                "FROM conversations c ORDER BY c.updated_at DESC LIMIT 50"
-            ).fetchall()
-        else:
-            rows = connection.execute(
-                "SELECT c.id, c.title, c.updated_at, "
-                "(SELECT m.content FROM messages m WHERE m.conversation_id = c.id ORDER BY m.id DESC LIMIT 1) AS preview "
-                "FROM conversations c WHERE c.user_id = ? ORDER BY c.updated_at DESC LIMIT 50",
-                (user["id"],),
-            ).fetchall()
+        rows = connection.execute(
+            "SELECT c.id, c.title, c.updated_at, "
+            "(SELECT m.content FROM messages m WHERE m.conversation_id = c.id ORDER BY m.id DESC LIMIT 1) AS preview "
+            "FROM conversations c WHERE c.agent_id = ? AND (? = 1 OR c.user_id = ?) "
+            "ORDER BY c.updated_at DESC LIMIT 50",
+            (normalized_agent_id, 1 if user["role"] == SUPER_ADMIN_ROLE else 0, user["id"]),
+        ).fetchall()
     return [
         {
             "id": row["id"],
@@ -5204,28 +5625,32 @@ def conversations(user: dict[str, Any] = Depends(require_current_user)) -> list[
 @app.get("/api/conversations/{conversation_id}")
 def conversation_detail(
     conversation_id: str,
+    agent_id: str = Query(...),
     user: dict[str, Any] = Depends(require_current_user),
 ) -> dict[str, Any]:
     """返回指定对话的消息，用于刷新恢复和切换对话。
 
     @param conversation_id 对话 UUID
+    @param agent_id 当前智能体 UUID
     @return 对话标题及用户可见消息
     @throws HTTPException 对话不存在时返回 404
     """
     ensure_conversation_exists(
         conversation_id,
         user["id"],
+        normalize_agent_id(agent_id),
         is_super_admin=user["role"] == SUPER_ADMIN_ROLE,
     )
     with database_connection() as connection:
         if user["role"] == SUPER_ADMIN_ROLE:
             row = connection.execute(
-                "SELECT title FROM conversations WHERE id = ?", (conversation_id,)
+                "SELECT title, agent_id FROM conversations WHERE id = ? AND agent_id = ?",
+                (conversation_id, normalize_agent_id(agent_id)),
             ).fetchone()
         else:
             row = connection.execute(
-                "SELECT title FROM conversations WHERE id = ? AND user_id = ?",
-                (conversation_id, user["id"]),
+                "SELECT title, agent_id FROM conversations WHERE id = ? AND user_id = ? AND agent_id = ?",
+                (conversation_id, user["id"], normalize_agent_id(agent_id)),
             ).fetchone()
     messages = load_messages(conversation_id)
     visible_messages = []
@@ -5244,29 +5669,37 @@ def conversation_detail(
             }.items()
             if key in {"id", "role", "content", "attachments", "created_at"}
         })
-    return {"id": conversation_id, "title": row["title"], "messages": visible_messages}
+    return {
+        "id": conversation_id,
+        "agent_id": row["agent_id"],
+        "title": row["title"],
+        "messages": visible_messages,
+    }
 
 
 @app.delete("/api/conversations/{conversation_id}")
 def delete_conversation(
     conversation_id: str,
+    agent_id: str = Query(...),
     user: dict[str, Any] = Depends(require_current_user),
 ) -> dict[str, bool]:
     """删除本地对话和其消息、附件提取文本。
 
     @param conversation_id 对话 UUID
+    @param agent_id 当前智能体 UUID
     @return 删除成功状态
     @throws HTTPException 对话不存在时返回 404
     """
     is_super_admin = user["role"] == SUPER_ADMIN_ROLE
-    ensure_conversation_exists(conversation_id, user["id"], is_super_admin=is_super_admin)
+    normalized_agent_id = normalize_agent_id(agent_id)
+    ensure_conversation_exists(conversation_id, user["id"], normalized_agent_id, is_super_admin=is_super_admin)
     with database_connection() as connection:
         if is_super_admin:
-            connection.execute("DELETE FROM conversations WHERE id = ?", (conversation_id,))
+            connection.execute("DELETE FROM conversations WHERE id = ? AND agent_id = ?", (conversation_id, normalized_agent_id))
         else:
             connection.execute(
-                "DELETE FROM conversations WHERE id = ? AND user_id = ?",
-                (conversation_id, user["id"]),
+                "DELETE FROM conversations WHERE id = ? AND user_id = ? AND agent_id = ?",
+                (conversation_id, user["id"], normalized_agent_id),
             )
     return {"deleted": True}
 
@@ -5274,6 +5707,7 @@ def delete_conversation(
 @app.post("/api/chat")
 async def chat(
     message: Annotated[str, Form()],
+    agent_id: Annotated[str, Form()],
     conversation_id: Annotated[str | None, Form()] = None,
     files: Annotated[list[UploadFile] | None, File()] = None,
     use_knowledge: Annotated[bool, Form()] = True,
@@ -5283,6 +5717,7 @@ async def chat(
     """保存用户消息与附件，并以 SSE 逐段返回通用智能体的回答。
 
     @param message 当前用户消息文本
+    @param agent_id 当前智能体 UUID
     @param conversation_id 当前对话 UUID；为空时创建新对话
     @param files 用户本轮附带的资料文件
     @param use_knowledge 是否用已由知识库管理入口导入的资料辅助回答
@@ -5291,6 +5726,8 @@ async def chat(
     @throws HTTPException 消息无效、对话不存在、附件不支持或模型配置缺失时返回对应 HTTP 错误
     """
     incoming_files = files or []
+    normalized_agent_id = normalize_agent_id(agent_id)
+    agent_row = get_agent_row(normalized_agent_id, require_published=True)
     if not message.strip() and not incoming_files:
         raise HTTPException(status_code=400, detail="请输入消息或添加附件后再发送。")
     if len(message) > 12_000:
@@ -5333,11 +5770,17 @@ async def chat(
         total_chars += min(len(extracted), remaining)
 
     is_super_admin = user["role"] == SUPER_ADMIN_ROLE
+    agent_resources = get_agent_resource_scope(normalized_agent_id)
     resource_scope = (
-        {"knowledge_folder": set(), "http_tool": set()}
+        agent_resources
         if is_super_admin
         else get_user_resource_scope(user["id"])
     )
+    if not is_super_admin:
+        resource_scope = {
+            resource_type: resource_scope[resource_type] & agent_resources[resource_type]
+            for resource_type in resource_scope
+        }
     current_conversation_id = conversation_id
     if current_conversation_id:
         try:
@@ -5347,12 +5790,14 @@ async def chat(
         ensure_conversation_exists(
             current_conversation_id,
             user["id"],
+            normalized_agent_id,
             is_super_admin=user["role"] == SUPER_ADMIN_ROLE,
         )
     else:
         current_conversation_id = str(uuid.uuid4())
 
     agent = build_agent(
+        normalized_agent_id,
         use_vision=bool(image_attachments),
         deep_thinking=deep_thinking,
         allowed_tool_ids=None if is_super_admin else resource_scope["http_tool"],
@@ -5360,7 +5805,7 @@ async def chat(
         conversation_id=current_conversation_id,
     )
     if not conversation_id:
-        create_conversation(user["id"], current_conversation_id)
+        create_conversation(user["id"], normalized_agent_id, current_conversation_id)
 
     prior_messages = load_messages(current_conversation_id, limit=MAX_HISTORY_MESSAGES - 1)
     # A prior access denial belongs to its own request. It must not bias a later,
@@ -5414,6 +5859,7 @@ async def chat(
                 retrieved_documents = await run_in_threadpool(
                     search_knowledge_with_log,
                     retrieval_query,
+                    normalized_agent_id,
                     None,
                     None,
                     user,
@@ -5423,6 +5869,7 @@ async def chat(
                 retrieved_documents = await run_in_threadpool(
                     search_knowledge_with_log,
                     retrieval_query,
+                    normalized_agent_id,
                     None,
                     resource_scope["knowledge_folder"],
                     user,
@@ -5434,7 +5881,12 @@ async def chat(
         # Re-read grants after retrieval so a permission revoked during a slow
         # embedding search cannot leave its chunks in the model prompt.
         resource_scope = get_user_resource_scope(user["id"])
+        resource_scope = {
+            resource_type: resource_scope[resource_type] & agent_resources[resource_type]
+            for resource_type in resource_scope
+        }
         agent = build_agent(
+            normalized_agent_id,
             use_vision=bool(image_attachments),
             deep_thinking=deep_thinking,
             allowed_tool_ids=resource_scope["http_tool"],
@@ -5450,7 +5902,10 @@ async def chat(
             authorized_source_ids = {
                 row["id"]
                 for row in connection.execute(
-                    "SELECT id, folder_id FROM knowledge_documents WHERE status = 'ready'"
+                    "SELECT d.id, d.folder_id FROM knowledge_documents d "
+                    "JOIN knowledge_folders f ON f.id = d.folder_id "
+                    "WHERE d.status = 'ready' AND f.agent_id = ?",
+                    (normalized_agent_id,),
                 ).fetchall()
                 if row["folder_id"] in resource_scope["knowledge_folder"]
             }
@@ -5613,7 +6068,7 @@ async def chat(
                         type(event).__name__, current_conversation_id,
                         {"knowledge_result_count": len(retrieved_documents)},
                     )
-                    yield f"event: error\ndata: {json.dumps({'message': 'DeepSeek 回答中断，请检查网络或稍后重试。'}, ensure_ascii=False)}\n\n"
+                    yield f"event: error\ndata: {json.dumps({'message': '模型回答中断，请检查网络或稍后重试。'}, ensure_ascii=False)}\n\n"
                     return
                 if isinstance(event, RunContentEvent) and event.reasoning_content and deep_thinking:
                     if not thinking_status_sent:
@@ -5708,7 +6163,7 @@ async def chat(
                 "ModelRequestError", current_conversation_id,
                 {"knowledge_result_count": len(retrieved_documents)},
             )
-            yield f"event: error\ndata: {json.dumps({'message': '调用 DeepSeek 失败，请检查网络、API Key 和模型配置后重试。'}, ensure_ascii=False)}\n\n"
+            yield f"event: error\ndata: {json.dumps({'message': '调用模型服务失败，请检查网络、API Key 和模型配置后重试。'}, ensure_ascii=False)}\n\n"
 
     return StreamingResponse(
         stream_answer(),

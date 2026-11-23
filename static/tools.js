@@ -309,7 +309,9 @@ function renderToolsList(items) {
 }
 
 async function loadTools() {
-  const response = await fetch("/api/tools");
+  const agentId = window.getSelectedAgentId?.() || "";
+  if (!agentId) throw new Error("请先新增一个智能体。");
+  const response = await fetch(`/api/tools?agent_id=${encodeURIComponent(agentId)}`);
   const payload = await response.json();
   if (!response.ok) throw new Error(payload.detail || "读取工具列表失败。");
   renderToolsList(payload);
@@ -325,7 +327,9 @@ async function saveTool(event) {
   setToolStatus("正在保存…");
   try {
     const payload = collectToolPayload();
-    const url = editingToolId ? `/api/tools/${encodeURIComponent(editingToolId)}` : "/api/tools";
+    payload.agent_id = window.getSelectedAgentId?.() || "";
+    const agentQuery = `?agent_id=${encodeURIComponent(payload.agent_id)}`;
+    const url = editingToolId ? `/api/tools/${encodeURIComponent(editingToolId)}${agentQuery}` : "/api/tools";
     const response = await fetch(url, { method: editingToolId ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
     const result = await response.json();
     if (!response.ok) throw new Error(result.detail || "保存工具失败。");
@@ -340,7 +344,7 @@ async function saveTool(event) {
 
 async function deleteTool(tool) {
   if (!window.confirm(`删除工具“${tool.name}”？智能体将不再调用它。`)) return;
-  const response = await fetch(`/api/tools/${encodeURIComponent(tool.id)}`, { method: "DELETE" });
+  const response = await fetch(`/api/tools/${encodeURIComponent(tool.id)}?agent_id=${encodeURIComponent(window.getSelectedAgentId?.() || "")}`, { method: "DELETE" });
   const payload = await response.json();
   if (!response.ok) {
     setToolStatus(payload.detail || "删除工具失败。");
@@ -357,7 +361,7 @@ async function testSelectedTool() {
   toolTestStatus.textContent = "请求中…";
   toolTestResult.hidden = true;
   try {
-    const response = await fetch(`/api/tools/${encodeURIComponent(selectedTestTool.id)}/test`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sample_params: collectTestParameters() }) });
+    const response = await fetch(`/api/tools/${encodeURIComponent(selectedTestTool.id)}/test?agent_id=${encodeURIComponent(window.getSelectedAgentId?.() || "")}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sample_params: collectTestParameters() }) });
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.detail || "测试请求失败。");
     toolTestStatus.textContent = `收到 HTTP ${payload.status_code}`;

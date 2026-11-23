@@ -7,7 +7,7 @@ const monitoringComponentLabels = {
   service: ["智能体服务", "API 进程正在运行"],
   database: ["本地数据库", "SQLite 业务数据连接"],
   ollama: ["Ollama 向量模型", "本机嵌入模型服务与模型"],
-  deepseek: ["DeepSeek 模型服务", "模型列表接口连通性检查"],
+  models: ["智能体模型配置", "已配置 API Key 的智能体数量"],
 };
 const monitoringStatusLabels = {
   healthy: "运行正常",
@@ -82,7 +82,7 @@ function renderMonitoringStatus(payload) {
   appendMonitoringComponent("service", payload.components.service);
   appendMonitoringComponent("database", payload.components.database);
   appendMonitoringComponent("ollama", payload.components.ollama, payload.models.embedding);
-  appendMonitoringComponent("deepseek", payload.components.deepseek, payload.models.chat);
+  appendMonitoringComponent("models", payload.components.models, `${payload.models.configured_agents} 个已配置`);
   const resources = payload.resources;
   appendMonitoringMetric("知识文档", resources.documents, `已索引 ${resources.ready_documents} · 处理中 ${resources.indexing_documents} · 失败 ${resources.failed_documents}`);
   appendMonitoringMetric("启用的 HTTP 工具", resources.enabled_tools);
